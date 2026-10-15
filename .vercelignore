@@ -1,0 +1,6 @@
+# Nunca enviar segredos locais para a Vercel (as variáveis configuram-se no painel da Vercel).
+.env
+.env.local
+.env.*.local
+.claude
+tests
