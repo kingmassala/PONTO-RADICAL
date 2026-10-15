@@ -14,8 +14,12 @@ const nextConfig: NextConfig = {
     },
   },
   images: {
-    // Só as imagens do bucket público «media» do Supabase são optimizadas.
-    remotePatterns: supabaseUrl ? [new URL(`${supabaseUrl.replace(/\/$/, "")}/storage/v1/object/public/media/**`)] : [],
+    // Imagens optimizadas: bucket «media» do Supabase e fotografias iniciais do Unsplash.
+    remotePatterns: [
+      ...(supabaseUrl ? [new URL(`${supabaseUrl.replace(/\/$/, "")}/storage/v1/object/public/media/**`)] : []),
+      // Fotografias iniciais (licença Unsplash). Podem ser substituídas na Biblioteca Multimédia.
+      { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" },
+    ],
     formats: ["image/avif", "image/webp"],
   },
   experimental: {

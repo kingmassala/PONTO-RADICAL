@@ -58,6 +58,7 @@ export const SECTION_TEMPLATES: Template[] = [
       overlayOpacity: 45,
       align: "left",
       height: "full",
+      showBrandStrip: true,
       primaryButton: emptyLink(),
       secondaryButton: emptyLink({ style: "secondary" }),
     }),

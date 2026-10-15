@@ -175,6 +175,39 @@ body {
   animation: pr-fade-up 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
+/* Aparecer ao fazer scroll (só em browsers com scroll-driven animations; os outros mostram tudo). */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .pr-scroll-reveal {
+      animation: pr-fade-up linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 35%;
+    }
+  }
+}
+
+/* Faixa de marcas em movimento contínuo. */
+@keyframes pr-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.pr-marquee {
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.pr-marquee-track {
+  animation: pr-marquee 32s linear infinite;
+}
+.pr-marquee:hover .pr-marquee-track {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pr-marquee-track {
+    animation: none;
+    flex-wrap: wrap;
+  }
+}
+
 /* ---------- Editor de texto rico (painel) ---------- */
 .rte .ProseMirror {
   min-height: 9rem;

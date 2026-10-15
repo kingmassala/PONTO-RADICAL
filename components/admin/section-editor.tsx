@@ -233,6 +233,12 @@ function HeroFields({ s, set, linkProps }: { s: SectionOf<"hero"> } & Omit<Field
             { value: "center", label: "Centrado" },
           ]}
         />
+        <Toggle
+          label="Mostrar faixa de marcas"
+          description="Faixa animada com os nomes das marcas visíveis, no fundo da abertura."
+          checked={s.showBrandStrip}
+          onChange={(v) => set({ showBrandStrip: v })}
+        />
       </Card>
       <Card title="Imagem ou vídeo de fundo">
         <Select

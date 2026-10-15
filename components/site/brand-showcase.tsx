@@ -22,7 +22,7 @@ function BrandImage({ brand }: { brand: Brand }) {
       alt={brand.heroImage.alt}
       fill
       sizes="(min-width: 1024px) 55vw, 100vw"
-      unoptimized={svg || !(brand.heroImage.url.startsWith("/") || brand.heroImage.url.includes(".supabase."))}
+      unoptimized={svg || !/^(\/|https:\/\/images\.unsplash\.com\/|https:\/\/[^/]+\.supabase\.co\/)/.test(brand.heroImage.url)}
       className="object-cover"
     />
   );

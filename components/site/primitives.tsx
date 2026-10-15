@@ -17,7 +17,8 @@ function canOptimize(url: string) {
   if (url.toLowerCase().split("?")[0].endsWith(".svg")) return false;
   if (url.startsWith("/")) return true;
   try {
-    return Boolean(SUPABASE_HOST) && new URL(url).hostname === SUPABASE_HOST;
+    const host = new URL(url).hostname;
+    return host === "images.unsplash.com" || (Boolean(SUPABASE_HOST) && host === SUPABASE_HOST);
   } catch {
     return false;
   }

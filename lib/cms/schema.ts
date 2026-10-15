@@ -76,6 +76,8 @@ const heroSection = z.object({
   overlayOpacity: z.number().int().min(0).max(90).default(45),
   align: z.enum(["left", "center"]).default("left"),
   height: z.enum(["full", "large"]).default("full"),
+  /** Faixa com os nomes das marcas no fundo da abertura. */
+  showBrandStrip: z.boolean().default(true),
   primaryButton: linkSchema,
   secondaryButton: linkSchema,
 });

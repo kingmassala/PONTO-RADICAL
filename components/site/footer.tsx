@@ -35,7 +35,13 @@ export function SiteFooter({ doc }: { doc: SiteDocument }) {
       <div className="mx-auto max-w-7xl px-5 pb-10 pt-20 sm:px-8">
         <div className="grid gap-12 lg:grid-cols-12">
           <div className="lg:col-span-5">
-            <p className="pr-heading text-4xl">{doc.navigation.logoText || doc.settings.siteName}</p>
+            <div className="flex items-center gap-4">
+              {doc.navigation.logo.url && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={doc.navigation.logo.url} alt="" className="h-14 w-auto max-w-[200px] object-contain" />
+              )}
+              <p className="pr-heading text-3xl tracking-[0.12em]">{doc.navigation.logoText || doc.settings.siteName}</p>
+            </div>
             {doc.footer.tagline && <p className="mt-5 max-w-sm text-white/65">{doc.footer.tagline}</p>}
             {doc.footer.showSocial && social.length > 0 && (
               <ul className="mt-8 flex gap-3">

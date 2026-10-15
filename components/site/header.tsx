@@ -47,18 +47,25 @@ export function SiteHeader({ logoText, logoUrl, logoAlt, items, cta, store, head
       }`}
     >
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-6 px-5 sm:px-8">
-        <a href="#top" className="flex items-center gap-3" aria-label={`${logoText} — voltar ao início`}>
-          {logoUrl ? (
+        <a href="#top" className="group flex items-center gap-3" aria-label={`${logoText || "Início"} — voltar ao início`}>
+          {logoUrl && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={logoUrl} alt={logoAlt || logoText} className="h-9 w-auto max-w-[180px] object-contain" />
-          ) : (
-            <span className="pr-heading text-2xl tracking-wide">{logoText}</span>
+            <img
+              src={logoUrl}
+              alt={logoText ? "" : logoAlt}
+              className="h-10 w-auto max-w-[180px] object-contain transition-transform duration-500 group-hover:rotate-[-8deg]"
+            />
           )}
+          {logoText && <span className="pr-heading text-xl tracking-[0.12em] sm:text-2xl">{logoText}</span>}
         </a>
 
-        <nav aria-label="Navegação principal" className="hidden items-center gap-8 lg:flex">
+        <nav aria-label="Navegação principal" className="hidden items-center gap-9 lg:flex">
           {items.map((item) => (
-            <a key={item.href} href={item.href} className="text-sm font-medium tracking-wide text-white/85 transition hover:text-white">
+            <a
+              key={item.href}
+              href={item.href}
+              className="relative py-2 text-[0.8rem] font-medium uppercase tracking-[0.16em] text-white/80 transition hover:text-white after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-left after:scale-x-0 after:bg-accent after:transition-transform after:duration-300 hover:after:scale-x-100"
+            >
               {item.label}
             </a>
           ))}

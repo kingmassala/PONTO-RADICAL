@@ -27,7 +27,7 @@ export const SEED_CONTENT: SiteDocument = {
     buttons: { shape: "pill", uppercase: true },
   },
   navigation: {
-    logo: emptyMedia(),
+    logo: { url: "/brand/ponto-radical-mark-white.svg", alt: "Ponto Radical", mediaId: null },
     logoText: "Ponto Radical",
     headerStyle: "transparent",
     ctaButton: { ...emptyLink(), enabled: true, label: "Contactar", type: "anchor", anchor: "contactos" },
@@ -46,12 +46,13 @@ export const SEED_CONTENT: SiteDocument = {
       subtitle:
         "A Ponto Radical representa em Angola marcas internacionais de referência em electrónica marítima, equipamento de embarcações e desportos de vento.",
       mediaKind: "image",
-      image: { url: "/seed/hero.svg", alt: "Linha do horizonte sobre o oceano ao entardecer", mediaId: null },
+      image: { url: "https://images.unsplash.com/photo-1552160757-52790c6f4faf?auto=format&fit=crop&w=2400&q=80", alt: "Lancha a navegar em águas profundas, vista aérea", mediaId: null },
       videoUrl: "",
       overlayColor: "dark",
-      overlayOpacity: 35,
+      overlayOpacity: 55,
       align: "left",
       height: "full",
+      showBrandStrip: true,
       primaryButton: { ...emptyLink(), enabled: true, label: "Descobrir as marcas", anchor: "marcas" },
       secondaryButton: { ...emptyLink(), enabled: true, label: "Fale connosco", anchor: "contactos", style: "secondary" },
     },
@@ -68,7 +69,7 @@ export const SEED_CONTENT: SiteDocument = {
       title: "Do cais ao alto mar, com as marcas certas.",
       body:
         "<p>A Ponto Radical nasceu da paixão pelo mar e pela aventura. Reunimos num só ponto as soluções de que navegadores, pescadores, operadores marítimos e praticantes de desportos de vento precisam.</p><p>Trabalhamos com fabricantes reconhecidos internacionalmente e acompanhamos cada cliente na escolha, instalação e manutenção do equipamento, com <strong>aconselhamento técnico especializado</strong>.</p>",
-      image: { url: "/seed/sobre.svg", alt: "Embarcação atracada num cais", mediaId: null },
+      image: { url: "https://images.unsplash.com/photo-1786218422418-9c0a475a7be1?auto=format&fit=crop&w=1600&q=80", alt: "Convés de um veleiro com cabos e aparelho", mediaId: null },
       stats: [
         { value: "5", label: "marcas internacionais representadas" },
         { value: "360°", label: "do equipamento à manutenção" },
@@ -146,10 +147,30 @@ export const SEED_CONTENT: SiteDocument = {
       title: "O mar começa onde termina a rotina.",
       subtitle:
         "Da pesca desportiva ao kitesurf nas praias de Angola, equipamos quem procura liberdade, adrenalina e horizonte.",
-      image: { url: "/seed/aventura.svg", alt: "Praticante de kitesurf sobre as ondas", mediaId: null },
+      image: { url: "https://images.unsplash.com/photo-1761155982582-cc35df20cb45?auto=format&fit=crop&w=2400&q=80", alt: "Kitesurfista a saltar ao pôr-do-sol sobre o oceano", mediaId: null },
       overlayOpacity: 30,
       height: "tall",
       button: { ...emptyLink(), enabled: true, label: "Planear o meu equipamento", anchor: "contactos" },
+    },
+    {
+      id: "sec-galeria",
+      type: "gallery",
+      anchor: "galeria",
+      visible: true,
+      showInNav: false,
+      navLabel: "Galeria",
+      background: "light",
+      eyebrow: "No mar e no vento",
+      title: "Feito para quem não fica em terra.",
+      intro: "Navegação, pesca desportiva, vela e kitesurf: o equipamento certo transforma cada saída numa experiência.",
+      layout: "mosaic",
+      items: [
+        { image: { url: "https://images.unsplash.com/photo-1444487233259-dae9d907a740?auto=format&fit=crop&w=1600&q=80", alt: "Veleiro clássico ao pôr-do-sol", mediaId: null }, caption: "Vela ao entardecer" },
+        { image: { url: "https://images.unsplash.com/photo-1763151425983-b429d837f743?auto=format&fit=crop&w=1200&q=80", alt: "Marina com veleiros atracados", mediaId: null }, caption: "Marina" },
+        { image: { url: "https://images.unsplash.com/photo-1774434035316-105e6fcd7afa?auto=format&fit=crop&w=1200&q=80", alt: "Kites coloridos sobre a praia", mediaId: null }, caption: "Kitesurf" },
+        { image: { url: "https://images.unsplash.com/photo-1776162241545-73028a3bd7d1?auto=format&fit=crop&w=1200&q=80", alt: "Lancha a deixar uma esteira no mar", mediaId: null }, caption: "Navegação costeira" },
+        { image: { url: "https://images.unsplash.com/photo-1758052005560-b0cd06ea63c9?auto=format&fit=crop&w=1200&q=80", alt: "Kitesurfistas nas ondas", mediaId: null }, caption: "Sessão de vento" },
+      ],
     },
     {
       id: "sec-contactos",
@@ -175,7 +196,7 @@ export const SEED_CONTENT: SiteDocument = {
       specialisation: "Electrónica marítima e navegação",
       description:
         "<p>Plotters cartográficos, sondas, radares, piloto automático e instrumentos de bordo para navegar com confiança em qualquer condição.</p>",
-      heroImage: { url: "/seed/brand-garmin.svg", alt: "Consola de navegação de uma embarcação", mediaId: null },
+      heroImage: { url: "https://images.unsplash.com/photo-1776802159513-d64fef74f494?auto=format&fit=crop&w=1800&q=80", alt: "Piloto ao leme com ecrã de navegação", mediaId: null },
       externalUrl: "https://www.garmin.com",
       visible: true,
     },
@@ -186,7 +207,7 @@ export const SEED_CONTENT: SiteDocument = {
       specialisation: "Ferragens e equipamento de convés",
       description:
         "<p>Ferragens, dobradiças, cunhos, puxadores e acessórios em aço inoxidável e nylon, concebidos para resistir ao ambiente marinho.</p>",
-      heroImage: { url: "/seed/brand-seadog.svg", alt: "Ferragens em aço inoxidável no convés", mediaId: null },
+      heroImage: { url: "https://images.unsplash.com/photo-1768080315860-f5c8c15fbd5c?auto=format&fit=crop&w=1800&q=80", alt: "Cabo amarrado a um cunho num cais de madeira", mediaId: null },
       externalUrl: "https://www.sea-dog.com",
       visible: true,
     },
@@ -197,7 +218,7 @@ export const SEED_CONTENT: SiteDocument = {
       specialisation: "Limpeza, protecção e manutenção",
       description:
         "<p>Produtos de limpeza e protecção para casco, convés, metais, vinil e motores, que prolongam a vida e o brilho da embarcação.</p>",
-      heroImage: { url: "/seed/brand-starbrite.svg", alt: "Casco brilhante de uma embarcação", mediaId: null },
+      heroImage: { url: "https://images.unsplash.com/photo-1568476612160-787b6a1d5fb1?auto=format&fit=crop&w=1800&q=80", alt: "Lancha branca impecável a navegar no mar", mediaId: null },
       externalUrl: "https://www.starbrite.com",
       visible: true,
     },
@@ -208,7 +229,7 @@ export const SEED_CONTENT: SiteDocument = {
       specialisation: "Bombas de esgoto e sistemas de bordo",
       description:
         "<p>Bombas de esgoto, interruptores de nível e arejadores, uma referência em fiabilidade para a segurança a bordo.</p>",
-      heroImage: { url: "/seed/brand-rule.svg", alt: "Sistema de bombagem de uma embarcação", mediaId: null },
+      heroImage: { url: "https://images.unsplash.com/photo-1788629325547-041ccf2684f2?auto=format&fit=crop&w=1800&q=80", alt: "Posto de comando e instrumentos de bordo", mediaId: null },
       externalUrl: "https://www.rule-industries.com",
       visible: true,
     },
@@ -219,7 +240,7 @@ export const SEED_CONTENT: SiteDocument = {
       specialisation: "Kitesurf e desportos de vento",
       description:
         "<p>Kites, pranchas, barras e trapézios desenvolvidos com atletas de topo, para progredir com segurança e desempenho.</p>",
-      heroImage: { url: "/seed/brand-duotone.svg", alt: "Kite colorido sobre o mar", mediaId: null },
+      heroImage: { url: "https://images.unsplash.com/photo-1767019462191-0af904b4a6eb?auto=format&fit=crop&w=1800&q=80", alt: "Kitesurfista a saltar sobre as ondas", mediaId: null },
       externalUrl: "https://www.duotonesports.com",
       visible: true,
     },
@@ -247,7 +268,7 @@ export const SEED_CONTENT: SiteDocument = {
     description:
       "Electrónica marítima, equipamento de convés, manutenção de embarcações e kitesurf. Representantes Garmin, Sea-Dog Line, Star brite, Rule e Duotone em Angola.",
     keywords: "náutica Angola, Garmin, Sea-Dog Line, Star brite, Rule, Duotone, kitesurf, equipamento marítimo, Luanda",
-    ogImage: { url: "/seed/hero.svg", alt: "Ponto Radical", mediaId: null },
+    ogImage: { url: "https://images.unsplash.com/photo-1552160757-52790c6f4faf?auto=format&fit=crop&w=1200&q=80", alt: "Ponto Radical", mediaId: null },
     siteUrl: "",
   },
   footer: {

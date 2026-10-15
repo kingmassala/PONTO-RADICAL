@@ -457,13 +457,13 @@ export function MenuEditor({ value, anchors, storeEnabled }: { value: MenuValue;
           value={m.navigation.logoText}
           maxLength={60}
           onChange={(v) => setNav({ logoText: v })}
-          hint="Usado quando não existe imagem de logótipo."
+          hint="Aparece ao lado do logótipo. Deixe vazio para mostrar só a imagem do logótipo."
         />
         <MediaField
           label="Logótipo (opcional)"
           value={m.navigation.logo}
           onChange={(v) => setNav({ logo: v })}
-          hint="Use uma versão clara (branca) do logótipo, em SVG ou PNG transparente."
+          hint="Use uma versão clara (branca) do logótipo, em SVG ou PNG transparente. Também é usado no rodapé."
         />
         <Select
           label="Estilo do cabeçalho"

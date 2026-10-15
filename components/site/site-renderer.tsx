@@ -59,7 +59,7 @@ export function SiteRenderer({ doc, previewBanner }: { doc: SiteDocument; previe
       </a>
       {previewBanner}
       <SiteHeader
-        logoText={doc.navigation.logoText || doc.settings.siteName}
+        logoText={doc.navigation.logoText}
         logoUrl={doc.navigation.logo.url}
         logoAlt={doc.navigation.logo.alt}
         items={navItems(doc)}

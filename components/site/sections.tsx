@@ -53,6 +53,7 @@ const overlayStyle = (color: "dark" | "primary", opacity: number) => ({
 export function HeroSection({ section, doc }: Props<"hero">) {
   const store = doc.store.showInHero ? storeLink(doc) : null;
   const centered = section.align === "center";
+  const brandNames = doc.brands.filter((b) => b.visible).map((b) => b.name);
   return (
     <section
       id={section.anchor}
@@ -81,13 +82,20 @@ export function HeroSection({ section, doc }: Props<"hero">) {
       </div>
 
       <div
-        className={`mx-auto flex w-full max-w-7xl flex-col justify-end px-5 pb-20 pt-36 sm:px-8 sm:pb-28 ${
+        className={`mx-auto flex w-full max-w-7xl flex-col justify-end px-5 pt-36 sm:px-8 ${
+          section.showBrandStrip ? "pb-36 sm:pb-40" : "pb-20 sm:pb-28"
+        } ${
           centered ? "items-center text-center" : ""
         }`}
       >
         <div className={`pr-reveal max-w-4xl ${centered ? "mx-auto" : ""}`}>
-          {section.eyebrow && <p className="pr-eyebrow mb-6 text-white/80">{section.eyebrow}</p>}
-          <h1 className="pr-heading pr-display">{section.title}</h1>
+          {section.eyebrow && (
+            <p className={`pr-eyebrow mb-6 flex items-center gap-3 text-white/80 ${centered ? "justify-center" : ""}`}>
+              <span aria-hidden className="h-px w-10 bg-accent" />
+              {section.eyebrow}
+            </p>
+          )}
+          <h1 className="pr-heading pr-display drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)]">{section.title}</h1>
           {section.subtitle && (
             <p className={`mt-7 max-w-2xl text-lg leading-relaxed text-white/85 sm:text-xl ${centered ? "mx-auto" : ""}`}>
               {section.subtitle}
@@ -100,6 +108,23 @@ export function HeroSection({ section, doc }: Props<"hero">) {
           </div>
         </div>
       </div>
+
+      {section.showBrandStrip && brandNames.length > 0 && (
+        <div className="absolute inset-x-0 bottom-0 border-t border-white/15 bg-black/25 backdrop-blur-md">
+          <div className="mx-auto flex max-w-7xl items-center gap-8 overflow-hidden px-5 py-5 sm:px-8">
+            <p className="pr-eyebrow hidden shrink-0 text-white/55 md:block">Marcas representadas</p>
+            <div className="pr-marquee relative flex-1 overflow-hidden" aria-label={`Marcas representadas: ${brandNames.join(", ")}`}>
+              <ul className="pr-marquee-track flex w-max items-center gap-12" aria-hidden>
+                {[...brandNames, ...brandNames].map((name, i) => (
+                  <li key={i} className="pr-heading whitespace-nowrap text-xl tracking-[0.14em] text-white/85 sm:text-2xl">
+                    {name}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
@@ -109,7 +134,7 @@ export function SplitSection({ section, doc }: Props<"split">) {
   const imageLeft = section.imagePosition === "left";
   return (
     <section id={section.anchor} aria-label={section.navLabel || section.title} className={`${bg.className} py-24 sm:py-32`}>
-      <div className="mx-auto grid max-w-7xl items-center gap-14 px-5 sm:px-8 lg:grid-cols-12 lg:gap-20">
+      <div className="pr-scroll-reveal mx-auto grid max-w-7xl items-center gap-14 px-5 sm:px-8 lg:grid-cols-12 lg:gap-20">
         <div className={`lg:col-span-6 ${imageLeft ? "lg:order-2" : ""}`}>
           <Eyebrow tone={bg.tone}>{section.eyebrow}</Eyebrow>
           <h2 className="pr-heading pr-h2">{section.title}</h2>
@@ -136,8 +161,12 @@ export function SplitSection({ section, doc }: Props<"split">) {
         </div>
         <div className={`lg:col-span-6 ${imageLeft ? "lg:order-1" : ""}`}>
           {section.image.url && (
-            <div className="relative aspect-[4/5] overflow-hidden rounded-sm sm:aspect-[5/6]">
-              <CmsImage media={section.image} sizes="(min-width: 1024px) 50vw, 100vw" />
+            <div className="group relative aspect-[4/5] overflow-hidden rounded-sm shadow-[0_40px_80px_-40px_rgba(0,0,0,0.45)] sm:aspect-[5/6]">
+              <CmsImage
+                media={section.image}
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="object-cover transition-transform duration-[1.6s] ease-out group-hover:scale-105"
+              />
               <div aria-hidden className="absolute -bottom-px left-0 h-2 w-1/3 bg-accent" />
             </div>
           )}
@@ -154,7 +183,7 @@ export function BrandsSection({ section, doc }: Props<"brands">) {
     .map((b) => ({ ...b, description: sanitizeRichText(b.description) }));
   return (
     <section id={section.anchor} aria-label={section.navLabel || section.title} className={`${bg.className} py-24 sm:py-32`}>
-      <div className="mx-auto max-w-7xl px-5 sm:px-8">
+      <div className="pr-scroll-reveal mx-auto max-w-7xl px-5 sm:px-8">
         <div className="grid gap-8 lg:grid-cols-12">
           <div className="lg:col-span-7">
             <Eyebrow tone={bg.tone}>{section.eyebrow}</Eyebrow>
@@ -177,7 +206,7 @@ export function GallerySection({ section }: Props<"gallery">) {
   const items = section.items.filter((i) => i.image.url);
   return (
     <section id={section.anchor} aria-label={section.navLabel || section.title} className={`${bg.className} py-24 sm:py-32`}>
-      <div className="mx-auto max-w-7xl px-5 sm:px-8">
+      <div className="pr-scroll-reveal mx-auto max-w-7xl px-5 sm:px-8">
         <Eyebrow tone={bg.tone}>{section.eyebrow}</Eyebrow>
         <h2 className="pr-heading pr-h2 max-w-3xl">{section.title}</h2>
         {section.intro && (
@@ -288,7 +317,7 @@ export function FeaturesSection({ section }: Props<"features">) {
   const dark = bg.tone === "dark";
   return (
     <section id={section.anchor} aria-label={section.navLabel || section.title} className={`${bg.className} py-24 sm:py-32`}>
-      <div className="mx-auto max-w-7xl px-5 sm:px-8">
+      <div className="pr-scroll-reveal mx-auto max-w-7xl px-5 sm:px-8">
         <div className="grid gap-8 lg:grid-cols-12">
           <div className="lg:col-span-7">
             <Eyebrow tone={bg.tone}>{section.eyebrow}</Eyebrow>
@@ -302,9 +331,12 @@ export function FeaturesSection({ section }: Props<"features">) {
           {section.items.map((item, i) => {
             const Icon = ICONS[item.icon] ?? Compass;
             return (
-              <li key={i} className={`${bg.className} group p-8 sm:p-10`}>
+              <li key={i} className={`${bg.className} group relative p-8 transition-colors duration-300 sm:p-10 ${dark ? "hover:bg-white/5" : "hover:bg-white"}`}>
+                <span aria-hidden className="absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 bg-accent transition-transform duration-500 group-hover:scale-x-100" />
                 <div className="flex items-center justify-between">
-                  <Icon aria-hidden className="size-8 text-accent" strokeWidth={1.5} />
+                  <span className="flex size-14 items-center justify-center rounded-full bg-accent/10 transition-colors duration-300 group-hover:bg-accent">
+                    <Icon aria-hidden className="size-7 text-accent transition-colors duration-300 group-hover:text-white" strokeWidth={1.5} />
+                  </span>
                   <span className={`text-sm tabular-nums ${dark ? "text-white/40" : "text-ink/35"}`}>
                     {String(i + 1).padStart(2, "0")}
                   </span>
@@ -342,7 +374,7 @@ export function ContactSection({ section, doc, preview }: Props<"contact"> & { p
   const bg = BACKGROUNDS[section.background];
   return (
     <section id={section.anchor} aria-label={section.navLabel || section.title} className={`${bg.className} py-24 sm:py-32`}>
-      <div className="mx-auto grid max-w-7xl gap-16 px-5 sm:px-8 lg:grid-cols-12">
+      <div className="pr-scroll-reveal mx-auto grid max-w-7xl gap-16 px-5 sm:px-8 lg:grid-cols-12">
         <div className="lg:col-span-5">
           <Eyebrow tone={bg.tone}>{section.eyebrow}</Eyebrow>
           <h2 className="pr-heading pr-h2">{section.title}</h2>
