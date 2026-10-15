@@ -1,5 +1,6 @@
 import {
   Anchor,
+
   Compass,
   LifeBuoy,
   Map,
@@ -17,11 +18,16 @@ import {
 } from "lucide-react";
 import type { SectionOf, SectionType, SiteDocument } from "@/lib/cms/schema";
 import { sanitizeRichText } from "@/lib/cms/sanitize";
+import { plainText } from "@/lib/cms/text";
 import { resolveLink, storeLink } from "./links";
 import { BACKGROUNDS, CmsButton, CmsImage, Eyebrow, RichText } from "./primitives";
 import { BrandShowcase } from "./brand-showcase";
 import { ContactForm } from "./contact-form";
 import { ContactDetails } from "./contact-details";
+import { Title } from "./title";
+import { Tilt } from "./fx/tilt";
+import { CountUp } from "./fx/count-up";
+import { DragScroll } from "./fx/drag-scroll";
 
 type Props<T extends SectionType> = { section: SectionOf<T>; doc: SiteDocument };
 
@@ -42,82 +48,117 @@ const ICONS: Record<string, LucideIcon> = {
   sun: Sun,
 };
 
-const overlayStyle = (color: "dark" | "primary", opacity: number) => ({
-  background: `linear-gradient(90deg, color-mix(in srgb, var(${
-    color === "primary" ? "--pr-primary" : "--pr-dark"
-  }) ${Math.min(100, opacity + 25)}%, transparent) 0%, color-mix(in srgb, var(${
-    color === "primary" ? "--pr-primary" : "--pr-dark"
-  }) ${opacity}%, transparent) 100%)`,
-});
+const overlayStyle = (color: "dark" | "primary", opacity: number) => {
+  const base = color === "primary" ? "--pr-primary" : "--pr-dark";
+  return {
+    background: `linear-gradient(100deg, color-mix(in srgb, var(${base}) ${Math.min(100, opacity + 30)}%, transparent) 0%, color-mix(in srgb, var(${base}) ${opacity}%, transparent) 55%, color-mix(in srgb, var(${base}) ${Math.max(0, opacity - 25)}%, transparent) 100%)`,
+  };
+};
+
+/** Logótipo usado como separador e emblema. */
+function LogoMark({ url, className }: { url: string; className?: string }) {
+  if (!url) {
+    return (
+      <span aria-hidden className={className}>
+        ✦
+      </span>
+    );
+  }
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={url} alt="" aria-hidden className={className} />;
+}
+
+/** Emblema circular com texto a rodar à volta do logótipo. */
+function SpinBadge({ text, logo }: { text: string; logo: string }) {
+  return (
+    <div className="relative size-36 sm:size-44" aria-hidden>
+      <svg viewBox="0 0 200 200" className="pr-spin absolute inset-0 size-full text-white">
+        <defs>
+          <path id="pr-badge-path" d="M100,100 m-78,0 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0" />
+        </defs>
+        <text fill="currentColor" style={{ font: "700 13px var(--pr-font-body)", letterSpacing: "0.3em", textTransform: "uppercase" }}>
+          <textPath href="#pr-badge-path">{text}</textPath>
+        </text>
+      </svg>
+      <div className="absolute inset-[30%] flex items-center justify-center rounded-full bg-accent p-3">
+        <LogoMark url={logo} className="size-full object-contain" />
+      </div>
+    </div>
+  );
+}
+
+/* --------------------------------- Hero --------------------------------- */
 
 export function HeroSection({ section, doc }: Props<"hero">) {
   const store = doc.store.showInHero ? storeLink(doc) : null;
   const centered = section.align === "center";
   const brandNames = doc.brands.filter((b) => b.visible).map((b) => b.name);
+  const badgeText = `${doc.settings.siteName} • Mar • Vento • Aventura • `;
+
   return (
     <section
       id={section.anchor}
-      aria-label={section.navLabel || section.title}
-      className={`relative isolate flex overflow-hidden bg-dark text-white ${
-        section.height === "full" ? "min-h-[100svh]" : "min-h-[78svh]"
-      }`}
+      aria-label={section.navLabel || plainText(section.title)}
+      className={`relative isolate flex overflow-hidden bg-dark text-white ${section.height === "full" ? "min-h-[100svh]" : "min-h-[82svh]"}`}
     >
-      <div className="absolute inset-0 -z-10">
-        {section.mediaKind === "video" && section.videoUrl ? (
-          <video
-            className="size-full object-cover"
-            src={section.videoUrl}
-            poster={section.image.url || undefined}
-            autoPlay
-            muted
-            loop
-            playsInline
-            aria-hidden
-          />
-        ) : (
-          <CmsImage media={section.image} sizes="100vw" priority />
-        )}
+      <div className="absolute inset-0 -z-10 overflow-hidden">
+        <div className="pr-ken-burns absolute inset-0">
+          {section.mediaKind === "video" && section.videoUrl ? (
+            <video className="size-full object-cover" src={section.videoUrl} poster={section.image.url || undefined} autoPlay muted loop playsInline aria-hidden />
+          ) : (
+            <CmsImage media={section.image} sizes="100vw" priority />
+          )}
+        </div>
         <div className="absolute inset-0" style={overlayStyle(section.overlayColor, section.overlayOpacity)} />
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/40 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-dark via-dark/30 to-transparent" />
+        {/* Corte diagonal do «R» do logótipo, como textura */}
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute -right-[8%] top-0 h-full w-[50%] text-white/[0.05]" aria-hidden>
+          <path d="M0 0 L100 100 L100 0 Z" fill="currentColor" />
+        </svg>
       </div>
 
       <div
-        className={`mx-auto flex w-full max-w-7xl flex-col justify-end px-5 pt-36 sm:px-8 ${
-          section.showBrandStrip ? "pb-36 sm:pb-40" : "pb-20 sm:pb-28"
-        } ${
-          centered ? "items-center text-center" : ""
-        }`}
+        className={`mx-auto flex w-full max-w-[90rem] flex-col justify-end px-5 pt-36 sm:px-8 lg:px-12 ${
+          section.showBrandStrip ? "pb-40 sm:pb-44" : "pb-20 sm:pb-28"
+        } ${centered ? "items-center text-center" : ""}`}
       >
-        <div className={`pr-reveal max-w-4xl ${centered ? "mx-auto" : ""}`}>
-          {section.eyebrow && (
-            <p className={`pr-eyebrow mb-6 flex items-center gap-3 text-white/80 ${centered ? "justify-center" : ""}`}>
-              <span aria-hidden className="h-px w-10 bg-accent" />
-              {section.eyebrow}
-            </p>
-          )}
-          <h1 className="pr-heading pr-display drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)]">{section.title}</h1>
-          {section.subtitle && (
-            <p className={`mt-7 max-w-2xl text-lg leading-relaxed text-white/85 sm:text-xl ${centered ? "mx-auto" : ""}`}>
-              {section.subtitle}
-            </p>
-          )}
-          <div className={`mt-10 flex flex-wrap gap-4 ${centered ? "justify-center" : ""}`}>
-            <CmsButton link={resolveLink(section.primaryButton, doc)} tone="dark" />
-            <CmsButton link={resolveLink(section.secondaryButton, doc)} tone="dark" />
-            <CmsButton link={store} tone="dark" />
+        {section.eyebrow && (
+          <p
+            className={`pr-load-fade pr-eyebrow mb-8 inline-flex w-fit items-center gap-3 rounded-full border border-white/20 bg-white/5 px-4 py-2 text-white/85 backdrop-blur ${centered ? "mx-auto" : ""}`}
+            style={{ ["--d" as string]: "0.05s" }}
+          >
+            <span className="size-1.5 animate-pulse rounded-full bg-accent" aria-hidden />
+            {section.eyebrow}
+          </p>
+        )}
+        <Title text={section.title} as="h1" animate="load" className={`pr-display max-w-[14ch] ${centered ? "mx-auto" : ""}`} />
+        <div className={`mt-10 flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between ${centered ? "items-center" : ""}`}>
+          <div className={`pr-load-fade max-w-xl ${centered ? "mx-auto" : ""}`} style={{ ["--d" as string]: "0.7s" }}>
+            {section.subtitle && <p className="text-lg leading-relaxed text-white/80 sm:text-xl">{section.subtitle}</p>}
+            <div className={`mt-9 flex flex-wrap gap-4 ${centered ? "justify-center" : ""}`}>
+              <CmsButton link={resolveLink(section.primaryButton, doc)} tone="dark" magnetic />
+              <CmsButton link={resolveLink(section.secondaryButton, doc)} tone="dark" magnetic />
+              <CmsButton link={store} tone="dark" magnetic />
+            </div>
           </div>
+          {!centered && (
+            <div className="pr-load-fade hidden shrink-0 lg:block" style={{ ["--d" as string]: "1s" }}>
+              <SpinBadge text={badgeText.repeat(2)} logo={doc.navigation.logo.url} />
+            </div>
+          )}
         </div>
       </div>
 
       {section.showBrandStrip && brandNames.length > 0 && (
-        <div className="absolute inset-x-0 bottom-0 border-t border-white/15 bg-black/25 backdrop-blur-md">
-          <div className="mx-auto flex max-w-7xl items-center gap-8 overflow-hidden px-5 py-5 sm:px-8">
-            <p className="pr-eyebrow hidden shrink-0 text-white/55 md:block">Marcas representadas</p>
+        <div className="absolute inset-x-0 bottom-0 border-t border-white/10 bg-black/30 backdrop-blur-xl">
+          <div className="flex items-center gap-8 overflow-hidden py-6">
+            <p className="pr-eyebrow hidden shrink-0 pl-12 text-white/50 xl:block">Marcas representadas</p>
             <div className="pr-marquee relative flex-1 overflow-hidden" aria-label={`Marcas representadas: ${brandNames.join(", ")}`}>
               <ul className="pr-marquee-track flex w-max items-center gap-12" aria-hidden>
-                {[...brandNames, ...brandNames].map((name, i) => (
-                  <li key={i} className="pr-heading whitespace-nowrap text-xl tracking-[0.14em] text-white/85 sm:text-2xl">
-                    {name}
+                {[...brandNames, ...brandNames, ...brandNames, ...brandNames].map((name, i) => (
+                  <li key={i} className="flex items-center gap-12 whitespace-nowrap">
+                    <span className="pr-heading text-xl text-white sm:text-2xl">{name}</span>
+                    <LogoMark url={doc.navigation.logo.url} className="size-5 opacity-50" />
                   </li>
                 ))}
               </ul>
@@ -129,70 +170,89 @@ export function HeroSection({ section, doc }: Props<"hero">) {
   );
 }
 
+/* ------------------------------ Texto e imagem ------------------------------ */
+
 export function SplitSection({ section, doc }: Props<"split">) {
   const bg = BACKGROUNDS[section.background];
   const imageLeft = section.imagePosition === "left";
+  const dark = bg.tone === "dark";
+  const badge = section.stats[0];
   return (
-    <section id={section.anchor} aria-label={section.navLabel || section.title} className={`${bg.className} py-24 sm:py-32`}>
-      <div className="pr-scroll-reveal mx-auto grid max-w-7xl items-center gap-14 px-5 sm:px-8 lg:grid-cols-12 lg:gap-20">
-        <div className={`lg:col-span-6 ${imageLeft ? "lg:order-2" : ""}`}>
+    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} relative overflow-hidden py-28 sm:py-40`}>
+      <div className="mx-auto max-w-[90rem] px-5 sm:px-8 lg:px-12">
+        <div className="pr-scroll-reveal">
           <Eyebrow tone={bg.tone}>{section.eyebrow}</Eyebrow>
-          <h2 className="pr-heading pr-h2">{section.title}</h2>
-          <RichText
-            html={section.body}
-            className={`mt-8 text-lg leading-relaxed ${bg.tone === "dark" ? "text-white/80" : "text-ink/75"}`}
-          />
-          {section.stats.length > 0 && (
-            <dl className={`mt-12 grid grid-cols-2 gap-8 border-t pt-10 ${bg.tone === "dark" ? "border-white/15" : "border-ink/10"}`}>
-              {section.stats.map((stat, i) => (
-                <div key={i}>
-                  <dt className="sr-only">{stat.label}</dt>
-                  <dd>
-                    <span className="pr-heading block text-5xl text-accent">{stat.value}</span>
-                    <span className={`mt-2 block text-sm ${bg.tone === "dark" ? "text-white/70" : "text-ink/65"}`}>{stat.label}</span>
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          )}
-          <div className="mt-10">
-            <CmsButton link={resolveLink(section.button, doc)} tone={bg.tone} />
-          </div>
         </div>
-        <div className={`lg:col-span-6 ${imageLeft ? "lg:order-1" : ""}`}>
-          {section.image.url && (
-            <div className="group relative aspect-[4/5] overflow-hidden rounded-sm shadow-[0_40px_80px_-40px_rgba(0,0,0,0.45)] sm:aspect-[5/6]">
-              <CmsImage
-                media={section.image}
-                sizes="(min-width: 1024px) 50vw, 100vw"
-                className="object-cover transition-transform duration-[1.6s] ease-out group-hover:scale-105"
-              />
-              <div aria-hidden className="absolute -bottom-px left-0 h-2 w-1/3 bg-accent" />
+        <Title text={section.title} className="pr-h2 max-w-[18ch]" />
+
+        <div className="mt-16 grid items-start gap-16 lg:mt-24 lg:grid-cols-12 lg:gap-20">
+          <div className={`relative lg:col-span-6 ${imageLeft ? "" : "lg:order-2"}`}>
+            {section.image.url && (
+              <div className="pr-scroll-clip relative aspect-[4/5] overflow-hidden rounded-[2rem] [clip-path:polygon(0_0,100%_0,100%_86%,80%_100%,0_100%)]">
+                <div className="pr-parallax absolute inset-0">
+                  <CmsImage media={section.image} sizes="(min-width: 1024px) 50vw, 100vw" />
+                </div>
+              </div>
+            )}
+            {badge && (
+              <div className={`absolute -bottom-8 ${imageLeft ? "right-4 sm:-right-8" : "left-4 sm:-left-10"}`}>
+                <div className="flex size-32 rotate-[-8deg] flex-col items-center justify-center rounded-full bg-accent text-center text-white shadow-2xl transition-transform duration-500 hover:rotate-[6deg] hover:scale-110 sm:size-40">
+                  <span className="pr-heading text-4xl sm:text-5xl">
+                    <CountUp value={badge.value} />
+                  </span>
+                  <span className="mt-1 max-w-[10ch] text-[0.6rem] font-bold uppercase leading-tight tracking-widest">
+                    {badge.label.split(" ").slice(0, 2).join(" ")}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className={`pr-scroll-reveal lg:col-span-6 lg:pt-10 ${imageLeft ? "" : "lg:order-1"}`}>
+            <RichText html={section.body} className={`text-xl leading-relaxed sm:text-2xl sm:leading-[1.55] ${dark ? "text-white/80" : "text-ink/75"}`} />
+            {section.stats.length > 0 && (
+              <dl className={`mt-14 grid grid-cols-2 gap-x-8 gap-y-10 border-t pt-10 ${dark ? "border-white/15" : "border-ink/15"}`}>
+                {section.stats.map((stat, i) => (
+                  <div key={i}>
+                    <dt className="sr-only">{stat.label}</dt>
+                    <dd>
+                      <span className="pr-heading block text-6xl text-accent sm:text-7xl">
+                        <CountUp value={stat.value} />
+                      </span>
+                      <span className={`mt-3 block max-w-[22ch] text-sm leading-snug ${dark ? "text-white/65" : "text-ink/60"}`}>{stat.label}</span>
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+            <div className="mt-12">
+              <CmsButton link={resolveLink(section.button, doc)} tone={bg.tone} magnetic />
             </div>
-          )}
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
+/* --------------------------------- Marcas --------------------------------- */
+
 export function BrandsSection({ section, doc }: Props<"brands">) {
   const bg = BACKGROUNDS[section.background];
-  const brands = doc.brands
-    .filter((b) => b.visible)
-    .map((b) => ({ ...b, description: sanitizeRichText(b.description) }));
+  const brands = doc.brands.filter((b) => b.visible).map((b) => ({ ...b, description: sanitizeRichText(b.description) }));
+  const dark = bg.tone === "dark";
   return (
-    <section id={section.anchor} aria-label={section.navLabel || section.title} className={`${bg.className} py-24 sm:py-32`}>
-      <div className="pr-scroll-reveal mx-auto max-w-7xl px-5 sm:px-8">
-        <div className="grid gap-8 lg:grid-cols-12">
-          <div className="lg:col-span-7">
-            <Eyebrow tone={bg.tone}>{section.eyebrow}</Eyebrow>
-            <h2 className="pr-heading pr-h2">{section.title}</h2>
+    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} pr-diagonal relative pb-28 sm:pb-40`}>
+      <div className="mx-auto max-w-[90rem] px-5 sm:px-8 lg:px-12">
+        <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
+          <div className="lg:col-span-8">
+            <div className="pr-scroll-reveal">
+              <Eyebrow tone={bg.tone}>{section.eyebrow}</Eyebrow>
+            </div>
+            <Title text={section.title} className="pr-h2" />
           </div>
           {section.intro && (
-            <p className={`self-end text-lg leading-relaxed lg:col-span-5 ${bg.tone === "dark" ? "text-white/75" : "text-ink/70"}`}>
-              {section.intro}
-            </p>
+            <p className={`pr-scroll-reveal text-lg leading-relaxed lg:col-span-4 ${dark ? "text-white/70" : "text-ink/70"}`}>{section.intro}</p>
           )}
         </div>
         <BrandShowcase brands={brands} layout={section.layout} tone={bg.tone} />
@@ -201,71 +261,91 @@ export function BrandsSection({ section, doc }: Props<"brands">) {
   );
 }
 
+/* --------------------------------- Galeria --------------------------------- */
+
+const GALLERY_SHAPES = [
+  "aspect-[3/4] w-[78vw] sm:w-[30rem]",
+  "aspect-[4/5] w-[64vw] sm:w-[22rem] sm:mt-16",
+  "aspect-square w-[70vw] sm:w-[26rem]",
+  "aspect-[3/4] w-[64vw] sm:w-[22rem] sm:mt-24",
+  "aspect-[5/4] w-[80vw] sm:w-[34rem]",
+];
+
 export function GallerySection({ section }: Props<"gallery">) {
   const bg = BACKGROUNDS[section.background];
   const items = section.items.filter((i) => i.image.url);
+  const dark = bg.tone === "dark";
   return (
-    <section id={section.anchor} aria-label={section.navLabel || section.title} className={`${bg.className} py-24 sm:py-32`}>
-      <div className="pr-scroll-reveal mx-auto max-w-7xl px-5 sm:px-8">
-        <Eyebrow tone={bg.tone}>{section.eyebrow}</Eyebrow>
-        <h2 className="pr-heading pr-h2 max-w-3xl">{section.title}</h2>
-        {section.intro && (
-          <p className={`mt-6 max-w-2xl text-lg ${bg.tone === "dark" ? "text-white/75" : "text-ink/70"}`}>{section.intro}</p>
-        )}
-        <div
-          className={`mt-14 grid gap-4 ${
-            section.layout === "mosaic" ? "grid-cols-2 md:grid-cols-4 md:auto-rows-[220px]" : "grid-cols-2 md:grid-cols-3"
-          }`}
-        >
-          {items.map((item, i) => {
-            const big = section.layout === "mosaic" && i % 5 === 0;
-            return (
-              <figure
-                key={i}
-                className={`group relative overflow-hidden ${
-                  section.layout === "mosaic" ? (big ? "col-span-2 row-span-2 aspect-square md:aspect-auto" : "aspect-square md:aspect-auto") : "aspect-[4/3]"
-                }`}
-              >
-                <CmsImage
-                  media={item.image}
-                  sizes="(min-width: 768px) 33vw, 50vw"
-                  className="object-cover transition duration-700 group-hover:scale-105"
-                />
-                {item.caption && (
-                  <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4 text-sm text-white">
-                    {item.caption}
-                  </figcaption>
-                )}
-              </figure>
-            );
-          })}
+    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} overflow-hidden py-28 sm:py-40`}>
+      <div className="mx-auto mb-16 grid max-w-[90rem] gap-8 px-5 sm:px-8 lg:grid-cols-12 lg:items-end lg:px-12">
+        <div className="lg:col-span-8">
+          <div className="pr-scroll-reveal">
+            <Eyebrow tone={bg.tone}>{section.eyebrow}</Eyebrow>
+          </div>
+          <Title text={section.title} className="pr-h2" />
         </div>
+        {section.intro && <p className={`pr-scroll-reveal text-lg lg:col-span-4 ${dark ? "text-white/70" : "text-ink/70"}`}>{section.intro}</p>}
       </div>
+
+      {section.layout === "mosaic" ? (
+        <DragScroll tone={bg.tone}>
+          {items.map((item, i) => (
+            <figure key={i} className={`group relative shrink-0 snap-start overflow-hidden rounded-[2rem] ${GALLERY_SHAPES[i % GALLERY_SHAPES.length]}`}>
+              <CmsImage
+                media={item.image}
+                sizes="(min-width: 640px) 34rem, 80vw"
+                className="pointer-events-none object-cover transition-transform duration-[1.2s] ease-out group-hover:scale-110"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+              {item.caption && (
+                <figcaption className="absolute bottom-5 left-5 flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-xs font-bold uppercase tracking-widest text-ink backdrop-blur transition-colors group-hover:bg-accent group-hover:text-white">
+                  <span className="tabular-nums opacity-50">{String(i + 1).padStart(2, "0")}</span>
+                  {item.caption}
+                </figcaption>
+              )}
+            </figure>
+          ))}
+        </DragScroll>
+      ) : (
+        <div className="mx-auto grid max-w-[90rem] grid-cols-2 gap-4 px-5 sm:px-8 md:grid-cols-3 lg:px-12">
+          {items.map((item, i) => (
+            <figure key={i} className="pr-scroll-reveal group relative aspect-[4/3] overflow-hidden rounded-3xl">
+              <CmsImage media={item.image} sizes="(min-width: 768px) 33vw, 50vw" className="object-cover transition duration-700 group-hover:scale-105" />
+              {item.caption && (
+                <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4 text-sm text-white">{item.caption}</figcaption>
+              )}
+            </figure>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
+
+/* ---------------------------------- Banner ---------------------------------- */
 
 export function BannerSection({ section, doc }: Props<"banner">) {
   return (
     <section
       id={section.anchor}
-      aria-label={section.navLabel || section.title}
-      className={`relative isolate flex items-end overflow-hidden bg-dark text-white ${
-        section.height === "tall" ? "min-h-[90svh]" : "min-h-[60svh]"
-      }`}
+      aria-label={section.navLabel || plainText(section.title)}
+      className={`relative isolate flex items-end overflow-hidden bg-dark text-white ${section.height === "tall" ? "min-h-[110svh]" : "min-h-[70svh]"}`}
     >
-      <div className="absolute inset-0 -z-10">
-        <CmsImage media={section.image} sizes="100vw" />
+      <div className="absolute inset-0 -z-10 overflow-hidden">
+        <div className="pr-scroll-scale absolute inset-0">
+          <CmsImage media={section.image} sizes="100vw" />
+        </div>
         <div className="absolute inset-0" style={overlayStyle("dark", section.overlayOpacity)} />
+        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-dark to-transparent" />
       </div>
-      <div className="mx-auto w-full max-w-7xl px-5 py-24 sm:px-8 sm:py-32">
-        <div className="max-w-3xl">
+      <div className="mx-auto w-full max-w-[90rem] px-5 py-28 sm:px-8 sm:py-40 lg:px-12">
+        <div className="pr-scroll-reveal">
           <Eyebrow tone="dark">{section.eyebrow}</Eyebrow>
-          <h2 className="pr-heading pr-display">{section.title}</h2>
-          {section.subtitle && <p className="mt-7 max-w-2xl text-lg leading-relaxed text-white/85 sm:text-xl">{section.subtitle}</p>}
-          <div className="mt-10">
-            <CmsButton link={resolveLink(section.button, doc)} tone="dark" />
-          </div>
+        </div>
+        <Title text={section.title} className="pr-display max-w-[13ch]" />
+        <div className="pr-scroll-reveal mt-10 flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
+          {section.subtitle && <p className="max-w-xl text-lg leading-relaxed text-white/80 sm:text-xl">{section.subtitle}</p>}
+          <CmsButton link={resolveLink(section.button, doc)} tone="dark" magnetic />
         </div>
       </div>
     </section>
@@ -276,73 +356,86 @@ export function VideoSection({ section, doc }: Props<"video">) {
   return (
     <section
       id={section.anchor}
-      aria-label={section.navLabel || section.title}
-      className="relative isolate flex min-h-[80svh] items-center overflow-hidden bg-dark text-white"
+      aria-label={section.navLabel || plainText(section.title)}
+      className="relative isolate flex min-h-[90svh] items-end overflow-hidden bg-dark text-white"
     >
       <div className="absolute inset-0 -z-10">
         {section.videoUrl ? (
-          <video
-            className="size-full object-cover"
-            src={section.videoUrl}
-            poster={section.poster.url || undefined}
-            autoPlay
-            muted
-            loop
-            playsInline
-            aria-hidden
-          />
+          <video className="size-full object-cover" src={section.videoUrl} poster={section.poster.url || undefined} autoPlay muted loop playsInline aria-hidden />
         ) : (
           <CmsImage media={section.poster} sizes="100vw" />
         )}
         <div className="absolute inset-0" style={overlayStyle("dark", section.overlayOpacity)} />
       </div>
-      <div className="mx-auto w-full max-w-7xl px-5 py-24 sm:px-8">
-        <div className="max-w-3xl">
+      <div className="mx-auto w-full max-w-[90rem] px-5 py-28 sm:px-8 lg:px-12">
+        <div className="pr-scroll-reveal">
           <Eyebrow tone="dark">{section.eyebrow}</Eyebrow>
-          <h2 className="pr-heading pr-display">{section.title}</h2>
-          {section.subtitle && <p className="mt-7 max-w-2xl text-lg text-white/85">{section.subtitle}</p>}
-          <div className="mt-10">
-            <CmsButton link={resolveLink(section.button, doc)} tone="dark" />
-          </div>
+        </div>
+        <Title text={section.title} className="pr-display max-w-[13ch]" />
+        {section.subtitle && <p className="pr-scroll-reveal mt-8 max-w-xl text-lg text-white/80">{section.subtitle}</p>}
+        <div className="mt-10">
+          <CmsButton link={resolveLink(section.button, doc)} tone="dark" magnetic />
         </div>
       </div>
     </section>
   );
 }
 
-const COLUMN_CLASSES = { 2: "md:grid-cols-2", 3: "md:grid-cols-2 lg:grid-cols-3", 4: "md:grid-cols-2 lg:grid-cols-4" } as const;
+/* ---------------------------------- Soluções ---------------------------------- */
 
 export function FeaturesSection({ section }: Props<"features">) {
   const bg = BACKGROUNDS[section.background];
   const dark = bg.tone === "dark";
+  const cols = { 2: "md:grid-cols-2", 3: "md:grid-cols-2 lg:grid-cols-3", 4: "md:grid-cols-2 lg:grid-cols-4" }[section.columns];
   return (
-    <section id={section.anchor} aria-label={section.navLabel || section.title} className={`${bg.className} py-24 sm:py-32`}>
-      <div className="pr-scroll-reveal mx-auto max-w-7xl px-5 sm:px-8">
-        <div className="grid gap-8 lg:grid-cols-12">
-          <div className="lg:col-span-7">
-            <Eyebrow tone={bg.tone}>{section.eyebrow}</Eyebrow>
-            <h2 className="pr-heading pr-h2">{section.title}</h2>
+    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} py-28 sm:py-40`}>
+      <div className="mx-auto max-w-[90rem] px-5 sm:px-8 lg:px-12">
+        <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
+          <div className="lg:col-span-8">
+            <div className="pr-scroll-reveal">
+              <Eyebrow tone={bg.tone}>{section.eyebrow}</Eyebrow>
+            </div>
+            <Title text={section.title} className="pr-h2" />
           </div>
           {section.intro && (
-            <p className={`self-end text-lg leading-relaxed lg:col-span-5 ${dark ? "text-white/75" : "text-ink/70"}`}>{section.intro}</p>
+            <p className={`pr-scroll-reveal text-lg leading-relaxed lg:col-span-4 ${dark ? "text-white/70" : "text-ink/70"}`}>{section.intro}</p>
           )}
         </div>
-        <ul className={`mt-16 grid gap-px ${dark ? "bg-white/10" : "bg-ink/10"} ${COLUMN_CLASSES[section.columns]}`}>
+
+        <ul className={`mt-20 grid gap-4 ${cols}`}>
           {section.items.map((item, i) => {
             const Icon = ICONS[item.icon] ?? Compass;
+            const featured = i === 0;
+            // O cartão em destaque ocupa duas linhas só quando isso não deixa buracos na grelha.
+            const span = featured && section.columns >= 3 && (section.items.length + 1) % section.columns === 0;
             return (
-              <li key={i} className={`${bg.className} group relative p-8 transition-colors duration-300 sm:p-10 ${dark ? "hover:bg-white/5" : "hover:bg-white"}`}>
-                <span aria-hidden className="absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 bg-accent transition-transform duration-500 group-hover:scale-x-100" />
-                <div className="flex items-center justify-between">
-                  <span className="flex size-14 items-center justify-center rounded-full bg-accent/10 transition-colors duration-300 group-hover:bg-accent">
-                    <Icon aria-hidden className="size-7 text-accent transition-colors duration-300 group-hover:text-white" strokeWidth={1.5} />
-                  </span>
-                  <span className={`text-sm tabular-nums ${dark ? "text-white/40" : "text-ink/35"}`}>
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                </div>
-                <h3 className="pr-heading pr-h3 mt-10">{item.title}</h3>
-                {item.text && <p className={`mt-4 leading-relaxed ${dark ? "text-white/70" : "text-ink/70"}`}>{item.text}</p>}
+              <li key={i} className={`pr-scroll-reveal group ${span ? "lg:row-span-2" : ""}`}>
+                <Tilt
+                  className={`flex h-full min-h-72 flex-col overflow-hidden rounded-[2rem] p-8 sm:p-10 ${
+                    featured
+                      ? "bg-accent text-white"
+                      : dark
+                        ? "bg-white/[0.06] text-white"
+                        : "bg-white text-ink shadow-[0_30px_60px_-40px_rgba(5,11,16,0.35)]"
+                  }`}
+                >
+                  <div className="flex items-start justify-between">
+                    <span
+                      className={`flex size-16 items-center justify-center rounded-2xl transition-transform duration-500 group-hover:rotate-[-12deg] group-hover:scale-110 ${
+                        featured ? "bg-white text-accent" : "bg-accent text-white"
+                      }`}
+                    >
+                      <Icon aria-hidden className="size-8" strokeWidth={1.6} />
+                    </span>
+                    <span className={`pr-heading text-5xl ${featured ? "text-white/30" : dark ? "text-white/15" : "text-ink/10"}`}>
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                  </div>
+                  <h3 className={`pr-heading mt-auto pt-16 ${featured ? "text-3xl sm:text-4xl" : "pr-h3"}`}>{item.title}</h3>
+                  {item.text && (
+                    <p className={`mt-4 leading-relaxed ${featured ? "text-lg text-white/90" : dark ? "text-white/65" : "text-ink/65"}`}>{item.text}</p>
+                  )}
+                </Tilt>
               </li>
             );
           })}
@@ -352,47 +445,87 @@ export function FeaturesSection({ section }: Props<"features">) {
   );
 }
 
+/* --------------------------------- Chamada --------------------------------- */
+
 export function CtaSection({ section, doc }: Props<"cta">) {
   const bg = BACKGROUNDS[section.background];
   return (
-    <section id={section.anchor} aria-label={section.navLabel || section.title} className={`${bg.className} py-24 sm:py-28`}>
-      <div className="mx-auto flex max-w-7xl flex-col gap-10 px-5 sm:px-8 lg:flex-row lg:items-end lg:justify-between">
-        <div className="max-w-3xl">
-          <h2 className="pr-heading pr-h2">{section.title}</h2>
-          {section.text && <p className={`mt-6 text-lg ${bg.tone === "dark" ? "text-white/80" : "text-ink/70"}`}>{section.text}</p>}
+    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} relative overflow-hidden py-28 sm:py-36`}>
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute -right-20 top-0 h-full w-1/2 opacity-10" aria-hidden>
+        <path d="M0 0 L100 100 L100 0 Z" fill="currentColor" />
+      </svg>
+      <div className="relative mx-auto flex max-w-[90rem] flex-col gap-12 px-5 sm:px-8 lg:flex-row lg:items-end lg:justify-between lg:px-12">
+        <div className="max-w-4xl">
+          <Title text={section.title} className="pr-h2" />
+          {section.text && <p className={`pr-scroll-reveal mt-8 max-w-2xl text-xl ${bg.tone === "dark" ? "text-white/80" : "text-ink/70"}`}>{section.text}</p>}
         </div>
         <div className="flex flex-wrap gap-4">
-          <CmsButton link={resolveLink(section.primaryButton, doc)} tone={bg.tone} />
-          <CmsButton link={resolveLink(section.secondaryButton, doc)} tone={bg.tone} />
+          <CmsButton link={resolveLink(section.primaryButton, doc)} tone={bg.tone} magnetic />
+          <CmsButton link={resolveLink(section.secondaryButton, doc)} tone={bg.tone} magnetic />
         </div>
       </div>
     </section>
   );
 }
 
+/* ----------------------------- Texto em movimento ----------------------------- */
+
+const SPEED = { slow: "60s", normal: "38s", fast: "22s" } as const;
+
+export function MarqueeSection({ section, doc }: Props<"marquee">) {
+  const bg = BACKGROUNDS[section.background];
+  const words = [...section.items, ...section.items, ...section.items];
+  const styleFor = (i: number) => (section.style === "outline" ? "pr-outline" : section.style === "solid" ? "" : i % 2 === 1 ? "pr-outline" : "");
+  return (
+    <section id={section.anchor} aria-label={section.items.join(", ")} className="relative z-10 overflow-hidden py-10 sm:py-16">
+      <div className={`${bg.className} ${section.tilted ? "-mx-4 rotate-[-2.5deg] shadow-2xl" : ""} py-6 sm:py-8`}>
+        <div className="pr-marquee overflow-hidden">
+          <ul
+            className="pr-marquee-track flex w-max items-center gap-10 sm:gap-14"
+            data-direction={section.direction}
+            style={{ ["--pr-marquee-duration" as string]: SPEED[section.speed] }}
+            aria-hidden
+          >
+            {[...words, ...words].map((word, i) => (
+              <li key={i} className="flex items-center gap-10 whitespace-nowrap sm:gap-14">
+                <span
+                  className={`pr-heading text-5xl sm:text-7xl lg:text-8xl ${styleFor(i)}`}
+                  style={{ ["--pr-outline-color" as string]: bg.tone === "dark" ? "#fff" : "var(--pr-text)" }}
+                >
+                  {word}
+                </span>
+                <LogoMark url={doc.navigation.logo.url} className="size-10 shrink-0 sm:size-14" />
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* --------------------------------- Contactos --------------------------------- */
+
 export function ContactSection({ section, doc, preview }: Props<"contact"> & { preview?: boolean }) {
   const bg = BACKGROUNDS[section.background];
   return (
-    <section id={section.anchor} aria-label={section.navLabel || section.title} className={`${bg.className} py-24 sm:py-32`}>
-      <div className="pr-scroll-reveal mx-auto grid max-w-7xl gap-16 px-5 sm:px-8 lg:grid-cols-12">
-        <div className="lg:col-span-5">
+    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} relative overflow-hidden py-28 sm:py-40`}>
+      <div className="mx-auto max-w-[90rem] px-5 sm:px-8 lg:px-12">
+        <div className="pr-scroll-reveal">
           <Eyebrow tone={bg.tone}>{section.eyebrow}</Eyebrow>
-          <h2 className="pr-heading pr-h2">{section.title}</h2>
-          {section.intro && (
-            <p className={`mt-6 text-lg leading-relaxed ${bg.tone === "dark" ? "text-white/75" : "text-ink/70"}`}>{section.intro}</p>
-          )}
-          <ContactDetails contact={doc.contact} tone={bg.tone} />
         </div>
-        {section.showForm && (
-          <div className="lg:col-span-7">
-            <ContactForm
-              title={section.formTitle}
-              successMessage={section.successMessage}
-              tone={bg.tone}
-              disabled={preview}
-            />
+        <Title text={section.title} className="pr-display max-w-[16ch]" />
+        <div className="mt-20 grid gap-16 lg:grid-cols-12">
+          <div className="pr-scroll-reveal lg:col-span-5">
+            {section.intro && <p className={`text-xl leading-relaxed ${bg.tone === "dark" ? "text-white/75" : "text-ink/70"}`}>{section.intro}</p>}
+            <ContactDetails contact={doc.contact} tone={bg.tone} />
           </div>
-        )}
+          {section.showForm && (
+            <div className="pr-scroll-reveal lg:col-span-7">
+              <ContactForm title={section.formTitle} successMessage={section.successMessage} tone={bg.tone} disabled={preview} />
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );

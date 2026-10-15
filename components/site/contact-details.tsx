@@ -20,27 +20,35 @@ export function ContactDetails({ contact, tone }: { contact: SiteDocument["conta
   ].filter(Boolean) as { icon: typeof Phone; label: string; value: string; href?: string }[];
 
   return (
-    <ul className="mt-12 space-y-6">
+    <ul className={`mt-12 border-t ${tone === "dark" ? "border-white/15" : "border-ink/15"}`}>
       {rows.map((row, i) => {
         const Icon = row.icon;
         const external = row.href?.startsWith("http");
+        const content = (
+          <>
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent transition-colors duration-300 group-hover:bg-accent group-hover:text-white">
+              <Icon aria-hidden className="size-5" strokeWidth={1.6} />
+            </span>
+            <span className="flex-1">
+              <span className={`pr-eyebrow block ${muted}`}>{row.label}</span>
+              <span className="mt-1 block text-lg font-medium sm:text-xl">{row.value}</span>
+            </span>
+            {row.href && (
+              <span aria-hidden className="text-2xl transition-transform duration-300 group-hover:-rotate-45 group-hover:text-accent">
+                →
+              </span>
+            )}
+          </>
+        );
         return (
-          <li key={i} className="flex gap-4">
-            <Icon aria-hidden className="mt-1 size-5 shrink-0 text-accent" strokeWidth={1.5} />
-            <div>
-              <p className={`pr-eyebrow ${muted}`}>{row.label}</p>
-              {row.href ? (
-                <a
-                  href={row.href}
-                  className="mt-1 block text-lg underline-offset-4 hover:underline"
-                  {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                >
-                  {row.value}
-                </a>
-              ) : (
-                <p className="mt-1 text-lg">{row.value}</p>
-              )}
-            </div>
+          <li key={i} className={`border-b ${tone === "dark" ? "border-white/15" : "border-ink/15"}`}>
+            {row.href ? (
+              <a href={row.href} className="group flex items-center gap-5 py-5" {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
+                {content}
+              </a>
+            ) : (
+              <div className="group flex items-center gap-5 py-5">{content}</div>
+            )}
           </li>
         );
       })}

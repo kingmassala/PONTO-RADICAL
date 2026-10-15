@@ -31,8 +31,8 @@ export function ContactForm({
     if (state.status === "success") formRef.current?.reset();
   }, [state]);
 
-  const field = `w-full border-0 border-b bg-transparent px-0 py-3 text-base outline-none transition placeholder:opacity-50 focus:ring-0 ${
-    dark ? "border-white/25 focus:border-white" : "border-ink/20 focus:border-ink"
+  const field = `w-full border-0 border-b-2 bg-transparent px-0 py-3 text-lg outline-none transition-colors placeholder:opacity-50 focus:ring-0 ${
+    dark ? "border-white/20 focus:border-accent" : "border-ink/15 focus:border-accent"
   }`;
   const label = `pr-eyebrow block ${dark ? "text-white/60" : "text-ink/55"}`;
   const err = (name: keyof NonNullable<ContactState["fieldErrors"]>) =>
@@ -44,7 +44,7 @@ export function ContactForm({
 
   if (state.status === "success") {
     return (
-      <div role="status" className={`flex h-full flex-col items-start justify-center gap-5 p-10 ${dark ? "bg-white/5" : "bg-white"}`}>
+      <div role="status" className={`flex h-full flex-col items-start justify-center gap-5 rounded-[2rem] p-10 ${dark ? "bg-white/[0.06]" : "bg-white"}`}>
         <CheckCircle2 aria-hidden className="size-10 text-accent" />
         <p className="pr-heading pr-h3">{successMessage || "Mensagem enviada."}</p>
       </div>
@@ -56,7 +56,7 @@ export function ContactForm({
       ref={formRef}
       action={action}
       noValidate
-      className={`p-8 sm:p-12 ${dark ? "bg-white/5" : "bg-white shadow-[0_30px_80px_-40px_rgba(0,0,0,0.25)]"}`}
+      className={`relative rounded-[2rem] p-8 sm:p-12 ${dark ? "bg-white/[0.06]" : "bg-white shadow-[0_40px_90px_-50px_rgba(5,11,16,0.45)]"}`}
     >
       {title && <h3 className="pr-heading pr-h3 mb-10">{title}</h3>}
       <input ref={startedRef} type="hidden" name="startedAt" defaultValue="0" />

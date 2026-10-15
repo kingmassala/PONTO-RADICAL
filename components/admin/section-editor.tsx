@@ -10,6 +10,9 @@ import { LinkEditor, type AnchorOption } from "./link-editor";
 import { MediaField, VideoField } from "./media-picker";
 import { RichTextEditor } from "./rich-text-editor";
 import { Button, Card, Select, Slider, TextArea, TextInput, Toggle } from "./ui";
+import { plainText } from "@/lib/cms/text";
+
+const TITLE_HINT = "Dica: coloque *palavras* entre asteriscos para as destacar em itálico na cor de destaque.";
 
 const BACKGROUND_OPTIONS = [
   { value: "light", label: "Claro (fundo principal)" },
@@ -65,7 +68,7 @@ export function SectionEditor({
       </Link>
       <div className="mb-8">
         <p className="text-xs font-medium uppercase tracking-wider text-sky-700">{SECTION_TYPE_LABELS[s.type]}</p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">{("title" in s && s.title) || s.navLabel}</h1>
+        <h1 className="mt-1 text-2xl font-semibold tracking-tight">{("title" in s && plainText(s.title)) || s.navLabel || SECTION_TYPE_LABELS[s.type]}</h1>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -125,7 +128,7 @@ function TypeFields({ section, set, linkProps }: FieldsProps) {
       return (
         <Card title="Conteúdo" description="As marcas apresentadas são geridas em «Marcas».">
           <TextInput label="Antetítulo" value={section.eyebrow} maxLength={120} onChange={(v) => set({ eyebrow: v })} />
-          <TextInput label="Título" value={section.title} maxLength={200} onChange={(v) => set({ title: v })} required />
+          <TextInput label="Título" value={section.title} maxLength={200} onChange={(v) => set({ title: v })} required hint={TITLE_HINT} />
           <TextArea label="Introdução" value={section.intro} maxLength={1000} onChange={(v) => set({ intro: v })} />
           <Select
             label="Apresentação"
@@ -147,7 +150,7 @@ function TypeFields({ section, set, linkProps }: FieldsProps) {
       return (
         <Card title="Conteúdo">
           <TextInput label="Antetítulo" value={section.eyebrow} maxLength={120} onChange={(v) => set({ eyebrow: v })} />
-          <TextInput label="Título" value={section.title} maxLength={200} onChange={(v) => set({ title: v })} required />
+          <TextInput label="Título" value={section.title} maxLength={200} onChange={(v) => set({ title: v })} required hint={TITLE_HINT} />
           <TextArea label="Subtítulo" value={section.subtitle} maxLength={600} onChange={(v) => set({ subtitle: v })} />
           <MediaField label="Fotografia de fundo" value={section.image} onChange={(v) => set({ image: v })} hint="Recomendado: 2400 × 1400 px ou superior." />
           <Slider label="Escurecimento da imagem" value={section.overlayOpacity} max={90} onChange={(v) => set({ overlayOpacity: v })} />
@@ -167,7 +170,7 @@ function TypeFields({ section, set, linkProps }: FieldsProps) {
       return (
         <Card title="Conteúdo">
           <TextInput label="Antetítulo" value={section.eyebrow} maxLength={120} onChange={(v) => set({ eyebrow: v })} />
-          <TextInput label="Título" value={section.title} maxLength={200} onChange={(v) => set({ title: v })} required />
+          <TextInput label="Título" value={section.title} maxLength={200} onChange={(v) => set({ title: v })} required hint={TITLE_HINT} />
           <TextArea label="Subtítulo" value={section.subtitle} maxLength={600} onChange={(v) => set({ subtitle: v })} />
           <VideoField label="Vídeo" value={section.videoUrl} onChange={(v) => set({ videoUrl: v })} />
           <MediaField
@@ -185,17 +188,19 @@ function TypeFields({ section, set, linkProps }: FieldsProps) {
     case "cta":
       return (
         <Card title="Conteúdo">
-          <TextInput label="Título" value={section.title} maxLength={200} onChange={(v) => set({ title: v })} required />
+          <TextInput label="Título" value={section.title} maxLength={200} onChange={(v) => set({ title: v })} required hint={TITLE_HINT} />
           <TextArea label="Texto" value={section.text} maxLength={800} onChange={(v) => set({ text: v })} />
           <LinkEditor label="Botão principal" value={section.primaryButton} onChange={(v) => set({ primaryButton: v })} {...linkProps} />
           <LinkEditor label="Botão secundário" value={section.secondaryButton} onChange={(v) => set({ secondaryButton: v })} {...linkProps} />
         </Card>
       );
+    case "marquee":
+      return <MarqueeFields s={section} set={set} />;
     case "contact":
       return (
         <Card title="Conteúdo" description="Telefone, email, morada e redes sociais são editados em «Contactos».">
           <TextInput label="Antetítulo" value={section.eyebrow} maxLength={120} onChange={(v) => set({ eyebrow: v })} />
-          <TextInput label="Título" value={section.title} maxLength={200} onChange={(v) => set({ title: v })} required />
+          <TextInput label="Título" value={section.title} maxLength={200} onChange={(v) => set({ title: v })} required hint={TITLE_HINT} />
           <TextArea label="Introdução" value={section.intro} maxLength={1000} onChange={(v) => set({ intro: v })} />
           <Toggle label="Mostrar formulário de contacto" checked={section.showForm} onChange={(v) => set({ showForm: v })} />
           {section.showForm && (
@@ -217,12 +222,74 @@ function TypeFields({ section, set, linkProps }: FieldsProps) {
   }
 }
 
+function MarqueeFields({ s, set }: { s: SectionOf<"marquee">; set: FieldsProps["set"] }) {
+  return (
+    <Card title="Palavras em movimento" description="Palavras curtas funcionam melhor (ex.: Navegar, Pescar, Velejar). O logótipo aparece entre cada palavra.">
+      {s.items.map((word, i) => (
+        <div key={i} className="flex items-end gap-2">
+          <div className="flex-1">
+            <TextInput
+              label={`Palavra ${i + 1}`}
+              value={word}
+              maxLength={40}
+              onChange={(v) => set({ items: s.items.map((x, j) => (j === i ? v : x)) })}
+            />
+          </div>
+          <Button size="sm" variant="ghost" aria-label="Mover para cima" disabled={i === 0} onClick={() => set({ items: move(s.items, i, -1) })}>
+            <ArrowUp className="size-4" />
+          </Button>
+          <Button size="sm" variant="ghost" aria-label="Remover palavra" disabled={s.items.length <= 1} onClick={() => set({ items: s.items.filter((_, j) => j !== i) })}>
+            <Trash2 className="size-4" />
+          </Button>
+        </div>
+      ))}
+      {s.items.length < 12 && (
+        <Button size="sm" onClick={() => set({ items: [...s.items, "Nova"] })}>
+          <Plus className="size-3.5" /> Adicionar palavra
+        </Button>
+      )}
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Select
+          label="Estilo do texto"
+          value={s.style}
+          onChange={(v) => set({ style: v })}
+          options={[
+            { value: "mixed", label: "Alternado (cheio / contorno)" },
+            { value: "solid", label: "Cheio" },
+            { value: "outline", label: "Só contorno" },
+          ]}
+        />
+        <Select
+          label="Velocidade"
+          value={s.speed}
+          onChange={(v) => set({ speed: v })}
+          options={[
+            { value: "slow", label: "Lenta" },
+            { value: "normal", label: "Normal" },
+            { value: "fast", label: "Rápida" },
+          ]}
+        />
+        <Select
+          label="Direcção"
+          value={s.direction}
+          onChange={(v) => set({ direction: v })}
+          options={[
+            { value: "left", label: "Para a esquerda" },
+            { value: "right", label: "Para a direita" },
+          ]}
+        />
+      </div>
+      <Toggle label="Faixa inclinada" description="Inclina ligeiramente a faixa, para um efeito mais dinâmico." checked={s.tilted} onChange={(v) => set({ tilted: v })} />
+    </Card>
+  );
+}
+
 function HeroFields({ s, set, linkProps }: { s: SectionOf<"hero"> } & Omit<FieldsProps, "section">) {
   return (
     <>
       <Card title="Textos">
         <TextInput label="Antetítulo" value={s.eyebrow} maxLength={120} onChange={(v) => set({ eyebrow: v })} />
-        <TextInput label="Título principal" value={s.title} maxLength={200} onChange={(v) => set({ title: v })} required />
+        <TextInput label="Título principal" value={s.title} maxLength={200} onChange={(v) => set({ title: v })} required hint={TITLE_HINT} />
         <TextArea label="Subtítulo" value={s.subtitle} maxLength={600} onChange={(v) => set({ subtitle: v })} />
         <Select
           label="Alinhamento"
@@ -293,7 +360,7 @@ function SplitFields({ s, set, linkProps }: { s: SectionOf<"split"> } & Omit<Fie
     <>
       <Card title="Textos">
         <TextInput label="Antetítulo" value={s.eyebrow} maxLength={120} onChange={(v) => set({ eyebrow: v })} />
-        <TextInput label="Título" value={s.title} maxLength={200} onChange={(v) => set({ title: v })} required />
+        <TextInput label="Título" value={s.title} maxLength={200} onChange={(v) => set({ title: v })} required hint={TITLE_HINT} />
         <RichTextEditor label="Texto" value={s.body} onChange={(v) => set({ body: v })} />
       </Card>
       <Card title="Imagem">
@@ -350,7 +417,7 @@ function GalleryFields({ s, set }: { s: SectionOf<"gallery">; set: FieldsProps["
     <>
       <Card title="Textos">
         <TextInput label="Antetítulo" value={s.eyebrow} maxLength={120} onChange={(v) => set({ eyebrow: v })} />
-        <TextInput label="Título" value={s.title} maxLength={200} onChange={(v) => set({ title: v })} required />
+        <TextInput label="Título" value={s.title} maxLength={200} onChange={(v) => set({ title: v })} required hint={TITLE_HINT} />
         <TextArea label="Introdução" value={s.intro} maxLength={1000} onChange={(v) => set({ intro: v })} />
         <Select
           label="Apresentação"
@@ -407,7 +474,7 @@ function FeaturesFields({ s, set }: { s: SectionOf<"features">; set: FieldsProps
     <>
       <Card title="Textos">
         <TextInput label="Antetítulo" value={s.eyebrow} maxLength={120} onChange={(v) => set({ eyebrow: v })} />
-        <TextInput label="Título" value={s.title} maxLength={200} onChange={(v) => set({ title: v })} required />
+        <TextInput label="Título" value={s.title} maxLength={200} onChange={(v) => set({ title: v })} required hint={TITLE_HINT} />
         <TextArea label="Introdução" value={s.intro} maxLength={1000} onChange={(v) => set({ intro: v })} />
         <Select
           label="Colunas (em ecrãs grandes)"

@@ -2,18 +2,18 @@
 
 /* Valores por omissão; o website público sobrepõe-nos com a configuração do CMS. */
 :root {
-  --pr-primary: #0e3b52;
-  --pr-secondary: #1f7a8c;
-  --pr-accent: #f26b1d;
-  --pr-background: #f7f5f0;
-  --pr-surface: #ece8df;
-  --pr-text: #0f1b24;
-  --pr-dark: #07141c;
-  --pr-font-heading: var(--font-barlow-condensed);
-  --pr-font-body: var(--font-barlow);
-  --pr-heading-transform: uppercase;
-  --pr-heading-weight: 600;
-  --pr-heading-tracking: 0;
+  --pr-primary: #0a2f44;
+  --pr-secondary: #14b8a6;
+  --pr-accent: #ff5a1f;
+  --pr-background: #f4f1ea;
+  --pr-surface: #e9e3d6;
+  --pr-text: #0b1218;
+  --pr-dark: #050b10;
+  --pr-font-heading: var(--font-unbounded);
+  --pr-font-body: var(--font-hanken);
+  --pr-heading-transform: none;
+  --pr-heading-weight: 800;
+  --pr-heading-tracking: -0.035em;
   --pr-heading-scale: 1;
   --pr-radius: 999px;
   --pr-button-transform: uppercase;
@@ -57,52 +57,92 @@ body {
   font-family: var(--pr-font-body);
   background: var(--pr-background);
   color: var(--pr-text);
+  overflow-x: clip;
 }
-
+.site ::selection {
+  background: var(--pr-accent);
+  color: #fff;
+}
 .site section[id] {
-  scroll-margin-top: 5rem;
+  scroll-margin-top: 6rem;
 }
 
+/* Tipografia */
 .pr-heading {
   font-family: var(--pr-font-heading);
   font-weight: var(--pr-heading-weight);
   text-transform: var(--pr-heading-transform);
   letter-spacing: var(--pr-heading-tracking);
-  line-height: 1.02;
+  line-height: 0.98;
   text-wrap: balance;
 }
 .pr-display {
-  font-size: calc(clamp(2.6rem, 6.4vw, 6rem) * var(--pr-heading-scale));
+  font-size: calc(clamp(2.15rem, 7.4vw, 7.6rem) * var(--pr-heading-scale));
+  line-height: 0.92;
 }
 .pr-h2 {
-  font-size: calc(clamp(2rem, 4.2vw, 3.75rem) * var(--pr-heading-scale));
+  font-size: calc(clamp(2.2rem, 5.2vw, 5.2rem) * var(--pr-heading-scale));
 }
 .pr-h3 {
-  font-size: calc(clamp(1.35rem, 2vw, 1.75rem) * var(--pr-heading-scale));
+  font-size: calc(clamp(1.25rem, 1.8vw, 1.6rem) * var(--pr-heading-scale));
+  line-height: 1.1;
+}
+/* Palavras entre *asteriscos* nos títulos */
+.pr-accent {
+  font-family: var(--font-instrument), Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: -0.01em;
+  color: var(--pr-accent);
+  padding-right: 0.06em;
 }
 .pr-eyebrow {
-  font-size: 0.78rem;
-  letter-spacing: 0.22em;
+  font-size: 0.74rem;
+  letter-spacing: 0.26em;
   text-transform: uppercase;
   font-weight: 600;
 }
+.pr-outline {
+  color: transparent !important;
+  -webkit-text-stroke: var(--pr-outline-width, 2px) var(--pr-outline-color, #fff);
+}
 
+/* Botões */
 .pr-btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.6rem;
-  min-height: 3rem;
-  padding: 0.85rem 1.6rem;
+  gap: 0.7rem;
+  min-height: 3.25rem;
+  padding: 0.9rem 1.75rem;
   border-radius: var(--pr-radius);
   text-transform: var(--pr-button-transform);
-  letter-spacing: 0.08em;
-  font-size: 0.85rem;
-  font-weight: 600;
-  transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.2s;
+  letter-spacing: 0.12em;
+  font-size: 0.78rem;
+  font-weight: 700;
+  overflow: hidden;
+  isolation: isolate;
+  transition: color 0.35s, border-color 0.35s, box-shadow 0.35s;
 }
-.pr-btn:hover {
-  transform: translateY(-1px);
+.pr-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  transform: translateY(101%);
+  transition: transform 0.45s cubic-bezier(0.7, 0, 0.2, 1);
+}
+.pr-btn:hover::before {
+  transform: none;
+}
+.pr-btn .pr-btn-arrow {
+  transition: transform 0.35s cubic-bezier(0.7, 0, 0.2, 1);
+}
+.pr-btn:hover .pr-btn-arrow {
+  transform: translateX(4px) rotate(-45deg);
 }
 .pr-btn:focus-visible,
 .site a:focus-visible,
@@ -115,28 +155,46 @@ body {
 .pr-btn-primary {
   background: var(--pr-accent);
   color: #fff;
+  box-shadow: 0 18px 40px -18px color-mix(in srgb, var(--pr-accent) 80%, transparent);
+}
+.pr-btn-primary::before {
+  background: #fff;
 }
 .pr-btn-primary:hover {
-  background: color-mix(in srgb, var(--pr-accent) 85%, black);
+  color: var(--pr-dark);
 }
 .pr-btn-secondary {
   border: 1.5px solid currentColor;
 }
+.pr-btn-secondary::before {
+  background: currentColor;
+}
 .pr-btn-secondary:hover {
-  background: color-mix(in srgb, currentColor 10%, transparent);
+  color: var(--pr-dark);
+}
+.pr-btn-secondary.text-ink:hover {
+  color: var(--pr-background);
 }
 .pr-btn-ghost {
   padding-inline: 0;
-  text-decoration: underline;
-  text-underline-offset: 6px;
+  min-height: auto;
+  border-bottom: 1.5px solid currentColor;
+  border-radius: 0;
+}
+.pr-btn-ghost::before {
+  display: none;
 }
 
+/* Texto rico */
 .pr-rich p + p {
   margin-top: 1em;
 }
 .pr-rich a {
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+.pr-rich strong {
+  font-weight: 700;
 }
 .pr-rich ul {
   list-style: disc;
@@ -152,7 +210,7 @@ body {
 .pr-rich h4 {
   font-family: var(--pr-font-heading);
   font-weight: var(--pr-heading-weight);
-  font-size: 1.25em;
+  font-size: 1.15em;
   margin: 1em 0 0.4em;
 }
 .pr-rich blockquote {
@@ -161,51 +219,263 @@ body {
   font-style: italic;
 }
 
+/* Grão de película sobre todo o website */
+.fx-grain::after {
+  content: "";
+  position: fixed;
+  inset: -50%;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+/* Barra de progresso de leitura */
+.pr-progress {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 3px;
+  z-index: 70;
+  background: var(--pr-accent);
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+}
+@supports (animation-timeline: scroll()) {
+  .pr-progress {
+    animation: pr-grow linear both;
+    animation-timeline: scroll(root);
+  }
+}
+@keyframes pr-grow {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Faixas em movimento */
+@keyframes pr-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes pr-marquee-reverse {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+.pr-marquee {
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+.pr-marquee-track {
+  animation: pr-marquee var(--pr-marquee-duration, 36s) linear infinite;
+}
+.pr-marquee-track[data-direction="right"] {
+  animation-name: pr-marquee-reverse;
+}
+.pr-marquee:hover .pr-marquee-track {
+  animation-play-state: paused;
+}
+
+/* Borda diagonal (inspirada no corte do «R» do logótipo) */
+.pr-diagonal {
+  clip-path: polygon(0 var(--pr-cut, 5vw), 100% 0, 100% 100%, 0 100%);
+  margin-top: calc(var(--pr-cut, 5vw) * -1);
+  padding-top: calc(var(--pr-cut, 5vw) + 6rem);
+}
+
+/* Emblema circular a rodar */
+@keyframes pr-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.pr-spin {
+  animation: pr-spin 22s linear infinite;
+}
+
+/* Animações (só com «Animações» activas e sem «reduzir movimento») */
 @keyframes pr-fade-up {
   from {
     opacity: 0;
-    transform: translateY(18px);
+    transform: translateY(28px);
   }
   to {
     opacity: 1;
     transform: none;
   }
 }
-.pr-reveal {
-  animation: pr-fade-up 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+@keyframes pr-word-up {
+  from {
+    transform: translateY(105%) rotate(4deg);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes pr-ken-burns {
+  from {
+    transform: scale(1.18);
+  }
+  to {
+    transform: scale(1.02);
+  }
+}
+@keyframes pr-scale-in {
+  from {
+    transform: scale(1.25);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+@keyframes pr-clip-in {
+  from {
+    clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+  }
+  to {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+}
+@keyframes pr-bob {
+  50% {
+    transform: translateY(8px);
+  }
 }
 
-/* Aparecer ao fazer scroll (só em browsers com scroll-driven animations; os outros mostram tudo). */
+.pr-word {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+.pr-word > span {
+  display: inline-block;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .fx-motion .pr-load-words .pr-word > span {
+    animation: pr-word-up 1s cubic-bezier(0.2, 0.75, 0.15, 1) both;
+    animation-delay: calc(0.15s + var(--i, 0) * 0.07s);
+  }
+  .fx-motion .pr-load-fade {
+    animation: pr-fade-up 1s cubic-bezier(0.2, 0.75, 0.15, 1) both;
+    animation-delay: var(--d, 0.6s);
+  }
+  .fx-motion .pr-ken-burns {
+    animation: pr-ken-burns 9s cubic-bezier(0.2, 0.6, 0.2, 1) both;
+  }
+  .fx-motion .pr-bob {
+    animation: pr-bob 2.2s ease-in-out infinite;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pr-marquee-track,
+  .pr-spin {
+    animation: none !important;
+  }
+}
+
+/* Animações ligadas ao scroll (browsers com scroll-driven animations) */
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    .pr-scroll-reveal {
+    .fx-motion .pr-scroll-reveal {
       animation: pr-fade-up linear both;
       animation-timeline: view();
-      animation-range: entry 0% entry 35%;
+      animation-range: entry 0% entry 40%;
+    }
+    .fx-motion .pr-scroll-words .pr-word > span {
+      animation: pr-word-up linear both;
+      animation-timeline: view();
+      animation-range: entry calc(var(--i, 0) * 3%) entry calc(45% + var(--i, 0) * 3%);
+    }
+    .fx-motion .pr-scroll-scale {
+      animation: pr-scale-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 60%;
+    }
+    .fx-motion .pr-scroll-clip {
+      animation: pr-clip-in linear both;
+      animation-timeline: view();
+      animation-range: entry 10% entry 70%;
+    }
+    .fx-motion .pr-parallax {
+      animation: pr-parallax linear both;
+      animation-timeline: view();
     }
   }
 }
-
-/* Faixa de marcas em movimento contínuo. */
-@keyframes pr-marquee {
+@keyframes pr-parallax {
+  from {
+    transform: translateY(-8%) scale(1.15);
+  }
   to {
-    transform: translateX(-50%);
+    transform: translateY(8%) scale(1.15);
   }
 }
-.pr-marquee {
-  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-}
-.pr-marquee-track {
-  animation: pr-marquee 32s linear infinite;
-}
-.pr-marquee:hover .pr-marquee-track {
-  animation-play-state: paused;
-}
-@media (prefers-reduced-motion: reduce) {
-  .pr-marquee-track {
-    animation: none;
-    flex-wrap: wrap;
+
+/* Cursor personalizado (apenas dispositivos com rato) */
+@media (hover: hover) and (pointer: fine) {
+  .fx-cursor,
+  .fx-cursor a,
+  .fx-cursor button {
+    cursor: none;
   }
+  .fx-cursor input,
+  .fx-cursor textarea {
+    cursor: text;
+  }
+}
+.pr-cursor-dot,
+.pr-cursor-ring {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 80;
+  pointer-events: none;
+  border-radius: 999px;
+  transform: translate3d(-100px, -100px, 0);
+}
+.pr-cursor-dot {
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  background: var(--pr-accent);
+}
+.pr-cursor-ring {
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  border: 1.5px solid color-mix(in srgb, var(--pr-accent) 70%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    width 0.35s cubic-bezier(0.2, 0.75, 0.15, 1),
+    height 0.35s cubic-bezier(0.2, 0.75, 0.15, 1),
+    margin 0.35s cubic-bezier(0.2, 0.75, 0.15, 1),
+    background-color 0.35s,
+    border-color 0.35s;
+  font: 700 10px/1 var(--pr-font-body);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #fff;
+}
+.pr-cursor-ring[data-state="link"] {
+  width: 64px;
+  height: 64px;
+  margin: -32px 0 0 -32px;
+  background: color-mix(in srgb, var(--pr-accent) 18%, transparent);
+}
+.pr-cursor-ring[data-state="label"] {
+  width: 92px;
+  height: 92px;
+  margin: -46px 0 0 -46px;
+  background: var(--pr-accent);
+  border-color: var(--pr-accent);
 }
 
 /* ---------- Editor de texto rico (painel) ---------- */

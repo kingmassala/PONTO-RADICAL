@@ -1,5 +1,6 @@
 import type { CmsLink, MediaRef, Section, SiteDocument } from "./schema";
 import { SECTION_TEMPLATES } from "./templates";
+import { plainText } from "./text";
 
 export type Issue = {
   level: "error" | "warning";
@@ -12,7 +13,7 @@ type NamedLink = { link: CmsLink; where: string; href: string };
 
 export function sectionLabel(section: Section): string {
   const template = SECTION_TEMPLATES.find((t) => t.type === section.type);
-  const name = section.navLabel || ("title" in section ? section.title : "") || template?.label || section.type;
+  const name = section.navLabel || ("title" in section ? plainText(section.title) : "") || template?.label || section.type;
   return `«${name}»`;
 }
 

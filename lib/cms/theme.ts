@@ -4,6 +4,18 @@ import { HEX_COLOR } from "./schema";
 
 /** Combinações de tipografia disponíveis em «Aparência». */
 export const FONT_PAIRING_OPTIONS: Record<Appearance["fontPairing"], { label: string; heading: string; body: string; description: string }> = {
+  radical: {
+    label: "Radical",
+    heading: "var(--font-unbounded)",
+    body: "var(--font-hanken)",
+    description: "Unbounded + Hanken Grotesk · expansiva, ousada e divertida",
+  },
+  vibrante: {
+    label: "Vibrante",
+    heading: "var(--font-bricolage)",
+    body: "var(--font-hanken)",
+    description: "Bricolage Grotesque + Hanken Grotesk · moderna com personalidade",
+  },
   editorial: {
     label: "Editorial",
     heading: "var(--font-fraunces)",
@@ -30,7 +42,7 @@ export const FONT_PAIRING_OPTIONS: Record<Appearance["fontPairing"], { label: st
   },
 };
 
-const TRACKING = { tight: "-0.02em", normal: "0", wide: "0.06em" } as const;
+const TRACKING = { tight: "-0.035em", normal: "-0.01em", wide: "0.04em" } as const;
 const SCALE = { compact: "0.85", standard: "1", dramatic: "1.18" } as const;
 const RADIUS = { square: "0px", rounded: "10px", pill: "999px" } as const;
 
@@ -41,7 +53,7 @@ function color(value: string, fallback: string) {
 /** Converte a configuração visual em variáveis CSS (design tokens). */
 export function themeStyle(appearance: Appearance): CSSProperties {
   const c = appearance.colors;
-  const fonts = FONT_PAIRING_OPTIONS[appearance.fontPairing] ?? FONT_PAIRING_OPTIONS.editorial;
+  const fonts = FONT_PAIRING_OPTIONS[appearance.fontPairing] ?? FONT_PAIRING_OPTIONS.radical;
   return {
     "--pr-primary": color(c.primary, "#0E3B52"),
     "--pr-secondary": color(c.secondary, "#1F7A8C"),

@@ -31,8 +31,8 @@ export function SiteFooter({ doc }: { doc: SiteDocument }) {
   const store = storeLink(doc);
 
   return (
-    <footer className="bg-dark text-white">
-      <div className="mx-auto max-w-7xl px-5 pb-10 pt-20 sm:px-8">
+    <footer className="pr-diagonal relative overflow-hidden bg-dark text-white">
+      <div className="mx-auto max-w-[90rem] px-5 pb-10 sm:px-8 lg:px-12">
         <div className="grid gap-12 lg:grid-cols-12">
           <div className="lg:col-span-5">
             <div className="flex items-center gap-4">
@@ -40,9 +40,9 @@ export function SiteFooter({ doc }: { doc: SiteDocument }) {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={doc.navigation.logo.url} alt="" className="h-14 w-auto max-w-[200px] object-contain" />
               )}
-              <p className="pr-heading text-3xl tracking-[0.12em]">{doc.navigation.logoText || doc.settings.siteName}</p>
+              <p className="pr-heading text-2xl uppercase tracking-[0.06em]">{doc.navigation.logoText || doc.settings.siteName}</p>
             </div>
-            {doc.footer.tagline && <p className="mt-5 max-w-sm text-white/65">{doc.footer.tagline}</p>}
+            {doc.footer.tagline && <p className="mt-6 max-w-sm text-lg text-white/65">{doc.footer.tagline}</p>}
             {doc.footer.showSocial && social.length > 0 && (
               <ul className="mt-8 flex gap-3">
                 {social.map(([key, url]) => (
@@ -52,7 +52,7 @@ export function SiteFooter({ doc }: { doc: SiteDocument }) {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={`${SOCIAL_LABELS[key]} (abre numa nova janela)`}
-                      className="flex size-11 items-center justify-center rounded-full border border-white/20 transition hover:border-accent hover:text-accent"
+                      className="flex size-12 items-center justify-center rounded-full border border-white/20 transition hover:-translate-y-1 hover:border-accent hover:bg-accent"
                     >
                       <svg viewBox="0 0 24 24" className="size-5" fill="currentColor" aria-hidden>
                         {SOCIAL_ICONS[key]}
@@ -68,7 +68,7 @@ export function SiteFooter({ doc }: { doc: SiteDocument }) {
             <ul className="mt-5 space-y-3">
               {navItems(doc).map((item) => (
                 <li key={item.href}>
-                  <a href={item.href} className="text-white/80 hover:text-white">
+                  <a href={item.href} className="text-lg text-white/80 transition hover:pl-2 hover:text-accent">
                     {item.label}
                   </a>
                 </li>
@@ -104,9 +104,21 @@ export function SiteFooter({ doc }: { doc: SiteDocument }) {
             </ul>
           </div>
         </div>
-        <div className="mt-16 flex flex-col gap-3 border-t border-white/10 pt-8 text-sm text-white/45 sm:flex-row sm:justify-between">
+        <p
+          aria-hidden
+          className="pr-heading pr-outline mt-24 select-none text-center text-[7.6vw] leading-none"
+          style={{
+            ["--pr-outline-color" as string]: "rgba(255,255,255,0.28)",
+            ["--pr-outline-width" as string]: "1.5px",
+            textWrap: "nowrap",
+            textTransform: "uppercase",
+          }}
+        >
+          {doc.navigation.logoText || doc.settings.siteName}
+        </p>
+        <div className="mt-10 flex flex-col gap-3 border-t border-white/10 pt-8 text-sm text-white/45 sm:flex-row sm:justify-between">
           <p>{doc.footer.copyright}</p>
-          <a href="#top" className="hover:text-white">
+          <a href="#top" className="font-semibold uppercase tracking-widest hover:text-accent">
             Voltar ao topo ↑
           </a>
         </div>

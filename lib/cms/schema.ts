@@ -158,6 +158,16 @@ export const FEATURE_ICONS = [
   "sun",
 ] as const;
 
+const marqueeSection = z.object({
+  ...sectionBase,
+  type: z.literal("marquee"),
+  items: z.array(z.string().trim().min(1).max(40)).min(1).max(12),
+  style: z.enum(["outline", "solid", "mixed"]).default("mixed"),
+  speed: z.enum(["slow", "normal", "fast"]).default("normal"),
+  direction: z.enum(["left", "right"]).default("left"),
+  tilted: z.boolean().default(true),
+});
+
 const featureItem = z.object({
   icon: z.enum(FEATURE_ICONS).default("compass"),
   title: requiredText(120),
@@ -204,6 +214,7 @@ export const sectionSchema = z.discriminatedUnion("type", [
   featuresSection,
   ctaSection,
   contactSection,
+  marqueeSection,
 ]);
 export type Section = z.infer<typeof sectionSchema>;
 export type SectionType = Section["type"];
@@ -221,7 +232,7 @@ export const brandSchema = z.object({
 });
 export type Brand = z.infer<typeof brandSchema>;
 
-export const FONT_PAIRINGS = ["editorial", "moderno", "tecnico", "classico"] as const;
+export const FONT_PAIRINGS = ["radical", "vibrante", "editorial", "moderno", "tecnico", "classico"] as const;
 
 export const appearanceSchema = z.object({
   colors: z.object({
@@ -233,10 +244,10 @@ export const appearanceSchema = z.object({
     text: z.string().regex(HEX_COLOR),
     dark: z.string().regex(HEX_COLOR),
   }),
-  fontPairing: z.enum(FONT_PAIRINGS).default("editorial"),
+  fontPairing: z.enum(FONT_PAIRINGS).default("radical"),
   headings: z.object({
     uppercase: z.boolean().default(false),
-    weight: z.enum(["400", "500", "600", "700", "800"]).default("600"),
+    weight: z.enum(["400", "500", "600", "700", "800", "900"]).default("800"),
     tracking: z.enum(["tight", "normal", "wide"]).default("tight"),
     scale: z.enum(["compact", "standard", "dramatic"]).default("standard"),
   }),
@@ -244,6 +255,14 @@ export const appearanceSchema = z.object({
     shape: z.enum(["square", "rounded", "pill"]).default("pill"),
     uppercase: z.boolean().default(true),
   }),
+  /** Efeitos interactivos do website (todos respeitam «reduzir movimento» do sistema). */
+  effects: z
+    .object({
+      customCursor: z.boolean().default(true),
+      grain: z.boolean().default(true),
+      animations: z.boolean().default(true),
+    })
+    .default({ customCursor: true, grain: true, animations: true }),
 });
 export type Appearance = z.infer<typeof appearanceSchema>;
 

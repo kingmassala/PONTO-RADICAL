@@ -3,6 +3,7 @@ import { ArrowRight, ArrowUpRight } from "lucide-react";
 import type { MediaRef, SectionBackground } from "@/lib/cms/schema";
 import { sanitizeRichText } from "@/lib/cms/sanitize";
 import type { ResolvedLink } from "./links";
+import { Magnetic } from "./fx/magnetic";
 
 const SUPABASE_HOST = (() => {
   try {
@@ -49,7 +50,15 @@ export function CmsImage({
   );
 }
 
-export function CmsButton({ link, tone = "light" }: { link: ResolvedLink | null; tone?: "light" | "dark" }) {
+export function CmsButton({
+  link,
+  tone = "light",
+  magnetic,
+}: {
+  link: ResolvedLink | null;
+  tone?: "light" | "dark";
+  magnetic?: boolean;
+}) {
   if (!link) return null;
   const external = /^https?:\/\//i.test(link.href);
   const cls =
@@ -58,17 +67,18 @@ export function CmsButton({ link, tone = "light" }: { link: ResolvedLink | null;
       : link.style === "secondary"
         ? `pr-btn pr-btn-secondary ${tone === "dark" ? "text-white" : "text-ink"}`
         : `pr-btn pr-btn-ghost ${tone === "dark" ? "text-white" : "text-ink"}`;
-  return (
-    <a
-      href={link.href}
-      className={cls}
-      {...(link.newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-    >
+  const button = (
+    <a href={link.href} className={cls} {...(link.newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
       {link.label}
-      {external ? <ArrowUpRight aria-hidden className="size-4" /> : <ArrowRight aria-hidden className="size-4" />}
+      {external ? (
+        <ArrowUpRight aria-hidden className="pr-btn-arrow size-4" />
+      ) : (
+        <ArrowRight aria-hidden className="pr-btn-arrow size-4" />
+      )}
       {link.newTab && <span className="sr-only"> (abre numa nova janela)</span>}
     </a>
   );
+  return magnetic ? <Magnetic>{button}</Magnetic> : button;
 }
 
 export function RichText({ html, className }: { html: string; className?: string }) {
@@ -87,8 +97,8 @@ export const BACKGROUNDS: Record<SectionBackground, { className: string; tone: "
 export function Eyebrow({ children, tone }: { children: React.ReactNode; tone: "light" | "dark" }) {
   if (!children) return null;
   return (
-    <p className={`pr-eyebrow mb-5 flex items-center gap-3 ${tone === "dark" ? "text-white/70" : "text-secondary"}`}>
-      <span aria-hidden className="h-px w-10 bg-accent" />
+    <p className={`pr-eyebrow mb-6 flex items-center gap-3 ${tone === "dark" ? "text-white/70" : "text-ink/60"}`}>
+      <span aria-hidden className="size-2 rotate-45 bg-accent" />
       {children}
     </p>
   );

@@ -23,7 +23,8 @@ export type TemplateKey =
   | "video"
   | "features"
   | "cta"
-  | "contact";
+  | "contact"
+  | "marquee";
 
 type Template = {
   key: TemplateKey;
@@ -238,6 +239,25 @@ export const SECTION_TEMPLATES: Template[] = [
   },
 ];
 
+SECTION_TEMPLATES.push({
+  key: "marquee",
+  type: "marquee",
+  label: "Texto em movimento",
+  description: "Palavras gigantes a deslizar pelo ecrã, entre secções.",
+  anchor: "faixa",
+  create: (base) => ({
+    ...base,
+    ...common,
+    type: "marquee",
+    background: "accent",
+    items: ["Navegar", "Pescar", "Velejar", "Voar"],
+    style: "mixed",
+    speed: "normal",
+    direction: "left",
+    tilted: true,
+  }),
+});
+
 export const SECTION_TYPE_LABELS: Record<SectionType, string> = {
   hero: "Hero",
   split: "Texto e imagem",
@@ -248,6 +268,7 @@ export const SECTION_TYPE_LABELS: Record<SectionType, string> = {
   features: "Colunas de destaques",
   cta: "Chamada para acção",
   contact: "Contactos",
+  marquee: "Texto em movimento",
 };
 
 /** Gera uma âncora única a partir de uma sugestão. */

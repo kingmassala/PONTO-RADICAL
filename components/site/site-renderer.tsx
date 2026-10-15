@@ -1,6 +1,7 @@
 import type { Section, SiteDocument } from "@/lib/cms/schema";
 import { themeStyle } from "@/lib/cms/theme";
 import { SiteHeader } from "./header";
+import { CustomCursor } from "./fx/cursor";
 import { SiteFooter } from "./footer";
 import { navItems, resolveLink, storeLink } from "./links";
 import {
@@ -11,6 +12,7 @@ import {
   FeaturesSection,
   GallerySection,
   HeroSection,
+  MarqueeSection,
   SplitSection,
   VideoSection,
 } from "./sections";
@@ -35,6 +37,8 @@ function renderSection(section: Section, doc: SiteDocument, preview: boolean) {
       return <CtaSection section={section} doc={doc} />;
     case "contact":
       return <ContactSection section={section} doc={doc} preview={preview} />;
+    case "marquee":
+      return <MarqueeSection section={section} doc={doc} />;
   }
 }
 
@@ -45,12 +49,19 @@ function renderSection(section: Section, doc: SiteDocument, preview: boolean) {
  */
 export function SiteRenderer({ doc, previewBanner }: { doc: SiteDocument; previewBanner?: React.ReactNode }) {
   const preview = Boolean(previewBanner);
+  const fx = doc.appearance.effects;
   const header = doc.store.showInHeader ? storeLink(doc) : null;
   const firstVisible = doc.sections.find((s) => s.visible);
   const startsWithHero = firstVisible?.type === "hero" || firstVisible?.type === "banner" || firstVisible?.type === "video";
 
   return (
-    <div id="top" className="site min-h-screen" style={themeStyle(doc.appearance)}>
+    <div
+      id="top"
+      className={`site min-h-screen ${fx.customCursor ? "fx-cursor" : ""} ${fx.grain ? "fx-grain" : ""} ${fx.animations ? "fx-motion" : ""}`}
+      style={themeStyle(doc.appearance)}
+    >
+      <div className="pr-progress" aria-hidden />
+      {fx.customCursor && <CustomCursor />}
       <a
         href="#conteudo"
         className="sr-only z-50 bg-accent px-4 py-2 text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
@@ -68,7 +79,7 @@ export function SiteRenderer({ doc, previewBanner }: { doc: SiteDocument; previe
         headerStyle={startsWithHero ? doc.navigation.headerStyle : "solid"}
         topOffset={preview ? 44 : 0}
       />
-      <main id="conteudo" className={startsWithHero ? "" : "pt-20"}>
+      <main id="conteudo" className={startsWithHero ? "" : "pt-28"}>
         {doc.sections
           .filter((s) => s.visible)
           .map((section) => (

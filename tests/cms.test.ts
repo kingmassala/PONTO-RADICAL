@@ -12,6 +12,7 @@ import { checkDocument, hasErrors, isStoreActive } from "../lib/cms/validate";
 import { SECTION_TEMPLATES, uniqueAnchor } from "../lib/cms/templates";
 import { navItems, resolveLink, storeLink } from "../components/site/links";
 import { detectImageType, svgIsSafe } from "../lib/media/files";
+import { plainText, tokenizeTitle } from "../lib/cms/text";
 
 let passed = 0;
 function test(name: string, fn: () => void) {
@@ -156,6 +157,34 @@ test("SVG com código ou referências externas é rejeitado", () => {
   ]) {
     assert.equal(svgIsSafe(bad), false, bad);
   }
+});
+
+test("destaque *palavra* nos títulos: espaços e pontuação correctos", () => {
+  const render = (t: string) =>
+    tokenizeTitle(t)
+      .map((x) => (x.glued ? "" : " ") + (x.accent ? `[${x.word}]` : x.word))
+      .join("")
+      .trim();
+  assert.equal(render("Referências *mundiais*, agora mais perto."), "Referências [mundiais], agora mais perto.");
+  assert.equal(render("Com as *marcas certas*."), "Com as [marcas] [certas].");
+  assert.equal(render("*Olá* mundo"), "[Olá] mundo");
+  assert.equal(render("Sem destaque"), "Sem destaque");
+  assert.equal(plainText("A *vida* no mar"), "A vida no mar");
+});
+
+test("faixa de texto em movimento e efeitos têm valores por omissão válidos", () => {
+  const doc = clone();
+  const { effects, ...appearanceWithoutEffects } = doc.appearance;
+  void effects;
+  const parsed = siteDocumentSchema.parse({ ...doc, appearance: appearanceWithoutEffects });
+  assert.deepEqual(parsed.appearance.effects, { customCursor: true, grain: true, animations: true });
+  const marquee = doc.sections.find((s) => s.type === "marquee");
+  assert.ok(marquee, "seed inclui uma faixa de texto em movimento");
+  const empty = clone();
+  const m = empty.sections.find((s) => s.type === "marquee");
+  if (m?.type !== "marquee") throw new Error();
+  m.items = [];
+  assert.equal(siteDocumentSchema.safeParse(empty).success, false, "faixa sem palavras é inválida");
 });
 
 console.log(`\n${passed} testes passaram.`);

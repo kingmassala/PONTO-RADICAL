@@ -300,6 +300,7 @@ export function AppearanceEditor({ value }: { value: Appearance }) {
                 { value: "600", label: "Semi-negrito" },
                 { value: "700", label: "Negrito" },
                 { value: "800", label: "Extra negrito" },
+                { value: "900", label: "Ultra negrito" },
               ]}
             />
             <Select
@@ -324,6 +325,26 @@ export function AppearanceEditor({ value }: { value: Appearance }) {
             />
           </div>
           <Toggle label="Títulos em maiúsculas" checked={a.headings.uppercase} onChange={(v) => setHeadings({ uppercase: v })} />
+        </Card>
+        <Card title="Efeitos interactivos" description="Todos respeitam a opção «reduzir movimento» do sistema do visitante.">
+          <Toggle
+            label="Animações"
+            description="Títulos que aparecem palavra a palavra, imagens com zoom e secções que surgem ao fazer scroll."
+            checked={a.effects.animations}
+            onChange={(v) => editor.update((cur) => ({ ...cur, effects: { ...cur.effects, animations: v } }))}
+          />
+          <Toggle
+            label="Cursor personalizado"
+            description="Círculo que segue o rato e cresce sobre botões e imagens (só em computadores)."
+            checked={a.effects.customCursor}
+            onChange={(v) => editor.update((cur) => ({ ...cur, effects: { ...cur.effects, customCursor: v } }))}
+          />
+          <Toggle
+            label="Textura de grão"
+            description="Grão subtil de película sobre todo o website."
+            checked={a.effects.grain}
+            onChange={(v) => editor.update((cur) => ({ ...cur, effects: { ...cur.effects, grain: v } }))}
+          />
         </Card>
         <Card title="Botões">
           <Select

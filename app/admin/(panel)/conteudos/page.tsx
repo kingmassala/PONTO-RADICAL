@@ -59,7 +59,7 @@ export default async function ContentsPage() {
                     </span>
                   )}
                 </p>
-                <p className="mt-1 font-medium text-slate-900">{s.title}</p>
+                <p className="mt-1 font-medium text-slate-900">{s.type === "marquee" ? s.items.join(" · ") : s.title.replace(/\*/g, "")}</p>
                 <p className="mt-1 line-clamp-2 text-sm text-slate-500">{summary(s)}</p>
               </div>
               <ArrowRight className="mt-1 size-4 text-slate-300 group-hover:text-sky-600" />
