@@ -1,26 +1,201 @@
 @import "tailwindcss";
 
+/* Valores por omissão; o website público sobrepõe-nos com a configuração do CMS. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --pr-primary: #0e3b52;
+  --pr-secondary: #1f7a8c;
+  --pr-accent: #f26b1d;
+  --pr-background: #f7f5f0;
+  --pr-surface: #ece8df;
+  --pr-text: #0f1b24;
+  --pr-dark: #07141c;
+  --pr-font-heading: var(--font-barlow-condensed);
+  --pr-font-body: var(--font-barlow);
+  --pr-heading-transform: uppercase;
+  --pr-heading-weight: 600;
+  --pr-heading-tracking: 0;
+  --pr-heading-scale: 1;
+  --pr-radius: 999px;
+  --pr-button-transform: uppercase;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-primary: var(--pr-primary);
+  --color-secondary: var(--pr-secondary);
+  --color-accent: var(--pr-accent);
+  --color-background: var(--pr-background);
+  --color-surface: var(--pr-surface);
+  --color-ink: var(--pr-text);
+  --color-dark: var(--pr-dark);
+  --font-heading: var(--pr-font-heading);
+  --font-body: var(--pr-font-body);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Website público ---------- */
+.site {
+  font-family: var(--pr-font-body);
+  background: var(--pr-background);
+  color: var(--pr-text);
+}
+
+.site section[id] {
+  scroll-margin-top: 5rem;
+}
+
+.pr-heading {
+  font-family: var(--pr-font-heading);
+  font-weight: var(--pr-heading-weight);
+  text-transform: var(--pr-heading-transform);
+  letter-spacing: var(--pr-heading-tracking);
+  line-height: 1.02;
+  text-wrap: balance;
+}
+.pr-display {
+  font-size: calc(clamp(2.6rem, 6.4vw, 6rem) * var(--pr-heading-scale));
+}
+.pr-h2 {
+  font-size: calc(clamp(2rem, 4.2vw, 3.75rem) * var(--pr-heading-scale));
+}
+.pr-h3 {
+  font-size: calc(clamp(1.35rem, 2vw, 1.75rem) * var(--pr-heading-scale));
+}
+.pr-eyebrow {
+  font-size: 0.78rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.pr-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 3rem;
+  padding: 0.85rem 1.6rem;
+  border-radius: var(--pr-radius);
+  text-transform: var(--pr-button-transform);
+  letter-spacing: 0.08em;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.2s;
+}
+.pr-btn:hover {
+  transform: translateY(-1px);
+}
+.pr-btn:focus-visible,
+.site a:focus-visible,
+.site button:focus-visible,
+.site input:focus-visible,
+.site textarea:focus-visible {
+  outline: 3px solid var(--pr-accent);
+  outline-offset: 3px;
+}
+.pr-btn-primary {
+  background: var(--pr-accent);
+  color: #fff;
+}
+.pr-btn-primary:hover {
+  background: color-mix(in srgb, var(--pr-accent) 85%, black);
+}
+.pr-btn-secondary {
+  border: 1.5px solid currentColor;
+}
+.pr-btn-secondary:hover {
+  background: color-mix(in srgb, currentColor 10%, transparent);
+}
+.pr-btn-ghost {
+  padding-inline: 0;
+  text-decoration: underline;
+  text-underline-offset: 6px;
+}
+
+.pr-rich p + p {
+  margin-top: 1em;
+}
+.pr-rich a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.pr-rich ul {
+  list-style: disc;
+  padding-left: 1.25em;
+  margin-top: 0.75em;
+}
+.pr-rich ol {
+  list-style: decimal;
+  padding-left: 1.25em;
+  margin-top: 0.75em;
+}
+.pr-rich h3,
+.pr-rich h4 {
+  font-family: var(--pr-font-heading);
+  font-weight: var(--pr-heading-weight);
+  font-size: 1.25em;
+  margin: 1em 0 0.4em;
+}
+.pr-rich blockquote {
+  border-left: 3px solid var(--pr-accent);
+  padding-left: 1em;
+  font-style: italic;
+}
+
+@keyframes pr-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.pr-reveal {
+  animation: pr-fade-up 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+/* ---------- Editor de texto rico (painel) ---------- */
+.rte .ProseMirror {
+  min-height: 9rem;
+  outline: none;
+}
+.rte .ProseMirror p + p {
+  margin-top: 0.75em;
+}
+.rte .ProseMirror ul {
+  list-style: disc;
+  padding-left: 1.25em;
+}
+.rte .ProseMirror ol {
+  list-style: decimal;
+  padding-left: 1.25em;
+}
+.rte .ProseMirror a {
+  color: #0369a1;
+  text-decoration: underline;
+}
+.rte .ProseMirror h3 {
+  font-weight: 600;
+  font-size: 1.1em;
 }

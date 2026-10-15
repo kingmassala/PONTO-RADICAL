@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "Ponto Radical", "runtimeExecutable": "npm", "runtimeArgs": ["run", "dev"], "port": 3000 },
+    {
+      "name": "Ponto Radical (conteúdo inicial, sem Supabase)",
+      "runtimeExecutable": "env",
+      "runtimeArgs": ["NEXT_PUBLIC_SUPABASE_URL=", "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=", "SUPABASE_SECRET_KEY=", "npm", "run", "dev", "--", "-p", "3100"],
+      "port": 3100
+    }
+  ]
+}
