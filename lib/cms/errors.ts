@@ -5,6 +5,13 @@ export type ActionResult<T = null> = { ok: true; data: T } | { ok: false; error:
 const LABELS: Record<string, string> = {
   sections: "Secções",
   brands: "Marcas",
+  services: "Serviços",
+  serviceCategories: "Categorias",
+  booking: "Reservas",
+  slug: "Endereço",
+  timeSlots: "Horários",
+  minPeople: "Mínimo de pessoas",
+  maxPeople: "Máximo de pessoas",
   appearance: "Aparência",
   navigation: "Menu",
   contact: "Contactos",

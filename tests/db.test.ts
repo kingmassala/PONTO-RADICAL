@@ -204,6 +204,81 @@ async function main() {
     assert.equal((await db.query("select * from public.contact_messages")).rows.length, 0);
   });
 
+  const BOOKING = `insert into public.booking_requests
+    (service_id, service_name, service_snapshot, requested_date, time_slot, people, name, email, phone, notes)
+    values ('srv-por-do-sol', 'Passeio ao pôr-do-sol', '{"priceFrom":35000}', '2026-10-24', '17:00', 4, 'Ana Silva', 'ana@example.com', '+244 923 000 000', 'Aniversário')
+    returning id, reference`;
+
+  await test("reservas: visitante anónimo não insere nem lê pedidos", async () => {
+    await rejects(as("anon", BOOKING), /row-level security/);
+    assert.equal((await as("anon", "select * from public.booking_requests")).length, 0);
+  });
+
+  await test("reservas: o servidor insere; referência gerada e auditoria do novo pedido", async () => {
+    const { rows } = await db.query<{ id: string; reference: string }>(BOOKING);
+    assert.match(rows[0].reference, /^[0-9A-F]{8}$/);
+    const audit = await db.query<{ action: string; actor_email: string }>(
+      "select action, actor_email from public.audit_log where entity = 'booking_requests' and entity_id = $1",
+      [rows[0].id],
+    );
+    assert.deepEqual(audit.rows, [{ action: "booking.create", actor_email: "website" }]);
+    await rejects(
+      db.query(BOOKING.replace("4, 'Ana Silva'", "0, 'Ana Silva'")),
+      /check constraint/,
+    );
+    await rejects(db.query("update public.booking_requests set status = 'pendente'"), /check constraint/);
+  });
+
+  await test("reservas: só a equipa lê; utilizador sem papel não vê nada", async () => {
+    assert.equal((await as(EDITOR, "select * from public.booking_requests")).length, 1);
+    assert.equal((await as(NOBODY, "select * from public.booking_requests")).length, 0);
+    await as(NOBODY, "update public.booking_requests set status = 'confirmado'");
+    const r = await db.query<{ status: string }>("select status from public.booking_requests");
+    assert.equal(r.rows[0].status, "novo");
+  });
+
+  await test("reservas: editor muda o estado (com auditoria) mas não altera os dados do cliente", async () => {
+    await as(EDITOR, "update public.booking_requests set status = 'proposta', proposed_date = '2026-10-25', internal_notes = 'Barco ocupado no dia 24'");
+    const [row] = (
+      await db.query<{ status: string; handled_by: string; proposed_date: string }>(
+        "select status, handled_by, proposed_date::text from public.booking_requests",
+      )
+    ).rows;
+    assert.equal(row.status, "proposta");
+    assert.equal(row.handled_by, EDITOR);
+    assert.equal(row.proposed_date, "2026-10-25");
+    const audit = await as<{ details: { from: string; to: string }; actor_email: string }>(
+      ADMIN,
+      "select details, actor_email from public.audit_log where action = 'booking.status'",
+    );
+    assert.equal(audit.length, 1);
+    assert.equal(audit[0].details.from, "novo");
+    assert.equal(audit[0].details.to, "proposta");
+    assert.equal(audit[0].actor_email, "editor@example.com");
+    await rejects(as(EDITOR, "update public.booking_requests set name = 'Outra pessoa'"), /not_authorized/);
+    await rejects(as(EDITOR, "update public.booking_requests set people = 40"), /not_authorized/);
+    await rejects(as(EDITOR, "update public.booking_requests set service_snapshot = '{}'"), /not_authorized/);
+  });
+
+  await test("reservas: pagamento registado com data (preparado para pagamentos futuros)", async () => {
+    await as(EDITOR, "update public.booking_requests set status = 'confirmado', quoted_amount = 140000, payment_status = 'pago'");
+    const paid = await db.query<{ paid_at: string | null; currency: string }>("select paid_at, currency from public.booking_requests");
+    assert.ok(paid.rows[0].paid_at);
+    assert.equal(paid.rows[0].currency, "AOA");
+    await as(EDITOR, "update public.booking_requests set payment_status = 'pendente'");
+    const unpaid = await db.query<{ paid_at: string | null }>("select paid_at from public.booking_requests");
+    assert.equal(unpaid.rows[0].paid_at, null);
+  });
+
+  await test("reservas: só o administrador elimina (com auditoria)", async () => {
+    await as(EDITOR, "delete from public.booking_requests");
+    assert.equal((await db.query("select * from public.booking_requests")).rows.length, 1);
+    await as(ADMIN, "delete from public.booking_requests");
+    assert.equal((await db.query("select * from public.booking_requests")).rows.length, 0);
+    const audit = await as(ADMIN, "select * from public.audit_log where action = 'booking.delete'");
+    assert.equal(audit.length, 1);
+  });
+
   await test("storage: só a equipa carrega ficheiros no bucket media", async () => {
     const [bucket] = (await db.query<{ public: boolean; allowed_mime_types: string[] }>("select * from storage.buckets where id = 'media'")).rows;
     assert.equal(bucket.public, true);

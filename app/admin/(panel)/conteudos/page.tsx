@@ -32,6 +32,7 @@ export default async function ContentsPage() {
   const { doc } = await getDraft();
   const others = [
     { title: "Marcas", text: doc.brands.map((b) => b.name).join(" · "), href: "/admin/marcas" },
+    { title: "Serviços (experiências)", text: doc.services.map((s) => s.name).join(" · "), href: "/admin/servicos" },
     { title: "Contactos e redes sociais", text: [doc.contact.phone, doc.contact.email, doc.contact.address].filter(Boolean).join(" · "), href: "/admin/contactos" },
     { title: "Cabeçalho e rodapé", text: doc.footer.tagline, href: "/admin/menu" },
     { title: "SEO", text: doc.seo.title, href: "/admin/seo" },

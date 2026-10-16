@@ -25,16 +25,17 @@ export default function PanelLayout({ children }: { children: React.ReactNode })
 async function PanelShell({ children }: { children: React.ReactNode }) {
   const user = await requireStaffPage();
   const supabase = await createClient();
-  const [draft, published, unread] = await Promise.all([
+  const [draft, published, unread, bookings] = await Promise.all([
     getDraft(),
     getPublishedState(),
     supabase.from("contact_messages").select("id", { count: "exact", head: true }).eq("status", "novo"),
+    supabase.from("booking_requests").select("id", { count: "exact", head: true }).eq("status", "novo"),
   ]);
   const hasUnpublished = !published || !documentsEqual(draft.doc, published.doc);
 
   return (
     <RevisionProvider revision={draft.revision}>
-      <Sidebar user={user} unreadMessages={unread.count ?? 0} />
+      <Sidebar user={user} unreadMessages={unread.count ?? 0} newBookings={bookings.count ?? 0} />
       <div className="lg:pl-64">
         <PublishBar hasUnpublished={hasUnpublished} publishedAt={published?.publishedAt ?? null} issues={checkDocument(draft.doc)} />
         <main className="mx-auto max-w-6xl px-4 py-8 sm:px-8">{children}</main>

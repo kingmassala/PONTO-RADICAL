@@ -13,6 +13,7 @@ import {
   GallerySection,
   HeroSection,
   MarqueeSection,
+  ServicesSection,
   SplitSection,
   VideoSection,
 } from "./sections";
@@ -39,6 +40,8 @@ function renderSection(section: Section, doc: SiteDocument, preview: boolean) {
       return <ContactSection section={section} doc={doc} preview={preview} />;
     case "marquee":
       return <MarqueeSection section={section} doc={doc} />;
+    case "services":
+      return <ServicesSection section={section} doc={doc} preview={preview} />;
   }
 }
 

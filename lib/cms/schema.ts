@@ -204,6 +204,21 @@ const contactSection = z.object({
   successMessage: text(300),
 });
 
+/** Experiências / Reservas: cartões dos serviços geridos em «Serviços», com pedido de reserva. */
+const servicesSection = z.object({
+  ...sectionBase,
+  type: z.literal("services"),
+  eyebrow: text(120),
+  title: requiredText(200),
+  intro: text(1000),
+  /** Categorias a mostrar (vazio = todas). */
+  categoryIds: z.array(z.string().max(40)).max(20).default([]),
+  showFilters: z.boolean().default(true),
+  buttonLabel: text(40),
+  /** Nota curta por baixo dos cartões (ex.: condições de reserva). */
+  note: text(300),
+});
+
 export const sectionSchema = z.discriminatedUnion("type", [
   heroSection,
   splitSection,
@@ -215,6 +230,7 @@ export const sectionSchema = z.discriminatedUnion("type", [
   ctaSection,
   contactSection,
   marqueeSection,
+  servicesSection,
 ]);
 export type Section = z.infer<typeof sectionSchema>;
 export type SectionType = Section["type"];
@@ -231,6 +247,80 @@ export const brandSchema = z.object({
   visible: z.boolean().default(true),
 });
 export type Brand = z.infer<typeof brandSchema>;
+
+/* ------------------------- Serviços e reservas ------------------------- */
+
+export const SLUG = ANCHOR;
+export const TIME_SLOT = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+export const serviceCategorySchema = z.object({
+  id: z.string().trim().regex(SLUG, "Identificador inválido").max(40),
+  label: requiredText(40),
+});
+export type ServiceCategory = z.infer<typeof serviceCategorySchema>;
+
+export const DEFAULT_SERVICE_CATEGORIES: ServiceCategory[] = [
+  { id: "passeios-de-barco", label: "Passeios de barco" },
+  { id: "actividades", label: "Actividades" },
+  { id: "outros", label: "Outros" },
+];
+
+/**
+ * Serviço reservável (passeio de barco, actividade, aula…). Os dias e horários
+ * são indicativos: o cliente envia um pedido e a equipa confirma no painel.
+ */
+export const serviceSchema = z.object({
+  id: z.string().min(1).max(64),
+  name: requiredText(120),
+  slug: z.string().trim().regex(SLUG, "Use apenas letras minúsculas, números e hífenes").max(80),
+  categoryId: z.string().trim().max(40),
+  summary: text(300),
+  /** Texto rico (limpo ao gravar e ao mostrar). */
+  description: text(8000),
+  gallery: z.array(mediaRefSchema).max(12).default([]),
+  /** Duração em minutos (0 = não indicada). */
+  durationMinutes: z.number().int().min(0).max(14 * 24 * 60).default(0),
+  /** Preço «a partir de», em kwanzas (AOA). null = sob consulta. */
+  priceFrom: z.number().int().min(0).max(1_000_000_000).nullable().default(null),
+  priceUnit: z.enum(["pessoa", "grupo"]).default("pessoa"),
+  minPeople: z.number().int().min(1).max(500).default(1),
+  maxPeople: z.number().int().min(1).max(500).default(8),
+  meetingPoint: text(300),
+  included: z.array(z.string().trim().min(1).max(160)).max(20).default([]),
+  requirements: z.array(z.string().trim().min(1).max(200)).max(20).default([]),
+  /** Dias da semana disponíveis (0 = domingo … 6 = sábado). Vazio = todos. */
+  weekdays: z.array(z.number().int().min(0).max(6)).max(7).default([]),
+  /** Horários de partida (HH:MM). Vazio = horário a combinar. */
+  timeSlots: z.array(z.string().regex(TIME_SLOT, "Use o formato HH:MM")).max(12).default([]),
+  visible: z.boolean().default(true),
+  /** Aceita pedidos de reserva (desligar mostra o serviço sem botão de reserva). */
+  bookable: z.boolean().default(true),
+});
+export type Service = z.infer<typeof serviceSchema>;
+
+export const bookingSettingsSchema = z.object({
+  enabled: z.boolean().default(true),
+  /** Antecedência mínima, em dias (0 = no próprio dia). */
+  minNoticeDays: z.number().int().min(0).max(60).default(1),
+  /** Até quantos dias no futuro se aceitam pedidos. */
+  maxAdvanceDays: z.number().int().min(7).max(730).default(180),
+  successMessage: text(400),
+  /** Condições de pagamento mostradas no formulário e na confirmação. */
+  paymentInfo: text(600),
+  /** Mostrar ligação para continuar a conversa no WhatsApp (se houver número em «Contactos»). */
+  whatsappFollowUp: z.boolean().default(true),
+});
+export type BookingSettings = z.infer<typeof bookingSettingsSchema>;
+
+export const DEFAULT_BOOKING_SETTINGS: BookingSettings = {
+  enabled: true,
+  minNoticeDays: 1,
+  maxAdvanceDays: 180,
+  successMessage: "Recebemos o seu pedido. A nossa equipa vai confirmar a disponibilidade e responder em breve.",
+  paymentInfo:
+    "Não é cobrado nada agora. O pagamento é feito depois da confirmação, por transferência bancária, Multicaixa Express ou no local.",
+  whatsappFollowUp: true,
+};
 
 export const FONT_PAIRINGS = ["radical", "vibrante", "editorial", "moderno", "tecnico", "classico"] as const;
 
@@ -333,6 +423,9 @@ export const siteDocumentSchema = z.object({
   navigation: navigationSchema,
   sections: z.array(sectionSchema).max(40),
   brands: z.array(brandSchema).max(40),
+  services: z.array(serviceSchema).max(60).default([]),
+  serviceCategories: z.array(serviceCategorySchema).max(20).default(DEFAULT_SERVICE_CATEGORIES),
+  booking: bookingSettingsSchema.default(DEFAULT_BOOKING_SETTINGS),
   contact: contactInfoSchema,
   store: storeSchema,
   seo: seoSchema,
@@ -347,6 +440,9 @@ export const DOCUMENT_KEYS: SiteDocumentKey[] = [
   "navigation",
   "sections",
   "brands",
+  "services",
+  "serviceCategories",
+  "booking",
   "contact",
   "store",
   "seo",

@@ -12,6 +12,8 @@ import {
   brandSchema,
   DOCUMENT_KEYS,
   sectionSchema,
+  serviceCategorySchema,
+  serviceSchema,
   siteDocumentSchema,
   type SiteDocument,
   type SiteDocumentKey,
@@ -54,6 +56,9 @@ const SUMMARIES: Record<SiteDocumentKey, string> = {
   navigation: "Menu e botões",
   sections: "Secções",
   brands: "Marcas",
+  services: "Serviços",
+  serviceCategories: "Categorias de serviços",
+  booking: "Definições de reservas",
   contact: "Contactos",
   store: "Loja Online",
   seo: "SEO",
@@ -232,6 +237,132 @@ export async function reorderBrands(orderedIds: string[], revision: number) {
       throw new Error("A lista de marcas mudou entretanto. Recarregue a página.");
     }
     doc.brands = ids.map((id) => doc.brands.find((b) => b.id === id)!);
+    return doc;
+  });
+}
+
+/* ----------------------------- Serviços ----------------------------- */
+
+export async function saveService(value: unknown, revision: number) {
+  const parsed = serviceSchema.safeParse(value);
+  if (!parsed.success) return errorResult(parsed.error);
+  const service = parsed.data;
+  return mutateDraft(revision, `Serviço ${service.name}`, (doc) => {
+    const index = doc.services.findIndex((s) => s.id === service.id);
+    if (index === -1) throw new Error("O serviço já não existe.");
+    if (doc.services.some((s) => s.id !== service.id && s.slug === service.slug)) {
+      throw new Error(`O endereço «${service.slug}» já é usado por outro serviço.`);
+    }
+    if (!doc.serviceCategories.some((c) => c.id === service.categoryId)) {
+      throw new Error("Escolha uma categoria existente.");
+    }
+    doc.services[index] = service;
+    return doc;
+  });
+}
+
+export async function addService(name: string, revision: number) {
+  const cleanName = z.string().trim().min(1, "Indique o nome do serviço").max(120).parse(name);
+  const id = `srv-${crypto.randomUUID().slice(0, 8)}`;
+  const result = await mutateDraft(revision, `Novo serviço ${cleanName}`, (doc) => {
+    doc.services.push({
+      id,
+      name: cleanName,
+      slug: uniqueAnchor(cleanName, doc.services.map((s) => s.slug)),
+      categoryId: doc.serviceCategories[0]?.id ?? "",
+      summary: "",
+      description: "",
+      gallery: [],
+      durationMinutes: 120,
+      priceFrom: null,
+      priceUnit: "pessoa",
+      minPeople: 1,
+      maxPeople: 8,
+      meetingPoint: "",
+      included: [],
+      requirements: [],
+      weekdays: [],
+      timeSlots: [],
+      visible: false,
+      bookable: true,
+    });
+    return doc;
+  });
+  return result.ok ? { ok: true as const, data: { ...result.data, id } } : result;
+}
+
+export async function duplicateService(id: string, revision: number) {
+  const newId = `srv-${crypto.randomUUID().slice(0, 8)}`;
+  const result = await mutateDraft(revision, "Duplicar serviço", (doc) => {
+    const index = doc.services.findIndex((s) => s.id === id);
+    if (index === -1) throw new Error("O serviço já não existe.");
+    const copy = structuredClone(doc.services[index]);
+    copy.id = newId;
+    copy.name = `${copy.name} (cópia)`.slice(0, 120);
+    copy.slug = uniqueAnchor(copy.slug, doc.services.map((s) => s.slug));
+    copy.visible = false;
+    doc.services.splice(index + 1, 0, copy);
+    return doc;
+  });
+  return result.ok ? { ok: true as const, data: { ...result.data, id: newId } } : result;
+}
+
+export async function deleteService(id: string, revision: number) {
+  return mutateDraft(revision, "Eliminar serviço", (doc) => {
+    doc.services = doc.services.filter((s) => s.id !== id);
+    return doc;
+  });
+}
+
+export async function reorderServices(orderedIds: string[], revision: number) {
+  const ids = z.array(z.string()).parse(orderedIds);
+  return mutateDraft(revision, "Reordenar serviços", (doc) => {
+    if (ids.length !== doc.services.length || !doc.services.every((s) => ids.includes(s.id))) {
+      throw new Error("A lista de serviços mudou entretanto. Recarregue a página.");
+    }
+    doc.services = ids.map((id) => doc.services.find((s) => s.id === id)!);
+    return doc;
+  });
+}
+
+export async function setServiceFlags(id: string, flags: { visible?: boolean; bookable?: boolean }, revision: number) {
+  const parsed = z.object({ visible: z.boolean().optional(), bookable: z.boolean().optional() }).parse(flags);
+  return mutateDraft(revision, "Visibilidade de serviço", (doc) => {
+    const service = doc.services.find((s) => s.id === id);
+    if (!service) throw new Error("O serviço já não existe.");
+    Object.assign(service, parsed);
+    return doc;
+  });
+}
+
+/** Categorias: renomear, acrescentar, reordenar e remover (só se não estiverem em uso). */
+export async function saveServiceCategories(value: unknown, revision: number) {
+  const parsed = z
+    .array(z.object({ id: z.string().trim().max(40), label: serviceCategorySchema.shape.label }))
+    .min(1, "Tem de existir pelo menos uma categoria.")
+    .max(20)
+    .safeParse(value);
+  if (!parsed.success) return errorResult(parsed.error);
+  return mutateDraft(revision, "Categorias de serviços", (doc) => {
+    const used: string[] = [];
+    const categories = parsed.data.map((c) => {
+      // Categorias novas chegam sem identificador: gera-se a partir do nome.
+      const id = c.id || uniqueAnchor(c.label, [...doc.serviceCategories.map((x) => x.id), ...used]);
+      used.push(id);
+      return { id, label: c.label };
+    });
+    for (const service of doc.services) {
+      if (!categories.some((c) => c.id === service.categoryId)) {
+        throw new Error(`A categoria do serviço «${service.name}» não pode ser removida enquanto estiver em uso.`);
+      }
+    }
+    doc.serviceCategories = categories;
+    // Secções que filtravam categorias removidas deixam de as referir.
+    for (const section of doc.sections) {
+      if (section.type === "services") {
+        section.categoryIds = section.categoryIds.filter((id) => categories.some((c) => c.id === id));
+      }
+    }
     return doc;
   });
 }

@@ -417,6 +417,51 @@ body {
   }
 }
 
+/* Painel de reserva e cartões de experiências */
+@keyframes pr-overlay-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes pr-drawer-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+@keyframes pr-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+@keyframes pr-pop {
+  0% {
+    transform: scale(0) rotate(-45deg);
+  }
+  70% {
+    transform: scale(1.15) rotate(8deg);
+  }
+}
+.pr-overlay-in {
+  animation: pr-overlay-in 0.4s ease-out backwards;
+}
+.pr-drawer-in {
+  animation: pr-sheet-in 0.6s cubic-bezier(0.2, 0.75, 0.15, 1) backwards;
+}
+@media (min-width: 1024px) {
+  .pr-drawer-in {
+    animation-name: pr-drawer-in;
+  }
+}
+.pr-pop {
+  animation: pr-pop 0.7s cubic-bezier(0.2, 0.75, 0.15, 1) backwards;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .fx-motion .pr-card-in {
+    animation: pr-fade-up 0.8s cubic-bezier(0.2, 0.75, 0.15, 1) backwards;
+    animation-delay: calc(var(--i, 0) * 0.08s);
+  }
+}
+
 /* Cursor personalizado (apenas dispositivos com rato) */
 @media (hover: hover) and (pointer: fine) {
   .fx-cursor,

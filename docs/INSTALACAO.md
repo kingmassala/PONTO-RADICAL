@@ -29,12 +29,18 @@ Precisa de:
 No Supabase, abra **SQL Editor → New query** e execute, por esta ordem:
 
 1. todo o conteúdo de `supabase/migrations/20261015000001_cms_schema.sql`;
-2. todo o conteúdo de `supabase/seed.sql` (conteúdo inicial do website).
+2. todo o conteúdo de `supabase/migrations/20261016000001_booking_requests.sql` (pedidos de reserva);
+3. todo o conteúdo de `supabase/seed.sql` (conteúdo inicial do website).
 
-Ambos podem ser executados mais de uma vez sem duplicar dados.
+Todos podem ser executados mais de uma vez sem duplicar dados.
 
 Em alternativa, sem copiar SQL: defina `SUPABASE_DB_URL` em `.env.local` (Supabase → **Connect** → *Session pooler*)
-e execute `npm run db:migrate` — aplica a migração e o seed numa única transacção.
+e execute `npm run db:migrate` — aplica as migrações e o seed numa única transacção.
+
+> **Projecto que já estava a funcionar antes das reservas?** Execute só a migração
+> `20261016000001_booking_requests.sql` (ou `npm run db:migrate`). O seed não altera conteúdo existente, por isso
+> os serviços de exemplo não aparecem: no painel, crie os serviços em **Serviços** e acrescente a secção
+> **Experiências e reservas** em **Secções** (e, se quiser, aponte o botão do cabeçalho para ela). Depois publique.
 
 Ou, com a [Supabase CLI](https://supabase.com/docs/guides/cli):
 
@@ -49,7 +55,7 @@ supabase db push
 e depois `npm run db:seed` (ver passo 4).
 
 Verificação: em **Table Editor** devem existir as tabelas `profiles`, `site_draft`, `site_versions`, `site_state`,
-`media`, `contact_messages` e `audit_log`, e em **Storage** o bucket público `media`.
+`media`, `contact_messages`, `booking_requests` e `audit_log`, e em **Storage** o bucket público `media`.
 
 ## 3. Configurar a autenticação
 
@@ -129,7 +135,7 @@ desenvolvimento do design.
    | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | chave pública |
    | `SUPABASE_SECRET_KEY` | chave secreta (**não** marque como pública) |
    | `NEXT_PUBLIC_SITE_URL` | `https://www.pontoradical.ao` |
-   | `CONTACT_IP_SALT` | texto aleatório longo |
+   | `CONTACT_IP_SALT` | texto aleatório longo (anonimiza o IP no formulário de contacto e nos pedidos de reserva) |
 
 4. **Deploy**.
 5. Em **Settings → Domains**, ligue o domínio (por ex. `pontoradical.ao` e `www.pontoradical.ao`) e siga as
@@ -148,6 +154,8 @@ Só é necessário um novo deploy quando o código muda (novas funcionalidades o
 - [ ] «Publicar» → o website público mostra a alteração (recarregue a página).
 - [ ] Carrega uma imagem em **Biblioteca Multimédia** e usa-a numa secção.
 - [ ] Envia uma mensagem pelo formulário do website e vê-a em **Mensagens**.
+- [ ] Envia um pedido em **Experiências** (escolha um serviço, data e hora), recebe a referência e vê o pedido em
+      **Reservas** (com o número de pedidos novos no menu). Confirme-o e veja-o na **Agenda** e na **Visão Geral**.
 - [ ] «Esqueceu-se da palavra-passe?» envia o email e o link permite definir nova palavra-passe.
 - [ ] O botão «Loja Online» não aparece em nenhum lugar (loja desactivada).
 
@@ -203,7 +211,7 @@ empresa, ou descarregue periodicamente o bucket `media` (Storage → media → s
 | `npm run dev` | Servidor de desenvolvimento |
 | `npm run build` | Build de produção |
 | `npm run lint` / `npm run typecheck` | Verificações de código |
-| `npm test` | Testes da lógica do CMS e da base de dados (RLS, publicação, permissões) |
+| `npm test` | Testes da lógica do CMS e das reservas e da base de dados (RLS, publicação, permissões, pedidos de reserva) |
 | `npm run db:seed-sql` | Regenera `supabase/seed.sql` a partir de `lib/cms/seed-content.ts` |
 | `npm run db:seed` | Insere o conteúdo inicial na base de dados configurada |
 | `npm run admin:create` | Cria/promove o administrador inicial |

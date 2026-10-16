@@ -17,16 +17,24 @@ export function Title({
 }) {
   const tokens = tokenizeTitle(text);
   const mode = animate === "load" ? "pr-load-words" : animate === "scroll" ? "pr-scroll-words" : "";
+  // Palavras coladas (ex.: pontuação a seguir a um destaque) ficam juntas, sem quebra de linha entre elas.
+  const groups: { token: (typeof tokens)[number]; index: number }[][] = [];
+  tokens.forEach((token, index) => {
+    if (token.glued && groups.length) groups[groups.length - 1].push({ token, index });
+    else groups.push([{ token, index }]);
+  });
   return (
     <Tag className={`pr-heading ${mode} ${className ?? ""}`} aria-label={text.replace(/\*/g, "")}>
-      {tokens.map((t, i) => (
-        <span key={i} aria-hidden>
-          <span className="pr-word">
-            <span style={{ ["--i" as string]: i }} className={t.accent ? "pr-accent" : undefined}>
-              {t.word}
+      {groups.map((group, g) => (
+        <span key={g} aria-hidden className={group.length > 1 ? "whitespace-nowrap" : undefined}>
+          {group.map(({ token: t, index: i }) => (
+            <span key={i} className="pr-word">
+              <span style={{ ["--i" as string]: i }} className={t.accent ? "pr-accent" : undefined}>
+                {t.word}
+              </span>
             </span>
-          </span>
-          {i < tokens.length - 1 && !tokens[i + 1].glued ? " " : ""}
+          ))}
+          {g < groups.length - 1 ? " " : ""}
         </span>
       ))}
     </Tag>

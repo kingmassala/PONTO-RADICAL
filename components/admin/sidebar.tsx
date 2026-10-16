@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
   BadgeCheck,
+  CalendarCheck,
   ExternalLink,
   FileText,
   History,
@@ -16,6 +17,7 @@ import {
   Menu as MenuIcon,
   MousePointerClick,
   Palette,
+  Sailboat,
   Phone,
   Search,
   Settings,
@@ -31,6 +33,8 @@ const NAV = [
   { href: "/admin/conteudos", label: "Conteúdos", icon: FileText },
   { href: "/admin/seccoes", label: "Secções", icon: LayoutList },
   { href: "/admin/marcas", label: "Marcas", icon: BadgeCheck },
+  { href: "/admin/servicos", label: "Serviços", icon: Sailboat },
+  { href: "/admin/reservas", label: "Reservas", icon: CalendarCheck, badge: "bookings" as const },
   { href: "/admin/multimedia", label: "Biblioteca Multimédia", icon: Images },
   { href: "/admin/aparencia", label: "Aparência", icon: Palette },
   { href: "/admin/menu", label: "Menu e Botões", icon: MousePointerClick },
@@ -46,9 +50,11 @@ const NAV = [
 export function Sidebar({
   user,
   unreadMessages,
+  newBookings = 0,
 }: {
   user: { email: string; fullName: string | null; role: "admin" | "editor" };
   unreadMessages: number;
+  newBookings?: number;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -73,6 +79,11 @@ export function Sidebar({
             <span className="flex-1">{item.label}</span>
             {item.badge === "messages" && unreadMessages > 0 && (
               <span className="rounded-full bg-orange-500 px-1.5 text-xs font-semibold text-white">{unreadMessages}</span>
+            )}
+            {item.badge === "bookings" && newBookings > 0 && (
+              <span className="rounded-full bg-orange-500 px-1.5 text-xs font-semibold text-white" aria-label={`${newBookings} pedidos novos`}>
+                {newBookings}
+              </span>
             )}
           </Link>
         );

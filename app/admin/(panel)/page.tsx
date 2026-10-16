@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AlertTriangle, ArrowRight, BadgeCheck, CheckCircle2, Images, Inbox, LayoutList, ShoppingBag } from "lucide-react";
+import { AlertTriangle, ArrowRight, BadgeCheck, CalendarCheck, CheckCircle2, Clock, Images, Inbox, LayoutList, Sailboat, ShoppingBag, Users } from "lucide-react";
 import { getStaffUser } from "@/lib/auth";
 import { getDraft, getPublishedState } from "@/lib/cms/draft";
 import { checkDocument, isStoreActive } from "@/lib/cms/validate";
 import { createClient } from "@/lib/supabase/server";
 import { formatDateTime } from "@/lib/format";
+import { formatLongDate, todayIso } from "@/lib/booking/rules";
 
 export const metadata: Metadata = { title: "Visão Geral" };
 
@@ -17,10 +18,20 @@ export default async function OverviewPage({ searchParams }: PageProps<"/admin">
     getPublishedState(),
   ]);
   const supabase = await createClient();
-  const [media, unread, versions] = await Promise.all([
+  const today = todayIso();
+  const [media, unread, versions, newBookings, upcoming] = await Promise.all([
     supabase.from("media").select("id", { count: "exact", head: true }),
     supabase.from("contact_messages").select("id", { count: "exact", head: true }).eq("status", "novo"),
     supabase.from("site_versions").select("id, note, published_at, published_by_email").order("id", { ascending: false }).limit(5),
+    supabase.from("booking_requests").select("id", { count: "exact", head: true }).eq("status", "novo"),
+    supabase
+      .from("booking_requests")
+      .select("id, reference, service_name, requested_date, time_slot, people, name, phone")
+      .eq("status", "confirmado")
+      .gte("requested_date", today)
+      .order("requested_date")
+      .order("time_slot")
+      .limit(6),
   ]);
   const doc = draft.doc;
   const issues = checkDocument(doc);
@@ -28,8 +39,10 @@ export default async function OverviewPage({ searchParams }: PageProps<"/admin">
   const stats = [
     { label: "Secções visíveis", value: `${doc.sections.filter((s) => s.visible).length}/${doc.sections.length}`, href: "/admin/seccoes", icon: LayoutList },
     { label: "Marcas visíveis", value: `${doc.brands.filter((b) => b.visible).length}/${doc.brands.length}`, href: "/admin/marcas", icon: BadgeCheck },
-    { label: "Ficheiros multimédia", value: String(media.count ?? 0), href: "/admin/multimedia", icon: Images },
+    { label: "Serviços visíveis", value: `${doc.services.filter((s) => s.visible).length}/${doc.services.length}`, href: "/admin/servicos", icon: Sailboat },
+    { label: "Pedidos de reserva novos", value: String(newBookings.count ?? 0), href: "/admin/reservas?estado=novo", icon: CalendarCheck },
     { label: "Mensagens novas", value: String(unread.count ?? 0), href: "/admin/mensagens", icon: Inbox },
+    { label: "Ficheiros multimédia", value: String(media.count ?? 0), href: "/admin/multimedia", icon: Images },
   ];
 
   return (
@@ -47,7 +60,7 @@ export default async function OverviewPage({ searchParams }: PageProps<"/admin">
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {stats.map((s) => (
           <Link key={s.label} href={s.href} className="group rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:border-sky-300">
             <s.icon className="size-5 text-slate-400 group-hover:text-sky-600" />
@@ -56,6 +69,48 @@ export default async function OverviewPage({ searchParams }: PageProps<"/admin">
           </Link>
         ))}
       </div>
+
+      <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
+        <header className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+          <h2 className="text-sm font-semibold">Próximas reservas confirmadas</h2>
+          <Link href="/admin/reservas?vista=agenda" className="text-xs text-sky-700 hover:underline">
+            Ver agenda
+          </Link>
+        </header>
+        {(upcoming.data ?? []).length === 0 ? (
+          <p className="px-6 py-6 text-sm text-slate-500">
+            Sem reservas confirmadas nos próximos dias.
+            {(newBookings.count ?? 0) > 0 && (
+              <>
+                {" "}
+                <Link href="/admin/reservas?estado=novo" className="text-sky-700 hover:underline">
+                  Há {newBookings.count} pedido(s) por tratar.
+                </Link>
+              </>
+            )}
+          </p>
+        ) : (
+          <ul className="divide-y divide-slate-100">
+            {(upcoming.data ?? []).map((b) => (
+              <li key={b.id}>
+                <Link href={`/admin/reservas?vista=agenda&mes=${b.requested_date.slice(0, 7)}#reserva-${b.id}`} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-6 py-3 text-sm hover:bg-slate-50">
+                  <span className={`w-48 font-medium first-letter:uppercase ${b.requested_date === today ? "text-orange-600" : "text-slate-800"}`}>
+                    {b.requested_date === today ? "Hoje" : formatLongDate(b.requested_date).replace(/ de \d{4}$/, "")}
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-slate-500">
+                    <Clock className="size-3.5" /> {b.time_slot}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-slate-800">{b.service_name}</span>
+                  <span className="inline-flex items-center gap-1 text-slate-500">
+                    <Users className="size-3.5" /> {b.people}
+                  </span>
+                  <span className="text-slate-500">{b.name}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       <div className="grid gap-6 lg:grid-cols-5">
         <section className="rounded-xl border border-slate-200 bg-white shadow-sm lg:col-span-3">

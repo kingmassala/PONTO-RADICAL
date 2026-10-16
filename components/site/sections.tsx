@@ -28,6 +28,8 @@ import { Title } from "./title";
 import { Tilt } from "./fx/tilt";
 import { CountUp } from "./fx/count-up";
 import { DragScroll } from "./fx/drag-scroll";
+import { ServicesExplorer, ServicesNote } from "./booking/services-explorer";
+import { visibleServices } from "@/lib/cms/validate";
 
 type Props<T extends SectionType> = { section: SectionOf<T>; doc: SiteDocument };
 
@@ -526,6 +528,50 @@ export function ContactSection({ section, doc, preview }: Props<"contact"> & { p
             </div>
           )}
         </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------- Experiências e reservas ------------------------- */
+
+export function ServicesSection({ section, doc, preview }: Props<"services"> & { preview?: boolean }) {
+  const bg = BACKGROUNDS[section.background];
+  const dark = bg.tone === "dark";
+  const services = visibleServices(doc, section.categoryIds).map((s) => ({
+    ...s,
+    description: sanitizeRichText(s.description),
+    categoryLabel: doc.serviceCategories.find((c) => c.id === s.categoryId)?.label ?? "",
+  }));
+  return (
+    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} relative overflow-hidden py-28 sm:py-40`}>
+      <div className="mx-auto max-w-[90rem] px-5 sm:px-8 lg:px-12">
+        <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
+          <div className="lg:col-span-8">
+            <div className="pr-scroll-reveal">
+              <Eyebrow tone={bg.tone}>{section.eyebrow}</Eyebrow>
+            </div>
+            <Title text={section.title} className="pr-h2" />
+          </div>
+          {section.intro && (
+            <p className={`pr-scroll-reveal text-lg leading-relaxed lg:col-span-4 ${dark ? "text-white/70" : "text-ink/70"}`}>{section.intro}</p>
+          )}
+        </div>
+        {services.length > 0 ? (
+          <ServicesExplorer
+            services={services}
+            categories={doc.serviceCategories}
+            showFilters={section.showFilters}
+            buttonLabel={section.buttonLabel}
+            settings={doc.booking}
+            whatsapp={doc.contact.whatsapp}
+            tone={bg.tone}
+            preview={preview}
+          />
+        ) : (
+          <p className={`mt-16 text-lg ${dark ? "text-white/60" : "text-ink/60"}`}>Novas experiências em breve.</p>
+        )}
+        <ServicesNote text={section.note} tone={bg.tone} />
       </div>
     </section>
   );

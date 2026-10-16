@@ -12,5 +12,5 @@ export default async function EditSectionPage({ params }: PageProps<"/admin/secc
   const { doc } = await getDraft();
   const section = doc.sections.find((s) => s.id === id);
   if (!section) notFound();
-  return <SectionEditor section={section} anchors={anchorOptions(doc)} storeEnabled={isStoreActive(doc)} />;
+  return <SectionEditor section={section} anchors={anchorOptions(doc)} storeEnabled={isStoreActive(doc)} serviceCategories={doc.serviceCategories} />;
 }

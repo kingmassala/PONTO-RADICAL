@@ -1,4 +1,4 @@
-import type { SiteDocument } from "./schema";
+import { DEFAULT_BOOKING_SETTINGS, DEFAULT_SERVICE_CATEGORIES, type MediaRef, type SiteDocument } from "./schema";
 import { emptyLink, emptyMedia } from "./templates";
 
 /**
@@ -8,7 +8,15 @@ import { emptyLink, emptyMedia } from "./templates";
  * Depois de configurado, a base de dados é a única fonte de verdade.
  *
  * Contactos marcados com «a confirmar» devem ser substituídos no painel.
+ * Os serviços (experiências) são exemplos: preços, horários e pontos de encontro
+ * marcados com «exemplo» devem ser revistos em «Serviços» antes de aceitar reservas reais.
  */
+
+const unsplash = (id: string, alt: string, w = 1600): MediaRef => ({
+  url: `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=80`,
+  alt,
+  mediaId: null,
+});
 export const SEED_CONTENT: SiteDocument = {
   schemaVersion: 1,
   settings: { siteName: "Ponto Radical", language: "pt-PT" },
@@ -31,7 +39,7 @@ export const SEED_CONTENT: SiteDocument = {
     logo: { url: "/brand/ponto-radical-mark-white.svg", alt: "Ponto Radical", mediaId: null },
     logoText: "Ponto Radical",
     headerStyle: "transparent",
-    ctaButton: { ...emptyLink(), enabled: true, label: "Contactar", type: "anchor", anchor: "contactos" },
+    ctaButton: { ...emptyLink(), enabled: true, label: "Reservar", type: "anchor", anchor: "experiencias" },
   },
   sections: [
     {
@@ -42,10 +50,10 @@ export const SEED_CONTENT: SiteDocument = {
       showInNav: false,
       navLabel: "Início",
       background: "dark",
-      eyebrow: "Náutica · Navegação · Aventura",
-      title: "Equipamento de confiança para quem *vive* o mar.",
+      eyebrow: "Loja náutica + experiências no mar",
+      title: "Equipe-se em terra. *Viva* o mar connosco.",
       subtitle:
-        "A Ponto Radical representa em Angola marcas internacionais de referência em electrónica marítima, equipamento de embarcações e desportos de vento.",
+        "Na loja, as marcas de referência em electrónica marítima, equipamento de embarcações e kitesurf. No mar, passeios de barco, pesca desportiva e aulas de kitesurf em Angola — reserve em poucos cliques.",
       mediaKind: "image",
       image: { url: "https://images.unsplash.com/photo-1552160757-52790c6f4faf?auto=format&fit=crop&w=2400&q=80", alt: "Lancha a navegar em águas profundas, vista aérea", mediaId: null },
       videoUrl: "",
@@ -54,8 +62,25 @@ export const SEED_CONTENT: SiteDocument = {
       align: "left",
       height: "full",
       showBrandStrip: true,
-      primaryButton: { ...emptyLink(), enabled: true, label: "Descobrir as marcas", anchor: "marcas" },
-      secondaryButton: { ...emptyLink(), enabled: true, label: "Fale connosco", anchor: "contactos", style: "secondary" },
+      primaryButton: { ...emptyLink(), enabled: true, label: "Reservar experiência", anchor: "experiencias" },
+      secondaryButton: { ...emptyLink(), enabled: true, label: "Ver a loja e as marcas", anchor: "marcas", style: "secondary" },
+    },
+    {
+      id: "sec-experiencias",
+      type: "services",
+      anchor: "experiencias",
+      visible: true,
+      showInNav: true,
+      navLabel: "Experiências",
+      background: "light",
+      eyebrow: "Experiências e reservas",
+      title: "Escolha a *aventura*. Nós tratamos do barco.",
+      intro:
+        "Passeios ao pôr-do-sol, pesca em mar alto, aulas de kitesurf e dias na ilha. Escolha a data, envie o pedido e a nossa equipa confirma a disponibilidade.",
+      categoryIds: [],
+      showFilters: true,
+      buttonLabel: "Pedir reserva",
+      note: "Os pedidos ficam sujeitos a confirmação pela equipa. Nada é cobrado online.",
     },
     {
       id: "sec-sobre",
@@ -64,18 +89,18 @@ export const SEED_CONTENT: SiteDocument = {
       visible: true,
       showInNav: true,
       navLabel: "Sobre",
-      background: "light",
+      background: "surface",
       imagePosition: "right",
       eyebrow: "Sobre a Ponto Radical",
-      title: "Do cais ao alto mar, com as *marcas certas*.",
+      title: "Uma loja, um barco e as *marcas certas*.",
       body:
-        "<p>A Ponto Radical nasceu da paixão pelo mar e pela aventura. Reunimos num só ponto as soluções de que navegadores, pescadores, operadores marítimos e praticantes de desportos de vento precisam.</p><p>Trabalhamos com fabricantes reconhecidos internacionalmente e acompanhamos cada cliente na escolha, instalação e manutenção do equipamento, com <strong>aconselhamento técnico especializado</strong>.</p>",
+        "<p>A Ponto Radical nasceu da paixão pelo mar e pela aventura. Na <strong>loja</strong>, reunimos as soluções de que navegadores, pescadores, operadores marítimos e praticantes de desportos de vento precisam, com aconselhamento técnico especializado.</p><p>No <strong>mar</strong>, convidamo-lo a experimentar: passeios de barco, pesca desportiva e aulas de kitesurf com a nossa equipa e o melhor equipamento.</p>",
       image: { url: "https://images.unsplash.com/photo-1786218422418-9c0a475a7be1?auto=format&fit=crop&w=1600&q=80", alt: "Convés de um veleiro com cabos e aparelho", mediaId: null },
       stats: [
         { value: "5", label: "marcas internacionais representadas" },
         { value: "360°", label: "do equipamento à manutenção" },
       ],
-      button: { ...emptyLink(), enabled: true, label: "Ver soluções", anchor: "solucoes", style: "secondary" },
+      button: { ...emptyLink(), enabled: true, label: "Ver experiências", anchor: "experiencias", style: "secondary" },
     },
     {
       id: "sec-marcas",
@@ -144,7 +169,7 @@ export const SEED_CONTENT: SiteDocument = {
       showInNav: false,
       navLabel: "",
       background: "accent",
-      items: ["Navegar", "Pescar", "Velejar", "Voar", "Explorar"],
+      items: ["Navegar", "Pescar", "Reservar", "Voar", "Explorar"],
       style: "mixed",
       speed: "normal",
       direction: "left",
@@ -165,7 +190,7 @@ export const SEED_CONTENT: SiteDocument = {
       image: { url: "https://images.unsplash.com/photo-1761155982582-cc35df20cb45?auto=format&fit=crop&w=2400&q=80", alt: "Kitesurfista a saltar ao pôr-do-sol sobre o oceano", mediaId: null },
       overlayOpacity: 30,
       height: "tall",
-      button: { ...emptyLink(), enabled: true, label: "Planear o meu equipamento", anchor: "contactos" },
+      button: { ...emptyLink(), enabled: true, label: "Reservar uma experiência", anchor: "experiencias" },
     },
     {
       id: "sec-galeria",
@@ -197,7 +222,7 @@ export const SEED_CONTENT: SiteDocument = {
       background: "light",
       eyebrow: "Contactos",
       title: "Vamos preparar a sua *próxima saída*?",
-      intro: "Fale com a nossa equipa para pedidos de informação, orçamentos ou apoio técnico.",
+      intro: "Fale com a nossa equipa para pedidos de informação, orçamentos, apoio técnico ou experiências à medida.",
       showForm: true,
       formTitle: "Envie-nos uma mensagem",
       successMessage: "Obrigado. Recebemos a sua mensagem e entraremos em contacto brevemente.",
@@ -260,6 +285,114 @@ export const SEED_CONTENT: SiteDocument = {
       visible: true,
     },
   ],
+  services: [
+    {
+      id: "srv-por-do-sol",
+      name: "Passeio de barco ao pôr-do-sol",
+      slug: "passeio-por-do-sol",
+      categoryId: "passeios-de-barco",
+      summary: "Duas horas a navegar ao longo da costa, com bebidas a bordo e o melhor pôr-do-sol de Luanda.",
+      description:
+        "<p>Partimos ao fim da tarde para um passeio tranquilo ao longo da baía, com paragem para banho se o mar o permitir. Ideal para casais, famílias e pequenos grupos de amigos.</p><p><strong>Exemplo de serviço</strong>: confirme o percurso, o preço e o ponto de encontro antes de publicar.</p>",
+      gallery: [
+        unsplash("1444487233259-dae9d907a740", "Veleiro a navegar ao pôr-do-sol"),
+        unsplash("1535024966840-e7424dc2635b", "Barco a motor a navegar junto à costa"),
+        unsplash("1534447677768-be436bb09401", "Barco à vela sob um céu estrelado"),
+      ],
+      durationMinutes: 120,
+      priceFrom: 35000,
+      priceUnit: "pessoa",
+      minPeople: 2,
+      maxPeople: 10,
+      meetingPoint: "Marina da Ilha de Luanda (exemplo — a confirmar)",
+      included: ["Skipper e combustível", "Bebidas e snacks", "Coletes salva-vidas", "Seguro de passageiros"],
+      requirements: ["Crianças acompanhadas por um adulto", "Calçado sem sola preta"],
+      weekdays: [3, 4, 5, 6, 0],
+      timeSlots: ["17:00"],
+      visible: true,
+      bookable: true,
+    },
+    {
+      id: "srv-pesca",
+      name: "Pesca desportiva em mar alto",
+      slug: "pesca-desportiva",
+      categoryId: "passeios-de-barco",
+      summary: "Meio dia de pesca ao corrico com equipamento profissional e skipper experiente.",
+      description:
+        "<p>Saída de madrugada em lancha equipada com sonda e plotter Garmin, à procura de espécies como o atum, a garoupa ou o peixe-serra. Todo o material de pesca é fornecido.</p><p><strong>Exemplo de serviço</strong>: confirme as espécies, o preço e o ponto de encontro antes de publicar.</p>",
+      gallery: [
+        unsplash("1776162241545-73028a3bd7d1", "Lancha a sair para o mar alto"),
+        unsplash("1552160757-52790c6f4faf", "Lancha a navegar em águas profundas, vista aérea"),
+        unsplash("1530053969600-caed2596d242", "Águas profundas do oceano vistas de baixo"),
+      ],
+      durationMinutes: 300,
+      priceFrom: 250000,
+      priceUnit: "grupo",
+      minPeople: 1,
+      maxPeople: 4,
+      meetingPoint: "Cais do Mussulo (exemplo — a confirmar)",
+      included: ["Lancha com skipper", "Canas, carretos e iscos", "Água e fruta", "Coletes salva-vidas"],
+      requirements: ["Não aconselhado a quem enjoa facilmente", "Protector solar e chapéu"],
+      weekdays: [5, 6, 0],
+      timeSlots: ["06:00", "13:00"],
+      visible: true,
+      bookable: true,
+    },
+    {
+      id: "srv-kitesurf",
+      name: "Iniciação ao kitesurf",
+      slug: "iniciacao-kitesurf",
+      categoryId: "actividades",
+      summary: "Aula de 3 horas com instrutor certificado e todo o equipamento Duotone incluído.",
+      description:
+        "<p>Da segurança em terra ao primeiro arranque na água: aprenda a controlar o kite com um instrutor certificado, em grupos reduzidos e com rádio no capacete.</p><p><strong>Exemplo de serviço</strong>: confirme o local, o preço e os horários antes de publicar.</p>",
+      gallery: [
+        unsplash("1758052005560-b0cd06ea63c9", "Kitesurfistas nas ondas"),
+        unsplash("1774434035316-105e6fcd7afa", "Kites coloridos sobre a praia"),
+        unsplash("1767019462191-0af904b4a6eb", "Kitesurfista a saltar sobre as ondas"),
+      ],
+      durationMinutes: 180,
+      priceFrom: 60000,
+      priceUnit: "pessoa",
+      minPeople: 1,
+      maxPeople: 3,
+      meetingPoint: "Praia do Cabo Ledo (exemplo — a confirmar)",
+      included: ["Instrutor certificado", "Kite, prancha e trapézio Duotone", "Fato e capacete com rádio", "Seguro de actividade"],
+      requirements: ["Idade mínima: 12 anos", "Saber nadar", "Peso mínimo: 40 kg"],
+      weekdays: [],
+      timeSlots: ["09:00", "14:00"],
+      visible: true,
+      bookable: true,
+    },
+    {
+      id: "srv-ilha",
+      name: "Dia na ilha",
+      slug: "dia-na-ilha",
+      categoryId: "passeios-de-barco",
+      summary: "Um dia inteiro entre praias desertas, snorkeling e almoço à beira-mar.",
+      description:
+        "<p>Travessia de barco até uma ilha da costa angolana, com tempo livre na praia, snorkeling em águas calmas e almoço de peixe grelhado.</p><p><strong>Exemplo de serviço</strong>: confirme o destino, o preço e o ponto de encontro antes de publicar.</p>",
+      gallery: [
+        unsplash("1507525428034-b723cf961d3e", "Praia de areia branca ao pôr-do-sol"),
+        unsplash("1544551763-46a013bb70d5", "Mergulhador entre cardumes de peixes"),
+        unsplash("1520454974749-611b7248ffdb", "Palmeiras contra o céu azul"),
+      ],
+      durationMinutes: 480,
+      priceFrom: 75000,
+      priceUnit: "pessoa",
+      minPeople: 4,
+      maxPeople: 12,
+      meetingPoint: "Marina da Ilha de Luanda (exemplo — a confirmar)",
+      included: ["Transporte de barco ida e volta", "Almoço e bebidas", "Máscara e tubo de snorkeling", "Guia"],
+      requirements: ["Protector solar e toalha", "Mínimo de 4 pessoas por reserva"],
+      weekdays: [6, 0],
+      timeSlots: ["08:30"],
+      visible: true,
+      bookable: true,
+    },
+  ],
+  serviceCategories: DEFAULT_SERVICE_CATEGORIES,
+  booking: DEFAULT_BOOKING_SETTINGS,
   contact: {
     phone: "+244 900 000 000 (a confirmar)",
     phoneSecondary: "",
@@ -279,15 +412,15 @@ export const SEED_CONTENT: SiteDocument = {
     showInHero: false,
   },
   seo: {
-    title: "Ponto Radical | Náutica, navegação e aventura em Angola",
+    title: "Ponto Radical | Loja náutica e experiências no mar em Angola",
     description:
-      "Electrónica marítima, equipamento de convés, manutenção de embarcações e kitesurf. Representantes Garmin, Sea-Dog Line, Star brite, Rule e Duotone em Angola.",
-    keywords: "náutica Angola, Garmin, Sea-Dog Line, Star brite, Rule, Duotone, kitesurf, equipamento marítimo, Luanda",
+      "Loja náutica (Garmin, Sea-Dog Line, Star brite, Rule, Duotone) e experiências no mar em Angola: passeios de barco, pesca desportiva e kitesurf. Reserve online.",
+    keywords: "náutica Angola, passeio de barco Luanda, pesca desportiva, kitesurf, Garmin, Duotone, equipamento marítimo, Luanda",
     ogImage: { url: "https://images.unsplash.com/photo-1552160757-52790c6f4faf?auto=format&fit=crop&w=1200&q=80", alt: "Ponto Radical", mediaId: null },
     siteUrl: "",
   },
   footer: {
-    tagline: "Equipamento náutico, navegação e desportos de aventura em Angola.",
+    tagline: "Loja náutica e experiências no mar em Angola: equipamento, passeios de barco, pesca e kitesurf.",
     copyright: "© Ponto Radical. Todos os direitos reservados.",
     showSocial: true,
     links: [],

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ArrowDown, ArrowLeft, ArrowUp, Plus, Trash2 } from "lucide-react";
 import { saveSection } from "@/lib/cms/actions";
-import { FEATURE_ICONS, type Section, type SectionOf } from "@/lib/cms/schema";
+import { FEATURE_ICONS, type Section, type SectionOf, type ServiceCategory } from "@/lib/cms/schema";
 import { emptyMedia, SECTION_TYPE_LABELS } from "@/lib/cms/templates";
 import { SaveBar, useDraftEditor } from "./draft-editor";
 import { LinkEditor, type AnchorOption } from "./link-editor";
@@ -51,10 +51,12 @@ export function SectionEditor({
   section,
   anchors,
   storeEnabled,
+  serviceCategories = [],
 }: {
   section: Section;
   anchors: AnchorOption[];
   storeEnabled: boolean;
+  serviceCategories?: ServiceCategory[];
 }) {
   const editor = useDraftEditor<Section>(section, (value, revision) => saveSection(value, revision));
   const s = editor.value;
@@ -73,7 +75,11 @@ export function SectionEditor({
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
-          <TypeFields section={s} set={set} linkProps={linkProps} />
+          {s.type === "services" ? (
+            <ServicesFields s={s} set={set} categories={serviceCategories} />
+          ) : (
+            <TypeFields section={s} set={set} linkProps={linkProps} />
+          )}
         </div>
 
         <div className="space-y-6">
@@ -220,6 +226,64 @@ function TypeFields({ section, set, linkProps }: FieldsProps) {
         </Card>
       );
   }
+}
+
+function ServicesFields({ s, set, categories }: { s: SectionOf<"services">; set: FieldsProps["set"]; categories: ServiceCategory[] }) {
+  const toggle = (id: string, on: boolean) =>
+    set({ categoryIds: on ? [...s.categoryIds, id] : s.categoryIds.filter((x) => x !== id) });
+  return (
+    <>
+      <Card title="Textos" description="Os serviços apresentados (passeios, actividades) são geridos em «Serviços».">
+        <TextInput label="Antetítulo" value={s.eyebrow} maxLength={120} onChange={(v) => set({ eyebrow: v })} />
+        <TextInput label="Título" value={s.title} maxLength={200} onChange={(v) => set({ title: v })} required hint={TITLE_HINT} />
+        <TextArea label="Introdução" value={s.intro} maxLength={1000} onChange={(v) => set({ intro: v })} />
+        <TextInput
+          label="Texto do botão dos cartões"
+          value={s.buttonLabel}
+          maxLength={40}
+          placeholder="Pedir reserva"
+          onChange={(v) => set({ buttonLabel: v })}
+        />
+        <TextArea
+          label="Nota por baixo dos cartões"
+          value={s.note}
+          maxLength={300}
+          rows={2}
+          onChange={(v) => set({ note: v })}
+          hint="Ex.: «Os pedidos ficam sujeitos a confirmação. Nada é cobrado online.»"
+        />
+      </Card>
+      <Card title="Que serviços mostrar">
+        <Toggle
+          label="Mostrar filtros por categoria"
+          description="Botões para filtrar (aparecem quando há serviços de mais de uma categoria)."
+          checked={s.showFilters}
+          onChange={(v) => set({ showFilters: v })}
+        />
+        <fieldset>
+          <legend className="mb-2 text-sm font-medium text-slate-700">Categorias</legend>
+          <p className="mb-3 text-xs text-slate-500">Sem nenhuma seleccionada, a secção mostra todos os serviços visíveis.</p>
+          <div className="flex flex-wrap gap-2">
+            {categories.map((c) => {
+              const on = s.categoryIds.includes(c.id);
+              return (
+                <label
+                  key={c.id}
+                  className={`inline-flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1.5 text-sm ${on ? "border-sky-500 bg-sky-50 text-sky-800" : "border-slate-300 text-slate-700"}`}
+                >
+                  <input type="checkbox" className="accent-sky-600" checked={on} onChange={(e) => toggle(c.id, e.target.checked)} />
+                  {c.label}
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
+        <Link href="/admin/servicos" className="inline-block text-sm text-sky-700 hover:underline">
+          Gerir serviços e categorias →
+        </Link>
+      </Card>
+    </>
+  );
 }
 
 function MarqueeFields({ s, set }: { s: SectionOf<"marquee">; set: FieldsProps["set"] }) {

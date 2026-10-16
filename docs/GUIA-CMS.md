@@ -30,7 +30,8 @@ a mensagem «O conteúdo foi alterado entretanto». Recarregue a página e repit
 ## Secções do menu lateral
 
 ### Visão Geral
-Resumo do website, verificação de erros, últimas publicações e estado da Loja Online.
+Resumo do website, pedidos de reserva novos, próximas reservas confirmadas, verificação de erros, últimas
+publicações e estado da Loja Online.
 
 ### Conteúdos
 Todos os textos do website pela ordem em que aparecem. Clique numa secção para a editar.
@@ -43,7 +44,9 @@ A página é uma sequência de secções. Aqui pode:
 - **mostrar no menu** (ícone ☰);
 - **duplicar** e **eliminar**;
 - **Adicionar secção** a partir de modelos: Hero, Texto e imagem, Imagem e texto, Montra de marcas, Galeria editorial,
-  Banner de imagem, Banner de vídeo, Colunas de destaques, Chamada para acção e Contactos.
+  Banner de imagem, Banner de vídeo, Colunas de destaques, Chamada para acção, Contactos, Texto em movimento e
+  **Experiências e reservas** (cartões dos serviços, com filtros e pedido de reserva; pode limitar a secção a
+  algumas categorias).
 
 Ao editar uma secção pode mudar textos, imagens, botões, cor de fundo, nome no menu e **âncora** (o endereço da
 secção, por ex. `#marcas`). Se mudar a âncora, os botões que apontavam para ela são actualizados automaticamente.
@@ -52,6 +55,54 @@ secção, por ex. `#marcas`). Se mudar a âncora, os botões que apontavam para 
 Garmin, Sea-Dog Line, Star brite, Rule e Duotone Kiteboarding, e outras que queira acrescentar. Para cada marca:
 nome, logótipo, especialização, descrição, imagem de destaque, site oficial e visibilidade. A ordem altera-se com as
 setas. Uma marca nova começa oculta até a completar.
+
+### Serviços (experiências reserváveis)
+Passeios de barco, actividades (aulas de kitesurf, pesca, jet ski…) e qualquer outro serviço que se possa reservar.
+Os serviços visíveis aparecem na secção **Experiências e reservas** do website, por esta ordem, com filtros por
+categoria e o botão de pedido de reserva.
+
+Na lista pode **reordenar** (↑ ↓), **ocultar/mostrar** (olho), **ligar/desligar pedidos de reserva** (calendário),
+**duplicar** e **eliminar**. Um serviço novo começa oculto até o completar. Para cada serviço:
+
+- **nome**, **categoria**, **endereço** (cria a ligação directa `https://<domínio>/#reservar-<endereço>`, útil para
+  partilhar no WhatsApp ou nas redes sociais — abre logo o pedido de reserva desse serviço);
+- **resumo** (cartão) e **descrição completa**;
+- **fotografias** (a primeira é a do cartão);
+- **duração**, **preço «a partir de»** em kwanzas, por pessoa ou por grupo (vazio = «sob consulta»), **mínimo e
+  máximo de pessoas** por reserva;
+- **dias da semana** e **horários de partida** — são indicativos: limitam o que o cliente pode pedir (sem horários,
+  aparece «A combinar»), mas não há reserva automática; é a equipa que confirma;
+- **ponto de encontro**, **o que está incluído** e **requisitos** (um item por linha).
+
+Ao lado da lista:
+
+- **Categorias** — renomear, reordenar, acrescentar ou remover (só se nenhum serviço a usar);
+- **Pedidos de reserva** — ligar/desligar todos os pedidos, antecedência mínima e até quando se aceitam pedidos,
+  condições de pagamento (mostradas no formulário), mensagem após o envio e a ligação para continuar no WhatsApp
+  (precisa do número de WhatsApp em **Contactos**).
+
+Como todo o conteúdo, as alterações aos serviços ficam no rascunho até **Publicar**.
+
+> Os quatro serviços iniciais (pôr-do-sol, pesca, kitesurf, dia na ilha) são **exemplos**: reveja preços, horários,
+> pontos de encontro e fotografias antes de aceitar reservas reais.
+
+### Reservas
+Pedidos enviados pelo website. O número de pedidos novos aparece no menu e na **Visão Geral**, que mostra também as
+próximas reservas confirmadas.
+
+- **Caixa de entrada** — filtros por estado (Novo, Confirmado, Nova data proposta, Recusado, Concluído, Cancelado).
+- **Agenda** — calendário do mês com os pedidos por dia; clique num pedido para o abrir.
+
+Em cada pedido: serviço, data, hora, pessoas, contactos e observações do cliente, e a **referência** (ex.: `7B3F9CA2`)
+que o cliente também recebe. Pode:
+
+- **Confirmar**, **Propor outra data** (indique a data e a hora propostas) ou **Recusar**;
+- responder por **WhatsApp** ou **email** com uma mensagem já escrita conforme o estado;
+- registar o **valor acordado**, o estado do **pagamento** e **notas internas**.
+
+O pagamento é feito depois da confirmação (transferência, Multicaixa Express ou no local) — o website não cobra nada.
+Os dados enviados pelo cliente não podem ser alterados no painel; mudanças de estado ficam no registo de actividade.
+Só administradores eliminam pedidos.
 
 ### Biblioteca Multimédia
 Todas as imagens e vídeos.
@@ -101,8 +152,8 @@ Convidar pessoas por email e definir o papel:
 
 | Papel | Pode |
 | --- | --- |
-| **Editor** | Editar todos os conteúdos, imagens, aparência, loja e SEO; publicar; tratar mensagens |
-| **Administrador** | Tudo o que o editor faz, mais gerir utilizadores, eliminar mensagens e ver o registo de actividade |
+| **Editor** | Editar todos os conteúdos, imagens, serviços, aparência, loja e SEO; publicar; tratar mensagens e reservas |
+| **Administrador** | Tudo o que o editor faz, mais gerir utilizadores, eliminar mensagens e pedidos de reserva e ver o registo de actividade |
 | **Sem acesso** | Não entra no painel |
 
 ### Definições
@@ -116,7 +167,8 @@ O painel cobre conteúdos, imagens, marcas, secções a partir dos modelos, apar
 É necessária intervenção no código para:
 
 - novos tipos de secção ou layouts diferentes dos modelos existentes;
-- novas funcionalidades (por ex. blog, área de clientes, pagamentos);
+- novas funcionalidades (por ex. blog, área de clientes, pagamentos online — a tabela de reservas já tem os campos
+  de pagamento preparados);
 - alterações de estrutura técnica, domínio ou integrações externas novas.
 
 ## Segurança

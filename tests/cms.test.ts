@@ -13,6 +13,8 @@ import { SECTION_TEMPLATES, uniqueAnchor } from "../lib/cms/templates";
 import { navItems, resolveLink, storeLink } from "../components/site/links";
 import { detectImageType, svgIsSafe } from "../lib/media/files";
 import { plainText, tokenizeTitle } from "../lib/cms/text";
+import { collectImages } from "../lib/cms/validate";
+import { bookingWindow, formatDuration, formatPrice, todayIso, validateBooking, FLEXIBLE_SLOT } from "../lib/booking/rules";
 
 let passed = 0;
 function test(name: string, fn: () => void) {
@@ -72,11 +74,11 @@ test("botão para secção inexistente é erro; secção oculta esconde o botão
   assert.ok(checkDocument(doc).some((i) => i.level === "error" && i.message.includes("nao-existe")));
 
   const doc2 = clone();
-  doc2.sections.find((s) => s.anchor === "marcas")!.visible = false;
+  doc2.sections.find((s) => s.anchor === "experiencias")!.visible = false;
   const hero2 = doc2.sections[0];
   if (hero2.type !== "hero") throw new Error();
   assert.equal(resolveLink(hero2.primaryButton, doc2), null);
-  assert.ok(!navItems(doc2).some((n) => n.href === "#marcas"));
+  assert.ok(!navItems(doc2).some((n) => n.href === "#experiencias"));
 });
 
 test("âncoras repetidas são erro", () => {
@@ -185,6 +187,139 @@ test("faixa de texto em movimento e efeitos têm valores por omissão válidos",
   if (m?.type !== "marquee") throw new Error();
   m.items = [];
   assert.equal(siteDocumentSchema.safeParse(empty).success, false, "faixa sem palavras é inválida");
+});
+
+/* ------------------------- Serviços e reservas ------------------------- */
+
+// Sexta-feira, 16 de Outubro de 2026, 11h00 em Luanda.
+const NOW = new Date("2026-10-16T10:00:00Z");
+const request = (overrides: Record<string, unknown> = {}) => ({
+  serviceId: "srv-por-do-sol",
+  date: "2026-10-17", // sábado
+  slot: "17:00",
+  people: "4",
+  name: "Ana Silva",
+  email: "ana@example.com",
+  phone: "+244 923 000 000",
+  notes: "",
+  ...overrides,
+});
+
+test("seed inclui serviços reserváveis válidos e a secção de experiências", () => {
+  const doc = clone();
+  assert.ok(doc.services.length >= 4);
+  for (const name of ["pôr-do-sol", "Pesca", "kitesurf", "ilha"]) {
+    assert.ok(doc.services.some((s) => s.name.toLowerCase().includes(name.toLowerCase())), name);
+  }
+  assert.equal(new Set(doc.services.map((s) => s.slug)).size, doc.services.length, "endereços únicos");
+  assert.ok(doc.services.every((s) => doc.serviceCategories.some((c) => c.id === s.categoryId)));
+  const section = doc.sections.find((s) => s.type === "services");
+  assert.ok(section?.visible && section.showInNav, "secção visível e no menu");
+  assert.equal(doc.navigation.ctaButton.anchor, "experiencias");
+});
+
+test("documentos antigos (sem serviços) continuam válidos, com valores por omissão", () => {
+  const { services, serviceCategories, booking, ...old } = clone();
+  void services;
+  void serviceCategories;
+  void booking;
+  const parsed = siteDocumentSchema.parse(old);
+  assert.deepEqual(parsed.services, []);
+  assert.ok(parsed.serviceCategories.length >= 2);
+  assert.equal(parsed.booking.enabled, true);
+});
+
+test("serviços: endereço repetido, categoria inexistente e capacidade incoerente são erros", () => {
+  const doc = clone();
+  doc.services[1].slug = doc.services[0].slug;
+  doc.services[2].categoryId = "nao-existe";
+  doc.services[3].minPeople = 20;
+  const errors = checkDocument(doc).filter((i) => i.level === "error").map((i) => i.message);
+  assert.ok(errors.some((m) => m.includes("mais de um serviço")), "slug");
+  assert.ok(errors.some((m) => m.includes("categoria escolhida já não existe")), "categoria");
+  assert.ok(errors.some((m) => m.includes("mínimo de pessoas")), "capacidade");
+});
+
+test("serviços: horários HH:MM, preço não negativo e descrição limpa", () => {
+  const doc = clone();
+  doc.services[0].timeSlots = ["25:00"];
+  assert.equal(siteDocumentSchema.safeParse(doc).success, false, "hora inválida");
+  const doc2 = clone();
+  doc2.services[0].priceFrom = -1;
+  assert.equal(siteDocumentSchema.safeParse(doc2).success, false, "preço negativo");
+  const doc3 = clone();
+  doc3.services[0].description = '<p>ok</p><img src=x onerror="alert(1)"><script>x</script>';
+  assert.equal(sanitizeDocument(doc3).services[0].description, "<p>ok</p>");
+  assert.ok(collectImages(clone()).some((i) => i.where.startsWith("Serviço")), "fotografias dos serviços verificadas");
+});
+
+test("pedido de reserva válido é aceite", () => {
+  const r = validateBooking(clone(), request(), NOW);
+  assert.ok(r.ok, JSON.stringify(!r.ok && r.fieldErrors));
+  assert.equal(r.ok && r.data.people, 4);
+  assert.equal(r.ok && r.data.service.name, "Passeio de barco ao pôr-do-sol");
+});
+
+test("pedido de reserva: datas fora da janela ou em dias sem saídas são rejeitadas", () => {
+  const doc = clone();
+  assert.equal(todayIso(NOW), "2026-10-16");
+  assert.deepEqual(bookingWindow(doc.booking, NOW), { first: "2026-10-17", last: "2027-04-14" });
+  const cases: [string, RegExp][] = [
+    ["2026-10-16", /antecedência/], // hoje, com 1 dia de antecedência mínima
+    ["2026-10-10", /antecedência/],
+    ["2026-10-19", /dia da semana/], // segunda-feira
+    ["2027-06-01", /ainda não está aberta/],
+    ["2026-02-30", /Escolha uma data/],
+    ["", /Escolha uma data/],
+  ];
+  for (const [date, pattern] of cases) {
+    const r = validateBooking(doc, request({ date }), NOW);
+    assert.ok(!r.ok && pattern.test(r.fieldErrors.date ?? ""), `${date}: ${JSON.stringify(!r.ok && r.fieldErrors)}`);
+  }
+});
+
+test("pedido de reserva: horário, número de pessoas e contactos validados", () => {
+  const doc = clone();
+  const slot = validateBooking(doc, request({ slot: "09:00" }), NOW);
+  assert.ok(!slot.ok && slot.fieldErrors.slot);
+  for (const people of ["1", "11", "2.5", "abc"]) {
+    const r = validateBooking(doc, request({ people }), NOW);
+    assert.ok(!r.ok && r.fieldErrors.people, people);
+  }
+  const contact = validateBooking(doc, request({ email: "nao-email", phone: "<script>", name: "A" }), NOW);
+  assert.ok(!contact.ok && contact.fieldErrors.email && contact.fieldErrors.phone && contact.fieldErrors.name);
+});
+
+test("pedido de reserva: serviço oculto, sem reservas ou reservas desligadas são recusados", () => {
+  for (const change of [
+    (d: SiteDocument) => (d.services[0].visible = false),
+    (d: SiteDocument) => (d.services[0].bookable = false),
+    (d: SiteDocument) => (d.booking.enabled = false),
+  ]) {
+    const doc = clone();
+    change(doc);
+    const r = validateBooking(doc, request(), NOW);
+    assert.ok(!r.ok && r.fieldErrors.serviceId);
+  }
+  const r = validateBooking(clone(), request({ serviceId: "nao-existe" }), NOW);
+  assert.ok(!r.ok && r.fieldErrors.serviceId);
+});
+
+test("pedido de reserva: serviço sem horários aceita «A combinar»; todos os dias sem restrição", () => {
+  const doc = clone();
+  doc.services[0].timeSlots = [];
+  doc.services[0].weekdays = [];
+  const r = validateBooking(doc, request({ slot: FLEXIBLE_SLOT, date: "2026-10-19" }), NOW);
+  assert.ok(r.ok, JSON.stringify(!r.ok && r.fieldErrors));
+});
+
+test("formatação de duração e preço", () => {
+  assert.equal(formatDuration(0), null);
+  assert.equal(formatDuration(45), "45 min");
+  assert.equal(formatDuration(150), "2 h 30 min");
+  assert.equal(formatDuration(1440), "1 dia");
+  assert.equal(formatPrice({ priceFrom: null, priceUnit: "pessoa" }), null);
+  assert.match(formatPrice({ priceFrom: 35000, priceUnit: "pessoa" }) ?? "", /^35\s000 Kz \/ pessoa$/);
 });
 
 console.log(`\n${passed} testes passaram.`);

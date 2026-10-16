@@ -24,7 +24,8 @@ export type TemplateKey =
   | "features"
   | "cta"
   | "contact"
-  | "marquee";
+  | "marquee"
+  | "services";
 
 type Template = {
   key: TemplateKey;
@@ -258,6 +259,27 @@ SECTION_TEMPLATES.push({
   }),
 });
 
+SECTION_TEMPLATES.push({
+  key: "services",
+  type: "services",
+  label: "Experiências e reservas",
+  description: "Cartões dos serviços (passeios, actividades) com filtros e pedido de reserva.",
+  anchor: "experiencias",
+  create: (base) => ({
+    ...base,
+    ...common,
+    type: "services",
+    background: "light",
+    eyebrow: "Experiências",
+    title: "Reserve a sua *experiência* no mar",
+    intro: "",
+    categoryIds: [],
+    showFilters: true,
+    buttonLabel: "Pedir reserva",
+    note: "",
+  }),
+});
+
 export const SECTION_TYPE_LABELS: Record<SectionType, string> = {
   hero: "Hero",
   split: "Texto e imagem",
@@ -269,6 +291,7 @@ export const SECTION_TYPE_LABELS: Record<SectionType, string> = {
   cta: "Chamada para acção",
   contact: "Contactos",
   marquee: "Texto em movimento",
+  services: "Experiências e reservas",
 };
 
 /** Gera uma âncora única a partir de uma sugestão. */

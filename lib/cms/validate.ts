@@ -49,6 +49,9 @@ export function collectImages(doc: SiteDocument): { ref: MediaRef; where: string
   for (const b of doc.brands) {
     out.push({ ref: b.heroImage, where: `Marca «${b.name}»`, href: `/admin/marcas/${b.id}` });
   }
+  for (const s of doc.services) {
+    s.gallery.forEach((ref) => out.push({ ref, where: `Serviço «${s.name}»`, href: `/admin/servicos/${s.id}` }));
+  }
   return out;
 }
 
@@ -125,6 +128,8 @@ export function checkDocument(doc: SiteDocument): Issue[] {
     });
   }
 
+  issues.push(...checkServices(doc));
+
   for (const { ref, where, href } of collectImages(doc)) {
     if (ref.url && !ref.alt) {
       issues.push({ level: "warning", message: `${where}: imagem sem texto alternativo (acessibilidade).`, href });
@@ -136,6 +141,65 @@ export function checkDocument(doc: SiteDocument): Issue[] {
   }
 
   return issues;
+}
+
+/** Serviços reserváveis: endereços únicos, categorias existentes e capacidades coerentes. */
+function checkServices(doc: SiteDocument): Issue[] {
+  const issues: Issue[] = [];
+  const categoryIds = new Set<string>();
+  for (const c of doc.serviceCategories) {
+    if (categoryIds.has(c.id)) {
+      issues.push({ level: "error", message: `Categoria de serviços repetida (${c.label}).`, href: "/admin/servicos" });
+    }
+    categoryIds.add(c.id);
+  }
+
+  const slugs = new Set<string>();
+  const ids = new Set<string>();
+  for (const s of doc.services) {
+    const href = `/admin/servicos/${s.id}`;
+    if (ids.has(s.id)) issues.push({ level: "error", message: `Identificador de serviço repetido (${s.id}).`, href: "/admin/servicos" });
+    ids.add(s.id);
+    if (slugs.has(s.slug)) {
+      issues.push({ level: "error", message: `O endereço «${s.slug}» está a ser usado por mais de um serviço.`, href });
+    }
+    slugs.add(s.slug);
+    if (!categoryIds.has(s.categoryId)) {
+      issues.push({ level: "error", message: `Serviço «${s.name}»: a categoria escolhida já não existe.`, href });
+    }
+    if (s.minPeople > s.maxPeople) {
+      issues.push({ level: "error", message: `Serviço «${s.name}»: o mínimo de pessoas é maior do que o máximo.`, href });
+    }
+    if (new Set(s.timeSlots).size !== s.timeSlots.length) {
+      issues.push({ level: "error", message: `Serviço «${s.name}»: existem horários repetidos.`, href });
+    }
+    if (s.visible && !s.gallery.some((g) => g.url)) {
+      issues.push({ level: "warning", message: `Serviço «${s.name}»: sem fotografia.`, href });
+    }
+  }
+
+  for (const section of doc.sections) {
+    if (section.type !== "services" || !section.visible) continue;
+    const shown = visibleServices(doc, section.categoryIds);
+    if (shown.length === 0) {
+      issues.push({
+        level: "warning",
+        message: `Secção ${sectionLabel(section)} não tem nenhum serviço visível para mostrar.`,
+        href: "/admin/servicos",
+      });
+    }
+    for (const id of section.categoryIds) {
+      if (!categoryIds.has(id)) {
+        issues.push({ level: "warning", message: `Secção ${sectionLabel(section)} filtra uma categoria que já não existe.`, href: `/admin/seccoes/${section.id}` });
+      }
+    }
+  }
+  return issues;
+}
+
+/** Serviços visíveis, opcionalmente limitados a algumas categorias. */
+export function visibleServices(doc: Pick<SiteDocument, "services">, categoryIds: string[] = []) {
+  return doc.services.filter((s) => s.visible && (categoryIds.length === 0 || categoryIds.includes(s.categoryId)));
 }
 
 export function isStoreActive(doc: Pick<SiteDocument, "store">): boolean {

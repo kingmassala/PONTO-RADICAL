@@ -45,5 +45,6 @@ export function sanitizeDocument(doc: SiteDocument): SiteDocument {
       section.type === "split" ? { ...section, body: sanitizeRichText(section.body) } : section,
     ),
     brands: doc.brands.map((brand) => ({ ...brand, description: sanitizeRichText(brand.description) })),
+    services: doc.services.map((service) => ({ ...service, description: sanitizeRichText(service.description) })),
   };
 }
