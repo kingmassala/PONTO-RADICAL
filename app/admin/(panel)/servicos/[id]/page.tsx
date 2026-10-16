@@ -4,6 +4,8 @@ import { getDraft } from "@/lib/cms/draft";
 import { ServiceEditor } from "@/components/admin/services-manager";
 
 export const metadata: Metadata = { title: "Editar serviço" };
+// Dados da sessão, lidos no pedido: a página pode bloquear (o indicador vem de ../../loading.tsx).
+export const instant = false;
 
 export default async function EditServicePage({ params }: PageProps<"/admin/servicos/[id]">) {
   const { id } = await params;

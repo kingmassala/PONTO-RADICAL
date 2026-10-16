@@ -4,6 +4,8 @@ import { AppearanceEditor } from "@/components/admin/part-editors";
 import { PageHeader } from "@/components/admin/page-header";
 
 export const metadata: Metadata = { title: "Aparência" };
+// Dados da sessão, lidos no pedido: a página pode bloquear (o indicador vem de ../loading.tsx).
+export const instant = false;
 
 export default async function Page() {
   const { doc } = await getDraft();

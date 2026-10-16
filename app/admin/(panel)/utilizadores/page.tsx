@@ -6,6 +6,8 @@ import { UsersManager } from "@/components/admin/users";
 import { PageHeader } from "@/components/admin/page-header";
 
 export const metadata: Metadata = { title: "Utilizadores" };
+// Dados da sessão, lidos no pedido: a página pode bloquear (o indicador vem de ../loading.tsx).
+export const instant = false;
 
 export default async function UsersPage() {
   const user = await requireAdminPage();

@@ -8,6 +8,8 @@ import { AccountSettings } from "@/components/admin/account-settings";
 import { PageHeader } from "@/components/admin/page-header";
 
 export const metadata: Metadata = { title: "Definições" };
+// Dados da sessão, lidos no pedido: a página pode bloquear (o indicador vem de ../loading.tsx).
+export const instant = false;
 
 const ACTIONS: Record<string, string> = {
   "draft.save": "Guardou rascunho",

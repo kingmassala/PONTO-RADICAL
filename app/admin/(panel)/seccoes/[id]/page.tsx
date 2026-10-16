@@ -6,6 +6,8 @@ import { isStoreActive } from "@/lib/cms/validate";
 import { SectionEditor } from "@/components/admin/section-editor";
 
 export const metadata: Metadata = { title: "Editar secção" };
+// Dados da sessão, lidos no pedido: a página pode bloquear (o indicador vem de ../../loading.tsx).
+export const instant = false;
 
 export default async function EditSectionPage({ params }: PageProps<"/admin/seccoes/[id]">) {
   const { id } = await params;

@@ -5,6 +5,8 @@ import { SectionsManager } from "@/components/admin/sections-manager";
 import { plainText } from "@/lib/cms/text";
 
 export const metadata: Metadata = { title: "Secções" };
+// Dados da sessão, lidos no pedido: a página pode bloquear (o indicador vem de ../loading.tsx).
+export const instant = false;
 
 export default async function SectionsPage() {
   const { doc } = await getDraft();

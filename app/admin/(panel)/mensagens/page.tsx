@@ -8,6 +8,8 @@ import { PageHeader } from "@/components/admin/page-header";
 import { EmptyState, Notice } from "@/components/admin/ui";
 
 export const metadata: Metadata = { title: "Mensagens" };
+// Dados da sessão, lidos no pedido: a página pode bloquear (o indicador vem de ../loading.tsx).
+export const instant = false;
 
 const FILTERS = ["todas", "novo", "em_curso", "respondido", "arquivado"] as const;
 

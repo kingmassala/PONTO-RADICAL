@@ -11,6 +11,8 @@ import { EmptyState, Notice } from "@/components/admin/ui";
 import { cx } from "@/lib/cx";
 
 export const metadata: Metadata = { title: "Reservas" };
+// Dados da sessão, lidos no pedido: a página pode bloquear (o indicador vem de ../loading.tsx).
+export const instant = false;
 
 const FILTERS = ["todas", ...BOOKING_STATUSES] as const;
 type Filter = (typeof FILTERS)[number];

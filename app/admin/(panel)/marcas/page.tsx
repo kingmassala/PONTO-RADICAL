@@ -4,6 +4,8 @@ import { BrandsManager } from "@/components/admin/brands-manager";
 import { PageHeader } from "@/components/admin/page-header";
 
 export const metadata: Metadata = { title: "Marcas" };
+// Dados da sessão, lidos no pedido: a página pode bloquear (o indicador vem de ../loading.tsx).
+export const instant = false;
 
 export default async function BrandsPage() {
   const { doc } = await getDraft();

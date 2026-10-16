@@ -8,6 +8,8 @@ import { RestoreVersionButton } from "@/components/admin/version-actions";
 import { Badge } from "@/components/admin/ui";
 
 export const metadata: Metadata = { title: "Publicações e Histórico" };
+// Dados da sessão, lidos no pedido: a página pode bloquear (o indicador vem de ../loading.tsx).
+export const instant = false;
 
 export default async function VersionsPage() {
   const supabase = await createClient();

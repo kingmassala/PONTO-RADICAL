@@ -8,6 +8,8 @@ import { PageHeader } from "@/components/admin/page-header";
 import type { Section } from "@/lib/cms/schema";
 
 export const metadata: Metadata = { title: "Conteúdos" };
+// Dados da sessão, lidos no pedido: a página pode bloquear (o indicador vem de ../loading.tsx).
+export const instant = false;
 
 function summary(s: Section): string {
   switch (s.type) {

@@ -5,6 +5,8 @@ import { BookingSettingsEditor, CategoriesEditor, ServicesManager } from "@/comp
 import { PageHeader } from "@/components/admin/page-header";
 
 export const metadata: Metadata = { title: "Serviços" };
+// Dados da sessão, lidos no pedido: a página pode bloquear (o indicador vem de ../loading.tsx).
+export const instant = false;
 
 export default async function ServicesPage() {
   const { doc } = await getDraft();
