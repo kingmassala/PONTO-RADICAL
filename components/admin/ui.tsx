@@ -3,9 +3,9 @@
 import { useId } from "react";
 import { AlertTriangle, CheckCircle2, Info, Loader2, XCircle } from "lucide-react";
 
-export function cx(...classes: (string | false | null | undefined)[]) {
-  return classes.filter(Boolean).join(" ");
-}
+import { cx } from "@/lib/cx";
+
+export { cx };
 
 export function PageHeader({
   title,

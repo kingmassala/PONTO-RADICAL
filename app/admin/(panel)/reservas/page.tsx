@@ -7,7 +7,8 @@ import { isServiceRoleConfigured } from "@/lib/supabase/admin";
 import { addDays, BOOKING_STATUS_LABELS, BOOKING_STATUSES, formatLongDate, todayIso, weekdayOf, type BookingStatus } from "@/lib/booking/rules";
 import { BookingRow, type Booking } from "@/components/admin/bookings";
 import { PageHeader } from "@/components/admin/page-header";
-import { cx, EmptyState, Notice } from "@/components/admin/ui";
+import { EmptyState, Notice } from "@/components/admin/ui";
+import { cx } from "@/lib/cx";
 
 export const metadata: Metadata = { title: "Reservas" };
 
