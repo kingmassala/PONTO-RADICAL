@@ -1,6 +1,6 @@
 // Cria (ou promove) o administrador inicial do painel.
 // Uso: npm run admin:create -- email@dominio.ao "Nome Apelido"
-// A palavra-passe é pedida no terminal (não fica no histórico da shell).
+// A palavra-passe é pedida no terminal sem aparecer no ecrã (nem fica no histórico da shell).
 import { createClient } from "@supabase/supabase-js";
 import { createInterface } from "node:readline/promises";
 import { stdin, stdout } from "node:process";
@@ -18,9 +18,43 @@ if (!email || !email.includes("@")) {
   process.exit(1);
 }
 
-const rl = createInterface({ input: stdin, output: stdout });
-const password = (await rl.question("Palavra-passe (mín. 10 caracteres): ")).trim();
-rl.close();
+// Lê a palavra-passe sem a mostrar no ecrã (nada aparece enquanto escreve ou cola).
+async function askHidden(question) {
+  if (!stdin.isTTY) {
+    const rl = createInterface({ input: stdin, output: stdout });
+    const answer = await rl.question(question);
+    rl.close();
+    return answer;
+  }
+  stdout.write(question);
+  stdin.setRawMode(true);
+  stdin.setEncoding("utf8");
+  stdin.resume();
+  return new Promise((resolve) => {
+    let value = "";
+    const onData = (chunk) => {
+      for (const ch of chunk) {
+        if (ch === "\r" || ch === "\n") {
+          stdin.setRawMode(false);
+          stdin.pause();
+          stdin.off("data", onData);
+          stdout.write("\n");
+          resolve(value);
+          return;
+        }
+        if (ch === "\u0003") {
+          stdout.write("\n");
+          process.exit(130);
+        }
+        if (ch === "\u007f" || ch === "\b") value = value.slice(0, -1);
+        else value += ch;
+      }
+    };
+    stdin.on("data", onData);
+  });
+}
+
+const password = (await askHidden("Palavra-passe (mín. 10 caracteres, não aparece no ecrã): ")).trim();
 if (password.length < 10) {
   console.error("A palavra-passe deve ter pelo menos 10 caracteres.");
   process.exit(1);
