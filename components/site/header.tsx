@@ -84,9 +84,12 @@ export function SiteHeader({ logoText, logoUrl, logoAlt, items, cta, store, head
 
         <div className="hidden items-center gap-2 lg:flex">
           {store && (
-            <a href={store.href} {...newTabProps(store)} className="group inline-flex items-center gap-2 rounded-full border border-white/25 px-5 py-2.5 text-sm font-semibold hover:border-white">
+            <a href={store.href} {...newTabProps(store)} title={store.label} className="group inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-white/25 px-3.5 py-2.5 text-sm font-semibold hover:border-white xl:px-5">
               <ShoppingBag aria-hidden className="size-4" />
-              <RollText>{store.label}</RollText>
+              {/* Entre lg e xl o menu fica apertado: só o ícone (o texto continua acessível). */}
+              <span className="sr-only xl:not-sr-only">
+                <RollText>{store.label}</RollText>
+              </span>
             </a>
           )}
           {cta && (

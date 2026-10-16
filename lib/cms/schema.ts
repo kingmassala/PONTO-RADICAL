@@ -393,6 +393,12 @@ export const storeSchema = z.object({
   openInNewTab: z.boolean().default(true),
   showInHeader: z.boolean().default(true),
   showInHero: z.boolean().default(false),
+  /** Enquanto não houver link da Quicksell: «contact» mantém os botões e encaminha para o WhatsApp/contactos. */
+  whenNoLink: z.enum(["contact", "hide"]).default("contact"),
+  /** Chamada para a loja por baixo das marcas. */
+  showInBrands: z.boolean().default(true),
+  brandsTitle: z.string().trim().max(120).default("Todas estas marcas estão disponíveis na nossa loja."),
+  brandsText: z.string().trim().max(300).default("Equipamento, electrónica e acessórios com aconselhamento técnico da nossa equipa."),
 });
 export type StoreConfig = z.infer<typeof storeSchema>;
 

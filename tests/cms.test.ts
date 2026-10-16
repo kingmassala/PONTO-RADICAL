@@ -36,13 +36,30 @@ test("conteúdo inicial é válido e sem erros", () => {
   assert.equal(hasErrors(checkDocument(doc)), false, JSON.stringify(checkDocument(doc).filter((i) => i.level === "error")));
 });
 
-test("Loja Online desactivada por omissão e oculta no website", () => {
+const storeButton = { enabled: true, label: "Loja", type: "store", anchor: "", url: "", newTab: true, style: "primary" } as const;
+
+test("Loja sem link: botões encaminham para os contactos (ou ocultos se assim configurado)", () => {
   const doc = clone();
   assert.equal(doc.store.enabled, false);
   assert.equal(doc.store.url, null);
   assert.equal(isStoreActive(doc), false);
+  assert.equal(storeLink(doc)?.href, "#contactos");
+  assert.equal(resolveLink(storeButton, doc)?.href, "#contactos");
+
+  doc.contact.whatsapp = "+244 923 000 000";
+  assert.ok(storeLink(doc)?.href.startsWith("https://wa.me/244923000000?text="));
+
+  doc.store.whenNoLink = "hide";
   assert.equal(storeLink(doc), null);
-  assert.equal(resolveLink({ enabled: true, label: "Loja", type: "store", anchor: "", url: "", newTab: true, style: "primary" }, doc), null);
+  assert.equal(resolveLink(storeButton, doc), null);
+});
+
+test("documento antigo sem as opções novas da loja continua válido", () => {
+  const doc = clone() as unknown as { store: Record<string, unknown> };
+  for (const key of ["whenNoLink", "showInBrands", "brandsTitle", "brandsText"]) delete doc.store[key];
+  const parsed = siteDocumentSchema.parse(doc);
+  assert.equal(parsed.store.whenNoLink, "contact");
+  assert.equal(parsed.store.showInBrands, true);
 });
 
 test("Loja Online activa com URL válido mostra o botão", () => {

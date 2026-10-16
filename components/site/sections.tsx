@@ -7,6 +7,7 @@ import {
   Radar,
   Shield,
   Ship,
+  ShoppingBag,
   Sparkles,
   Sun,
   Truck,
@@ -243,6 +244,7 @@ export function BrandsSection({ section, doc }: Props<"brands">) {
   const bg = BACKGROUNDS[section.background];
   const brands = doc.brands.filter((b) => b.visible).map((b) => ({ ...b, description: sanitizeRichText(b.description) }));
   const dark = bg.tone === "dark";
+  const store = doc.store.showInBrands ? storeLink(doc) : null;
   return (
     <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} pr-diagonal relative pb-28 sm:pb-40`}>
       <div className="mx-auto max-w-[90rem] px-5 sm:px-8 lg:px-12">
@@ -258,6 +260,26 @@ export function BrandsSection({ section, doc }: Props<"brands">) {
           )}
         </div>
         <BrandShowcase brands={brands} layout={section.layout} tone={bg.tone} />
+        {store && (
+          <div
+            className={`pr-3d-rise mt-16 flex flex-col gap-8 rounded-[2rem] p-8 sm:mt-24 sm:p-12 lg:flex-row lg:items-center lg:justify-between ${
+              dark ? "bg-white/[0.06] text-white ring-1 ring-white/10" : "bg-dark text-white"
+            }`}
+          >
+            <div className="flex items-start gap-5 sm:gap-7">
+              <span className="pr-float-3d flex size-14 shrink-0 items-center justify-center rounded-2xl bg-accent text-white sm:size-16" aria-hidden>
+                <ShoppingBag className="size-7 sm:size-8" strokeWidth={1.6} />
+              </span>
+              <div>
+                {doc.store.brandsTitle && <p className="pr-heading pr-h3 max-w-[26ch] text-2xl sm:text-3xl">{doc.store.brandsTitle}</p>}
+                {doc.store.brandsText && <p className="mt-3 max-w-xl leading-relaxed text-white/70">{doc.store.brandsText}</p>}
+              </div>
+            </div>
+            <div className="shrink-0">
+              <CmsButton link={store} tone="dark" magnetic />
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

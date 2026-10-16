@@ -23,20 +23,35 @@ export function resolveLink(link: CmsLink, doc: SiteDocument): ResolvedLink | nu
     }
     case "external":
       return link.url ? { ...base, href: link.url, newTab: link.newTab } : null;
-    case "store":
-      return isStoreActive(doc) ? { ...base, href: doc.store.url!, newTab: doc.store.openInNewTab } : null;
+    case "store": {
+      const target = storeTarget(doc);
+      return target ? { ...base, href: target.href, newTab: target.newTab } : null;
+    }
   }
+}
+
+const STORE_WHATSAPP_MESSAGE = "Olá! Gostaria de saber que produtos têm disponíveis na loja.";
+
+/**
+ * Destino dos botões da loja: a Quicksell quando está activa; enquanto o link não
+ * existir (e «whenNoLink» for «contact»), o WhatsApp ou a secção de contactos.
+ */
+export function storeTarget(doc: SiteDocument): { href: string; newTab: boolean; pending: boolean } | null {
+  if (isStoreActive(doc)) return { href: doc.store.url!, newTab: doc.store.openInNewTab, pending: false };
+  if (doc.store.whenNoLink !== "contact") return null;
+  const whatsapp = doc.contact.whatsapp.replace(/[^0-9]/g, "");
+  if (whatsapp) {
+    return { href: `https://wa.me/${whatsapp}?text=${encodeURIComponent(STORE_WHATSAPP_MESSAGE)}`, newTab: true, pending: true };
+  }
+  const contact = doc.sections.find((s) => s.type === "contact" && s.visible);
+  return contact ? { href: `#${contact.anchor}`, newTab: false, pending: true } : null;
 }
 
 /** Botão «Loja Online» configurado em «Loja Online». */
 export function storeLink(doc: SiteDocument): ResolvedLink | null {
-  if (!isStoreActive(doc)) return null;
-  return {
-    href: doc.store.url!,
-    label: doc.store.label || "Loja Online",
-    newTab: doc.store.openInNewTab,
-    style: "primary",
-  };
+  const target = storeTarget(doc);
+  if (!target) return null;
+  return { href: target.href, newTab: target.newTab, label: doc.store.label || "Loja Online", style: "primary" };
 }
 
 export function navItems(doc: SiteDocument) {

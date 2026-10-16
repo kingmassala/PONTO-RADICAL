@@ -56,19 +56,22 @@ function validStoreUrl(url: string | null) {
   return Boolean(url && /^https:\/\/[^\s]+\.[^\s]+/i.test(url));
 }
 
-export function StoreEditor({ value }: { value: StoreConfig }) {
+const FALLBACK_LABELS = { whatsapp: "o WhatsApp da loja", contact: "a secção de contactos" } as const;
+
+export function StoreEditor({ value, fallback }: { value: StoreConfig; fallback: keyof typeof FALLBACK_LABELS | null }) {
   const editor = useDraftEditor(value, (v, r) => saveDraftPart("store", { ...v, url: v.url?.trim() ? v.url.trim() : null }, r));
   const s = editor.value;
   const set = (patch: Partial<StoreConfig>) => editor.update((cur) => ({ ...cur, ...patch }));
   const urlValid = validStoreUrl(s.url);
   const urlError = s.url && !urlValid ? "Introduza um endereço completo que comece por https://" : undefined;
   const willShow = s.enabled && urlValid;
+  const usesFallback = !willShow && s.whenNoLink === "contact" && fallback !== null;
 
   return (
     <div className="space-y-6">
       <Notice tone="info" title="A loja online funciona na plataforma Quicksell, separada deste website.">
-        Aqui configura apenas o botão «Loja Online». Enquanto a loja estiver desactivada, o botão não aparece em nenhum
-        lugar do website, por isso nunca são mostrados links inválidos.
+        Aqui configura os botões e chamadas para a loja. Enquanto o link não estiver activo, pode manter os botões
+        visíveis a encaminhar os clientes para {fallback ? FALLBACK_LABELS[fallback] : "os contactos"}, ou ocultá-los.
       </Notice>
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
@@ -88,12 +91,37 @@ export function StoreEditor({ value }: { value: StoreConfig }) {
               onChange={(v) => set({ enabled: v && urlValid })}
             />
             {s.enabled && !urlValid && <Notice tone="error">A loja não pode estar activa sem um endereço válido.</Notice>}
+            <Select
+              label="Enquanto a loja não estiver activa"
+              value={s.whenNoLink}
+              onChange={(v) => set({ whenNoLink: v })}
+              options={[
+                { value: "contact", label: `Mostrar os botões e encaminhar para ${fallback ? FALLBACK_LABELS[fallback] : "os contactos"}` },
+                { value: "hide", label: "Ocultar os botões da loja" },
+              ]}
+              hint={
+                fallback === null && s.whenNoLink === "contact"
+                  ? "Defina o WhatsApp em «Contactos» ou mostre a secção de contactos; até lá os botões ficam ocultos."
+                  : "Quando activar a loja, os mesmos botões passam a abrir a Quicksell."
+              }
+            />
           </Card>
           <Card title="Botão">
             <TextInput label="Texto do botão" value={s.label} maxLength={40} onChange={(v) => set({ label: v })} />
             <Toggle label="Abrir numa nova janela" checked={s.openInNewTab} onChange={(v) => set({ openInNewTab: v })} />
             <Toggle label="Mostrar no cabeçalho (menu)" checked={s.showInHeader} onChange={(v) => set({ showInHeader: v })} />
             <Toggle label="Mostrar na abertura (Hero)" checked={s.showInHero} onChange={(v) => set({ showInHero: v })} />
+            <Toggle
+              label="Mostrar chamada para a loja na secção «Marcas»"
+              checked={s.showInBrands}
+              onChange={(v) => set({ showInBrands: v })}
+            />
+            {s.showInBrands && (
+              <>
+                <TextInput label="Título da chamada" value={s.brandsTitle} maxLength={120} onChange={(v) => set({ brandsTitle: v })} />
+                <TextArea label="Texto da chamada" value={s.brandsText} maxLength={300} rows={2} onChange={(v) => set({ brandsText: v })} />
+              </>
+            )}
             <p className="text-xs text-slate-500">
               Também pode usar a loja como destino de qualquer botão do website, escolhendo «Loja Online» no destino.
             </p>
@@ -101,7 +129,7 @@ export function StoreEditor({ value }: { value: StoreConfig }) {
         </div>
         <Card title="Pré-visualização do botão">
           <div className="flex min-h-32 items-center justify-center rounded-lg bg-[#07141C] p-6">
-            {willShow ? (
+            {willShow || usesFallback ? (
               <a
                 href={s.url ?? "#"}
                 target="_blank"
@@ -111,12 +139,18 @@ export function StoreEditor({ value }: { value: StoreConfig }) {
                 <ShoppingBag className="size-4" /> {s.label || "Loja Online"}
               </a>
             ) : (
-              <p className="text-center text-xs text-white/60">Botão oculto (loja desactivada)</p>
+              <p className="text-center text-xs text-white/60">Botões ocultos (loja desactivada)</p>
             )}
           </div>
           <div className="text-sm">
             Estado:{" "}
-            {willShow ? <Badge tone="green">Activa (após publicar)</Badge> : <Badge tone="amber">Desactivada</Badge>}
+            {willShow ? (
+              <Badge tone="green">Activa (após publicar)</Badge>
+            ) : usesFallback ? (
+              <Badge tone="sky">Botões visíveis · encaminham para {FALLBACK_LABELS[fallback!]}</Badge>
+            ) : (
+              <Badge tone="amber">Desactivada</Badge>
+            )}
           </div>
           {urlValid && (
             <a href={s.url!} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-sky-700 hover:underline">

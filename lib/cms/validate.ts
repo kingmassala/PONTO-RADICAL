@@ -111,10 +111,10 @@ export function checkDocument(doc: SiteDocument): Issue[] {
     if (link.type === "external" && !link.url) {
       issues.push({ level: "error", message: `${where}: falta o endereço do link.`, href });
     }
-    if (link.type === "store" && !isStoreActive(doc)) {
+    if (link.type === "store" && !isStoreActive(doc) && !hasStoreFallback(doc)) {
       issues.push({
         level: "warning",
-        message: `${where}: aponta para a Loja Online, que está desactivada. O botão fica oculto até a loja ser activada.`,
+        message: `${where}: aponta para a Loja Online, que ainda não tem link. O botão fica oculto até a loja ser activada.`,
         href: "/admin/loja",
       });
     }
@@ -204,6 +204,12 @@ export function visibleServices(doc: Pick<SiteDocument, "services">, categoryIds
 
 export function isStoreActive(doc: Pick<SiteDocument, "store">): boolean {
   return Boolean(doc.store.enabled && doc.store.url && /^https:\/\//i.test(doc.store.url));
+}
+
+/** Sem link da Quicksell, os botões da loja podem encaminhar para o WhatsApp ou para a secção de contactos. */
+export function hasStoreFallback(doc: Pick<SiteDocument, "store" | "contact" | "sections">): boolean {
+  if (doc.store.whenNoLink !== "contact") return false;
+  return Boolean(doc.contact.whatsapp.replace(/[^0-9]/g, "")) || doc.sections.some((s) => s.type === "contact" && s.visible);
 }
 
 export function hasErrors(issues: Issue[]): boolean {

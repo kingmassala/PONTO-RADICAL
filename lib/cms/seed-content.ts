@@ -409,7 +409,11 @@ export const SEED_CONTENT: SiteDocument = {
     label: "Loja Online",
     openInNewTab: true,
     showInHeader: true,
-    showInHero: false,
+    showInHero: true,
+    whenNoLink: "contact",
+    showInBrands: true,
+    brandsTitle: "Todas estas marcas estão disponíveis na nossa loja.",
+    brandsText: "Equipamento, electrónica e acessórios com aconselhamento técnico da nossa equipa.",
   },
   seo: {
     title: "Ponto Radical | Loja náutica e experiências no mar em Angola",

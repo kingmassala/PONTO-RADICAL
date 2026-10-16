@@ -3,7 +3,7 @@ import Link from "next/link";
 import { AlertTriangle, ArrowRight, BadgeCheck, CalendarCheck, CheckCircle2, Clock, Images, Inbox, LayoutList, Sailboat, ShoppingBag, Users } from "lucide-react";
 import { getStaffUser } from "@/lib/auth";
 import { getDraft, getPublishedState } from "@/lib/cms/draft";
-import { checkDocument, isStoreActive } from "@/lib/cms/validate";
+import { checkDocument, hasStoreFallback, isStoreActive } from "@/lib/cms/validate";
 import { createClient } from "@/lib/supabase/server";
 import { formatDateTime } from "@/lib/format";
 import { formatLongDate, todayIso } from "@/lib/booking/rules";
@@ -172,7 +172,9 @@ export default async function OverviewPage({ searchParams }: PageProps<"/admin">
             <p className="text-sm text-slate-500">
               {isStoreActive(doc)
                 ? `Activa no rascunho · ${doc.store.url}`
-                : "Desactivada · o botão «Loja Online» está oculto no website."}
+                : hasStoreFallback(doc)
+                  ? "Sem link da Quicksell · os botões da loja encaminham para os contactos."
+                  : "Desactivada · os botões da loja estão ocultos no website."}
             </p>
           </div>
         </div>

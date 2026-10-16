@@ -9,10 +9,16 @@ export const instant = false;
 
 export default async function Page() {
   const { doc } = await getDraft();
+  // Para onde vão os botões enquanto não houver link da Quicksell (ver storeTarget em components/site/links.ts).
+  const fallback = doc.contact.whatsapp.replace(/[^0-9]/g, "")
+    ? "whatsapp"
+    : doc.sections.some((s) => s.type === "contact" && s.visible)
+      ? "contact"
+      : null;
   return (
     <>
-      <PageHeader title="Loja Online" description="Configuração do botão para a loja externa na plataforma Quicksell." />
-      <StoreEditor value={doc.store} />
+      <PageHeader title="Loja Online" description="Botões e chamadas para a loja externa na plataforma Quicksell." />
+      <StoreEditor value={doc.store} fallback={fallback} />
     </>
   );
 }
