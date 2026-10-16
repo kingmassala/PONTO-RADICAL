@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { startTransition, useActionState, useEffect, useRef } from "react";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { submitContact, type ContactState } from "@/lib/contact/actions";
 
@@ -19,12 +19,13 @@ export function ContactForm({
 }) {
   const [state, action, pending] = useActionState(submitContact, initial);
   const formRef = useRef<HTMLFormElement>(null);
-  const startedRef = useRef<HTMLInputElement>(null);
+  // Momento em que o formulário ficou disponível (verificação anti-spam no servidor).
+  // Definido após a montagem (não no render) para não divergir do HTML gerado no servidor.
+  const startedAt = useRef(0);
   const dark = tone === "dark";
 
   useEffect(() => {
-    // Momento em que o formulário ficou disponível (verificação anti-spam no servidor).
-    if (startedRef.current) startedRef.current.value = String(Date.now());
+    startedAt.current = Date.now();
   }, []);
 
   useEffect(() => {
@@ -54,12 +55,18 @@ export function ContactForm({
   return (
     <form
       ref={formRef}
-      action={action}
+      onSubmit={(e) => {
+        // Submissão manual: com `action={...}` o React 19 repõe os campos após cada
+        // envio, apagando o que foi escrito e o `startedAt` quando há erros de validação.
+        e.preventDefault();
+        const data = new FormData(e.currentTarget);
+        data.set("startedAt", String(startedAt.current));
+        startTransition(() => action(data));
+      }}
       noValidate
       className={`relative rounded-[2rem] p-8 sm:p-12 ${dark ? "bg-white/[0.06]" : "bg-white shadow-[0_40px_90px_-50px_rgba(5,11,16,0.45)]"}`}
     >
       {title && <h3 className="pr-heading pr-h3 mb-10">{title}</h3>}
-      <input ref={startedRef} type="hidden" name="startedAt" defaultValue="0" />
       {/* Campo-armadilha para bots: invisível para pessoas e leitores de ecrã. */}
       <div aria-hidden className="absolute left-[-9999px] h-0 w-0 overflow-hidden">
         <label>
