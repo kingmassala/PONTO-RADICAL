@@ -108,7 +108,7 @@ export function ServicesExplorer({
             <li key={service.id} className={`pr-card-in ${wide ? "sm:col-span-2" : ""}`} style={{ ["--i" as string]: i }}>
               <article
                 data-cursor={bookable ? "Reservar" : "Ver"}
-                className="group relative overflow-hidden rounded-[2rem] bg-dark text-white has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-accent"
+                className="pr-3d-rise group relative overflow-hidden rounded-[2rem] bg-dark text-white has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-accent"
               >
                 <div className={`relative ${wide ? "aspect-[4/5] sm:aspect-[21/9]" : "aspect-[4/5] lg:aspect-[5/4]"}`}>
                   {image ? (

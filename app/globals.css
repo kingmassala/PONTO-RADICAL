@@ -309,7 +309,7 @@ body {
 }
 @keyframes pr-word-up {
   from {
-    transform: translateY(105%) rotate(4deg);
+    transform: translateY(105%) rotateX(-70deg) rotate(4deg);
   }
   to {
     transform: none;
@@ -345,15 +345,31 @@ body {
   }
 }
 
+@keyframes pr-float-3d {
+  0%,
+  100% {
+    transform: perspective(700px) rotateX(10deg) rotateY(-14deg);
+  }
+  50% {
+    transform: perspective(700px) rotateX(-8deg) rotateY(16deg) translateY(-6px);
+  }
+}
+
+/* overflow: clip (e não hidden) para não criar um contentor de scroll: as animações
+   ligadas ao scroll (view()) usam o contentor de scroll mais próximo como referência. */
 .pr-word {
   display: inline-block;
-  overflow: hidden;
+  overflow: clip;
   vertical-align: top;
   padding-bottom: 0.08em;
   margin-bottom: -0.08em;
 }
 .pr-word > span {
   display: inline-block;
+  transform-origin: 50% 100%;
+}
+.pr-word {
+  perspective: 600px;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -370,6 +386,9 @@ body {
   }
   .fx-motion .pr-bob {
     animation: pr-bob 2.2s ease-in-out infinite;
+  }
+  .fx-motion .pr-float-3d {
+    animation: pr-float-3d 9s ease-in-out infinite;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -406,6 +425,64 @@ body {
       animation: pr-parallax linear both;
       animation-timeline: view();
     }
+    /* 3D: o conteúdo do hero inclina-se e afasta-se ao sair do ecrã */
+    .fx-motion .pr-3d-recede {
+      animation: pr-3d-recede linear both;
+      animation-timeline: view();
+      animation-range: exit 0% exit 100%;
+    }
+    /* 3D: cartões erguem-se do plano ao entrar no ecrã */
+    .fx-motion .pr-3d-rise {
+      animation: pr-3d-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+    }
+    /* 3D: imagem roda ligeiramente enquanto atravessa o ecrã */
+    .fx-motion .pr-3d-swing {
+      animation: pr-3d-swing linear both;
+      animation-timeline: view();
+    }
+    /* 3D: galeria horizontal em «coverflow» */
+    .fx-motion .pr-3d-coverflow {
+      animation: pr-3d-coverflow linear both;
+      animation-timeline: view(inline);
+    }
+  }
+}
+@keyframes pr-3d-recede {
+  to {
+    opacity: 0.15;
+    transform: perspective(1200px) translate3d(0, -4%, -220px) rotateX(16deg);
+  }
+}
+@keyframes pr-3d-rise {
+  from {
+    opacity: 0;
+    transform: perspective(1100px) translate3d(0, 70px, -120px) rotateX(24deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes pr-3d-swing {
+  from {
+    transform: perspective(1400px) rotateY(-12deg) rotateX(5deg);
+  }
+  to {
+    transform: perspective(1400px) rotateY(9deg) rotateX(-4deg);
+  }
+}
+@keyframes pr-3d-coverflow {
+  from {
+    transform: perspective(1200px) rotateY(-20deg) scale(0.92);
+  }
+  35%,
+  75% {
+    transform: none;
+  }
+  to {
+    transform: perspective(1200px) rotateY(20deg) scale(0.92);
   }
 }
 @keyframes pr-parallax {

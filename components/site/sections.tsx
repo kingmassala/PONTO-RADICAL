@@ -73,7 +73,7 @@ function LogoMark({ url, className }: { url: string; className?: string }) {
 /** Emblema circular com texto a rodar à volta do logótipo. */
 function SpinBadge({ text, logo }: { text: string; logo: string }) {
   return (
-    <div className="relative size-36 sm:size-44" aria-hidden>
+    <div className="pr-float-3d relative size-36 sm:size-44" aria-hidden>
       <svg viewBox="0 0 200 200" className="pr-spin absolute inset-0 size-full text-white">
         <defs>
           <path id="pr-badge-path" d="M100,100 m-78,0 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0" />
@@ -101,9 +101,9 @@ export function HeroSection({ section, doc }: Props<"hero">) {
     <section
       id={section.anchor}
       aria-label={section.navLabel || plainText(section.title)}
-      className={`relative isolate flex overflow-hidden bg-dark text-white ${section.height === "full" ? "min-h-[100svh]" : "min-h-[82svh]"}`}
+      className={`relative isolate flex overflow-clip bg-dark text-white ${section.height === "full" ? "min-h-[100svh]" : "min-h-[82svh]"}`}
     >
-      <div className="absolute inset-0 -z-10 overflow-hidden">
+      <div className="absolute inset-0 -z-10 overflow-clip">
         <div className="pr-ken-burns absolute inset-0">
           {section.mediaKind === "video" && section.videoUrl ? (
             <video className="size-full object-cover" src={section.videoUrl} poster={section.image.url || undefined} autoPlay muted loop playsInline aria-hidden />
@@ -120,7 +120,7 @@ export function HeroSection({ section, doc }: Props<"hero">) {
       </div>
 
       <div
-        className={`mx-auto flex w-full max-w-[90rem] flex-col justify-end px-5 pt-36 sm:px-8 lg:px-12 ${
+        className={`pr-3d-recede mx-auto flex w-full max-w-[90rem] flex-col justify-end px-5 pt-36 sm:px-8 lg:px-12 ${
           section.showBrandStrip ? "pb-40 sm:pb-44" : "pb-20 sm:pb-28"
         } ${centered ? "items-center text-center" : ""}`}
       >
@@ -180,7 +180,7 @@ export function SplitSection({ section, doc }: Props<"split">) {
   const dark = bg.tone === "dark";
   const badge = section.stats[0];
   return (
-    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} relative overflow-hidden py-28 sm:py-40`}>
+    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} relative overflow-clip py-28 sm:py-40`}>
       <div className="mx-auto max-w-[90rem] px-5 sm:px-8 lg:px-12">
         <div className="pr-scroll-reveal">
           <Eyebrow tone={bg.tone}>{section.eyebrow}</Eyebrow>
@@ -188,9 +188,9 @@ export function SplitSection({ section, doc }: Props<"split">) {
         <Title text={section.title} className="pr-h2 max-w-[18ch]" />
 
         <div className="mt-16 grid items-start gap-16 lg:mt-24 lg:grid-cols-12 lg:gap-20">
-          <div className={`relative lg:col-span-6 ${imageLeft ? "" : "lg:order-2"}`}>
+          <div className={`pr-3d-swing relative lg:col-span-6 ${imageLeft ? "" : "lg:order-2"}`}>
             {section.image.url && (
-              <div className="pr-scroll-clip relative aspect-[4/5] overflow-hidden rounded-[2rem] [clip-path:polygon(0_0,100%_0,100%_86%,80%_100%,0_100%)]">
+              <div className="pr-scroll-clip relative aspect-[4/5] overflow-clip rounded-[2rem] [clip-path:polygon(0_0,100%_0,100%_86%,80%_100%,0_100%)]">
                 <div className="pr-parallax absolute inset-0">
                   <CmsImage media={section.image} sizes="(min-width: 1024px) 50vw, 100vw" />
                 </div>
@@ -278,7 +278,7 @@ export function GallerySection({ section }: Props<"gallery">) {
   const items = section.items.filter((i) => i.image.url);
   const dark = bg.tone === "dark";
   return (
-    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} overflow-hidden py-28 sm:py-40`}>
+    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} overflow-clip py-28 sm:py-40`}>
       <div className="mx-auto mb-16 grid max-w-[90rem] gap-8 px-5 sm:px-8 lg:grid-cols-12 lg:items-end lg:px-12">
         <div className="lg:col-span-8">
           <div className="pr-scroll-reveal">
@@ -292,7 +292,7 @@ export function GallerySection({ section }: Props<"gallery">) {
       {section.layout === "mosaic" ? (
         <DragScroll tone={bg.tone}>
           {items.map((item, i) => (
-            <figure key={i} className={`group relative shrink-0 snap-start overflow-hidden rounded-[2rem] ${GALLERY_SHAPES[i % GALLERY_SHAPES.length]}`}>
+            <figure key={i} className={`pr-3d-coverflow group relative shrink-0 snap-start overflow-hidden rounded-[2rem] ${GALLERY_SHAPES[i % GALLERY_SHAPES.length]}`}>
               <CmsImage
                 media={item.image}
                 sizes="(min-width: 640px) 34rem, 80vw"
@@ -331,9 +331,9 @@ export function BannerSection({ section, doc }: Props<"banner">) {
     <section
       id={section.anchor}
       aria-label={section.navLabel || plainText(section.title)}
-      className={`relative isolate flex items-end overflow-hidden bg-dark text-white ${section.height === "tall" ? "min-h-[110svh]" : "min-h-[70svh]"}`}
+      className={`relative isolate flex items-end overflow-clip bg-dark text-white ${section.height === "tall" ? "min-h-[110svh]" : "min-h-[70svh]"}`}
     >
-      <div className="absolute inset-0 -z-10 overflow-hidden">
+      <div className="absolute inset-0 -z-10 overflow-clip">
         <div className="pr-scroll-scale absolute inset-0">
           <CmsImage media={section.image} sizes="100vw" />
         </div>
@@ -359,7 +359,7 @@ export function VideoSection({ section, doc }: Props<"video">) {
     <section
       id={section.anchor}
       aria-label={section.navLabel || plainText(section.title)}
-      className="relative isolate flex min-h-[90svh] items-end overflow-hidden bg-dark text-white"
+      className="relative isolate flex min-h-[90svh] items-end overflow-clip bg-dark text-white"
     >
       <div className="absolute inset-0 -z-10">
         {section.videoUrl ? (
@@ -411,7 +411,7 @@ export function FeaturesSection({ section }: Props<"features">) {
             // O cartão em destaque ocupa duas linhas só quando isso não deixa buracos na grelha.
             const span = featured && section.columns >= 3 && (section.items.length + 1) % section.columns === 0;
             return (
-              <li key={i} className={`pr-scroll-reveal group ${span ? "lg:row-span-2" : ""}`}>
+              <li key={i} className={`pr-3d-rise group ${span ? "lg:row-span-2" : ""}`}>
                 <Tilt
                   className={`flex h-full min-h-72 flex-col overflow-hidden rounded-[2rem] p-8 sm:p-10 ${
                     featured
@@ -452,7 +452,7 @@ export function FeaturesSection({ section }: Props<"features">) {
 export function CtaSection({ section, doc }: Props<"cta">) {
   const bg = BACKGROUNDS[section.background];
   return (
-    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} relative overflow-hidden py-28 sm:py-36`}>
+    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} relative overflow-clip py-28 sm:py-36`}>
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute -right-20 top-0 h-full w-1/2 opacity-10" aria-hidden>
         <path d="M0 0 L100 100 L100 0 Z" fill="currentColor" />
       </svg>
@@ -511,7 +511,7 @@ export function MarqueeSection({ section, doc }: Props<"marquee">) {
 export function ContactSection({ section, doc, preview }: Props<"contact"> & { preview?: boolean }) {
   const bg = BACKGROUNDS[section.background];
   return (
-    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} relative overflow-hidden py-28 sm:py-40`}>
+    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} relative overflow-clip py-28 sm:py-40`}>
       <div className="mx-auto max-w-[90rem] px-5 sm:px-8 lg:px-12">
         <div className="pr-scroll-reveal">
           <Eyebrow tone={bg.tone}>{section.eyebrow}</Eyebrow>
@@ -544,7 +544,7 @@ export function ServicesSection({ section, doc, preview }: Props<"services"> & {
     categoryLabel: doc.serviceCategories.find((c) => c.id === s.categoryId)?.label ?? "",
   }));
   return (
-    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} relative overflow-hidden py-28 sm:py-40`}>
+    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} relative overflow-clip py-28 sm:py-40`}>
       <div className="mx-auto max-w-[90rem] px-5 sm:px-8 lg:px-12">
         <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
           <div className="lg:col-span-8">
