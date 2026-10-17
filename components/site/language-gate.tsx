@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { LOCALE_INFO, LOCALES, localePath, type Locale } from "@/lib/i18n/config";
 import { getMessages } from "@/lib/i18n/messages";
-import { rememberLocale } from "./language-switcher";
+import { skipNextGate } from "./language-switcher";
 
 const noopSubscribe = () => () => {};
 
@@ -22,8 +22,8 @@ function LogoMark() {
 
 /**
  * Ecrã de entrada: o logótipo a girar em 3D sobre fundo branco e a escolha da língua.
- * Aparece só na primeira visita; o script de lib/i18n/gate-script.ts esconde-o antes
- * de ser desenhado quando a escolha já está guardada.
+ * Aparece em todos os carregamentos da página (incluindo ao actualizar); o script de
+ * lib/i18n/gate-script.ts só o esconde logo a seguir a escolher outra língua.
  *
  * Na pré-visualização do painel (`previewHrefs`) aparece sempre, a escolha não é
  * guardada e cada língua abre a pré-visualização nessa língua.
@@ -40,7 +40,7 @@ export function LanguageGate({
   const preview = Boolean(previewHrefs);
   const [state, setState] = useState<"open" | "closing" | "closed">("open");
   const firstButton = useRef<HTMLAnchorElement>(null);
-  // Língua já escolhida numa visita anterior (marcada no <html> pelo script de entrada).
+  // Acabou de escolher outra língua (marcado no <html> pelo script de entrada): não volta a perguntar.
   const chosenBefore = useSyncExternalStore(
     noopSubscribe,
     () => !preview && Boolean(document.documentElement.dataset.prLocale) && state === "open",
@@ -54,8 +54,11 @@ export function LanguageGate({
   if (state === "closed" || chosenBefore) return null;
 
   const choose = (e: React.MouseEvent, l: Locale) => {
-    if (!preview) rememberLocale(l);
-    if (l !== locale) return; // segue o link para a página dessa língua
+    if (l !== locale) {
+      // Segue o link para a página dessa língua, sem voltar a mostrar a entrada lá.
+      if (!preview) skipNextGate();
+      return;
+    }
     e.preventDefault();
     // Na pré-visualização, actualizar a página já não volta a mostrar a entrada.
     if (previewHrefs) window.history.replaceState(null, "", previewHrefs[l]);

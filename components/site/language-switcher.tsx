@@ -2,19 +2,19 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Check, Globe } from "lucide-react";
-import { LOCALE_INFO, LOCALE_STORAGE_KEY, LOCALES, localePath, type Locale } from "@/lib/i18n/config";
+import { GATE_SKIP_KEY, LOCALE_INFO, LOCALES, localePath } from "@/lib/i18n/config";
 import { useLocale, useMessages } from "./i18n";
 
-/** Guarda a língua escolhida (para o ecrã de entrada não voltar a aparecer). */
-export function rememberLocale(locale: Locale) {
+/**
+ * Antes de abrir a página de outra língua: o ecrã de entrada não volta a aparecer
+ * nesse carregamento (só nesse; ao actualizar ou voltar a abrir o site aparece de novo).
+ */
+export function skipNextGate() {
   try {
-    localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+    sessionStorage.setItem(GATE_SKIP_KEY, "1");
   } catch {
-    // Armazenamento bloqueado: fica o cookie abaixo.
+    // Armazenamento bloqueado: o ecrã de entrada volta a aparecer, sem outro efeito.
   }
-  // Cookie de reserva (1 ano), para browsers que bloqueiam ou limpam o localStorage.
-  document.cookie = `${LOCALE_STORAGE_KEY}=${locale}; max-age=31536000; path=/; samesite=lax`;
-  document.documentElement.dataset.prLocale = locale;
 }
 
 /** Selector de língua do cabeçalho. `variant="pills"` mostra as quatro línguas lado a lado (menu móvel). */
@@ -47,7 +47,7 @@ export function LanguageSwitcher({ variant = "menu", tabIndex }: { variant?: "me
             lang={LOCALE_INFO[l].htmlLang}
             tabIndex={tabIndex}
             aria-current={l === locale ? "true" : undefined}
-            onClick={() => rememberLocale(l)}
+            onClick={skipNextGate}
             className={`flex-1 rounded-full border py-2.5 text-center text-sm font-bold tracking-widest ${
               l === locale ? "border-white bg-white text-dark" : "border-white/25 text-white/80"
             }`}
@@ -81,7 +81,7 @@ export function LanguageSwitcher({ variant = "menu", tabIndex }: { variant?: "me
                 hrefLang={LOCALE_INFO[l].htmlLang}
                 lang={LOCALE_INFO[l].htmlLang}
                 aria-current={l === locale ? "true" : undefined}
-                onClick={() => rememberLocale(l)}
+                onClick={skipNextGate}
                 className="flex items-center justify-between gap-4 rounded-xl px-3.5 py-2.5 text-sm font-semibold text-white/85 hover:bg-white/10 hover:text-white"
               >
                 <span>

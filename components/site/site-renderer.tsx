@@ -91,7 +91,7 @@ export function SiteRenderer({
       {!preview && (
         <>
           {/* Tem de correr antes de o ecrã de entrada ser desenhado. */}
-          <script dangerouslySetInnerHTML={{ __html: languageGateScript(locale) }} />
+          <script dangerouslySetInnerHTML={{ __html: languageGateScript() }} />
           <LanguageGate locale={locale} siteName={doc.settings.siteName} />
         </>
       )}

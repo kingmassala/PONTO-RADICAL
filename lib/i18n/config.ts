@@ -23,5 +23,5 @@ export function localePath(locale: Locale): string {
   return locale === DEFAULT_LOCALE ? "/" : `/${locale}`;
 }
 
-/** Chave no localStorage com a língua escolhida no ecrã de entrada. */
-export const LOCALE_STORAGE_KEY = "pr-locale";
+/** Marca (sessionStorage) para saltar o ecrã de entrada no carregamento seguinte, depois de escolher a língua. */
+export const GATE_SKIP_KEY = "pr-gate-skip";
