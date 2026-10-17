@@ -7,6 +7,8 @@ import { checkDocument, hasStoreFallback, isStoreActive } from "@/lib/cms/valida
 import { createClient } from "@/lib/supabase/server";
 import { formatDateTime } from "@/lib/format";
 import { formatLongDate, todayIso } from "@/lib/booking/rules";
+import { BRAND_TAGLINE } from "@/lib/brand";
+import { BrandMark } from "@/components/admin/brand";
 
 export const metadata: Metadata = { title: "Visão Geral" };
 
@@ -47,11 +49,16 @@ export default async function OverviewPage({ searchParams }: PageProps<"/admin">
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Olá{user?.fullName ? `, ${user.fullName.split(" ")[0]}` : ""}.</h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Faça alterações, guarde no rascunho, pré-visualize e publique quando estiver pronto.
-        </p>
+      <div className="relative overflow-hidden rounded-2xl bg-black px-6 py-7 text-white sm:px-8">
+        <BrandMark className="pointer-events-none absolute -right-10 -top-12 size-56 text-white/[0.07]" />
+        <div className="relative flex items-center gap-5">
+          <BrandMark className="hidden size-14 shrink-0 sm:block" />
+          <div>
+            <p className="pr-logo-type text-[0.65rem] text-white/55">{BRAND_TAGLINE}</p>
+            <h1 className="mt-1.5 text-2xl font-semibold tracking-tight">Olá{user?.fullName ? `, ${user.fullName.split(" ")[0]}` : ""}.</h1>
+            <p className="mt-1 text-sm text-white/70">Faça alterações, guarde no rascunho, pré-visualize e publique quando estiver pronto.</p>
+          </div>
+        </div>
       </div>
 
       {erro === "sem-permissao" && (

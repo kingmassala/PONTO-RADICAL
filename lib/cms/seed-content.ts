@@ -436,5 +436,5 @@ export const SEED_CONTENT: SiteDocument = {
     showSocial: true,
     links: [],
   },
-  translations: { es: {}, fr: {}, en: {} },
+  translations: { es: {}, fr: {}, en: {}, ru: {}, zh: {} },
 };

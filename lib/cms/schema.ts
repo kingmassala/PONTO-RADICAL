@@ -428,8 +428,8 @@ export const footerSchema = z.object({
 /** Traduções do conteúdo: por língua, «chave do campo → texto» (ver lib/i18n/content.ts). */
 const translationMap = z.record(z.string().max(200), z.string().max(8000)).default({});
 export const translationsSchema = z
-  .object({ es: translationMap, fr: translationMap, en: translationMap })
-  .default({ es: {}, fr: {}, en: {} });
+  .object({ es: translationMap, fr: translationMap, en: translationMap, ru: translationMap, zh: translationMap })
+  .default({ es: {}, fr: {}, en: {}, ru: {}, zh: {} });
 
 export const settingsSchema = z.object({
   siteName: requiredText(80),

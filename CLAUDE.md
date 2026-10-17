@@ -10,7 +10,7 @@ Instalação noutro computador: [SETUP_NEW_COMPUTER.md](SETUP_NEW_COMPUTER.md). 
 Website One Page da **Ponto Radical** (loja náutica e experiências no mar em Angola) com CMS próprio em `/admin`.
 Next.js 16 (App Router, **Cache Components** + Partial Prefetching) · React 19 · TypeScript · Tailwind CSS 4 ·
 Supabase (Postgres, Auth, Storage, RLS) · Vercel. Interface e conteúdos em **português europeu** (pt-PT, ortografia
-pré-acordo: «actividade», «electrónica», «óptimo»…); o website tem também ES, FR e EN.
+pré-acordo: «actividade», «electrónica», «óptimo»…); o website tem também ES, FR, EN, RU e ZH (chinês simplificado).
 
 - Produção: https://ponto-radical.vercel.app (deploy automático a cada push para `main`).
 - GitHub: https://github.com/kingmassala/PONTO-RADICAL · Supabase: projecto `gchtuvikrcvwxuxzmnty` (Frankfurt) ·
@@ -54,7 +54,7 @@ desenvolvimento antes de `npm run build`** (partilham `.next/` e o dev fica com 
 - Todo o conteúdo público é **um documento JSON** validado por `lib/cms/schema.ts` (zod). Rascunho em
   `site_draft` (uma linha, com `revision` para gravações concorrentes); cada publicação é uma linha imutável em
   `site_versions`; `site_state` aponta para a versão online; `publish_site()` é transaccional.
-- Website: `app/(site)/page.tsx` (PT em `/`) e `app/(site)/[lang]/page.tsx` (`/es`, `/fr`, `/en`), ambos com
+- Website: `app/(site)/page.tsx` (PT em `/`) e `app/(site)/[lang]/page.tsx` (`/es`, `/fr`, `/en`, `/ru`, `/zh`), ambos com
   `components/site/site-renderer.tsx`, que também serve a pré-visualização do painel.
 - Traduções: textos fixos em `lib/i18n/messages.ts`; conteúdo do CMS em `doc.translations[língua][chave]`
   (chaves por id do elemento, ver `lib/i18n/content.ts`), editáveis em **Painel › Traduções**.

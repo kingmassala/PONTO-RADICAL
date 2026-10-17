@@ -117,7 +117,7 @@ export default async function BookingsPage({ searchParams }: PageProps<"/admin/r
             )}
           >
             {f === "todas" ? "Todas" : BOOKING_STATUS_LABELS[f]}
-            <span className={cx("rounded-full px-1.5 text-xs", filter === f ? "bg-white/20" : f === "novo" && countOf.novo > 0 ? "bg-orange-500 text-white" : "bg-slate-100")}>
+            <span className={cx("rounded-full px-1.5 text-xs", filter === f ? "bg-white/20" : f === "novo" && countOf.novo > 0 ? "bg-black text-white" : "bg-slate-100")}>
               {f === "todas" ? total : countOf[f]}
             </span>
           </Link>
@@ -207,7 +207,7 @@ function MonthGrid({ month, today, bookings }: { month: string; today: string; b
             <div key={iso ?? `e${i}`} className={cx("min-h-24 border-b border-r border-slate-100 p-1.5", !iso && "bg-slate-50/60", iso && iso < today && "bg-slate-50/40")}>
               {iso && (
                 <>
-                  <p className={cx("mb-1 inline-flex size-6 items-center justify-center rounded-full text-xs", iso === today ? "bg-orange-500 font-semibold text-white" : "text-slate-500")}>
+                  <p className={cx("mb-1 inline-flex size-6 items-center justify-center rounded-full text-xs", iso === today ? "bg-black font-semibold text-white" : "text-slate-500")}>
                     {Number(iso.slice(8))}
                   </p>
                   <ul className="space-y-1">

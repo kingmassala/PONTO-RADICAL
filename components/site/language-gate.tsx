@@ -106,7 +106,7 @@ export function LanguageGate({
           ))}
         </ul>
 
-        <nav aria-label={getMessages(locale).header.language} className="mt-10 grid w-full max-w-2xl grid-cols-2 gap-3 sm:grid-cols-4">
+        <nav aria-label={getMessages(locale).header.language} className="mt-10 grid w-full max-w-2xl grid-cols-2 gap-3 sm:grid-cols-3">
           {order.map((l, i) => (
             <a
               key={l}

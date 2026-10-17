@@ -193,6 +193,21 @@ test("destaque *palavra* nos títulos: espaços e pontuação correctos", () => 
   assert.equal(plainText("A *vida* no mar"), "A vida no mar");
 });
 
+test("títulos em chinês: sem espaços, com quebra de linha entre caracteres", () => {
+  const tokens = tokenizeTitle("一起*畅享*大海。");
+  assert.deepEqual(
+    tokens.map((x) => x.word),
+    ["一", "起", "畅", "享", "大", "海", "。"],
+  );
+  // Caracteres chineses: sem espaço mas quebráveis; a pontuação fica colada (não começa linha).
+  assert.ok(tokens.slice(1, 6).every((x) => x.joined && !x.glued));
+  assert.equal(tokens.at(-1)?.glued, true);
+  assert.deepEqual(
+    tokens.filter((x) => x.accent).map((x) => x.word),
+    ["畅", "享"],
+  );
+});
+
 test("faixa de texto em movimento e efeitos têm valores por omissão válidos", () => {
   const doc = clone();
   const { effects, ...appearanceWithoutEffects } = doc.appearance;
@@ -368,7 +383,7 @@ test("traduções: chaves estáveis por id, aplicadas por língua e nomes de mar
 test("documento antigo sem traduções continua válido", () => {
   const doc = clone() as unknown as Record<string, unknown>;
   delete doc.translations;
-  assert.deepEqual(siteDocumentSchema.parse(doc).translations, { es: {}, fr: {}, en: {} });
+  assert.deepEqual(siteDocumentSchema.parse(doc).translations, { es: {}, fr: {}, en: {}, ru: {}, zh: {} });
 });
 
 test("formatação e mensagens do servidor na língua do visitante", () => {

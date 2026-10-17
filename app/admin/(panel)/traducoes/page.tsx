@@ -12,7 +12,7 @@ export default async function Page() {
   const { doc } = await getDraft();
   return (
     <>
-      <PageHeader title="Traduções" description="Conteúdo do website em espanhol, francês e inglês." />
+      <PageHeader title="Traduções" description="Conteúdo do website em espanhol, francês, inglês, russo e chinês." />
       <TranslationsEditor entries={collectTexts(doc)} value={doc.translations} />
     </>
   );

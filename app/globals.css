@@ -878,3 +878,9 @@ html:not([data-pr-locale]):has(.pr-gate) :is(.pr-cursor-dot, .pr-cursor-ring) {
   letter-spacing: 0.32em;
   line-height: 1.6;
 }
+
+/* Chinês: sem espaçamento negativo nos títulos (os caracteres CJK ficariam colados). */
+[lang|="zh"] .pr-heading,
+.pr-heading[lang|="zh"] {
+  letter-spacing: 0;
+}

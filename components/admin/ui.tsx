@@ -213,7 +213,7 @@ export function Toggle({
         onClick={() => onChange(!checked)}
         className={cx(
           "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition",
-          checked ? "bg-sky-600" : "bg-slate-300",
+          checked ? "bg-black" : "bg-slate-300",
         )}
       >
         <span className={cx("inline-block size-5 rounded-full bg-white shadow transition", checked ? "translate-x-5" : "translate-x-0.5")} />
@@ -250,7 +250,7 @@ export function Slider({
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full accent-sky-600"
+        className="w-full accent-black"
       />
     </Field>
   );
@@ -271,7 +271,7 @@ export function Button({ variant = "secondary", size = "md", loading, className,
       className={cx(
         "inline-flex items-center justify-center gap-2 rounded-lg font-medium transition disabled:cursor-not-allowed disabled:opacity-50",
         size === "sm" ? "px-2.5 py-1.5 text-xs" : "px-4 py-2 text-sm",
-        variant === "primary" && "bg-sky-600 text-white shadow-sm hover:bg-sky-700",
+        variant === "primary" && "bg-black text-white shadow-sm hover:bg-neutral-800",
         variant === "secondary" && "border border-slate-300 bg-white text-slate-700 shadow-sm hover:bg-slate-50",
         variant === "danger" && "border border-red-200 bg-white text-red-600 hover:bg-red-50",
         variant === "ghost" && "text-slate-600 hover:bg-slate-100",

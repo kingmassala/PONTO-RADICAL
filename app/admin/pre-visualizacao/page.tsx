@@ -48,16 +48,18 @@ async function Preview({ searchParams }: { searchParams: Promise<PreviewParams> 
                 key={l}
                 href={href(l, false)}
                 aria-current={l === locale ? "page" : undefined}
-                className={`rounded px-2 py-1 text-xs font-bold ${l === locale ? "bg-amber-950 text-amber-50" : "hover:bg-amber-950/10"}`}
+                className={`rounded px-1.5 py-1 text-xs font-bold sm:px-2 ${l === locale ? "bg-amber-950 text-amber-50" : "hover:bg-amber-950/10"}`}
               >
                 {LOCALE_INFO[l].short}
               </Link>
             ))}
-            <Link href={href(locale, true)} className="ml-2 rounded px-2 py-1 text-xs font-bold hover:bg-amber-950/10">
-              Ver entrada
+            <Link href={href(locale, true)} className="ml-1 rounded px-2 py-1 text-xs font-bold hover:bg-amber-950/10 sm:ml-2">
+              <span className="sm:hidden">Entrada</span>
+              <span className="hidden sm:inline">Ver entrada</span>
             </Link>
-            <Link href="/admin" className="ml-2 rounded bg-amber-950/10 px-3 py-1 hover:bg-amber-950/20">
-              Voltar ao painel
+            <Link href="/admin" className="ml-1 rounded bg-amber-950/10 px-2.5 py-1 hover:bg-amber-950/20 sm:ml-2 sm:px-3">
+              <span className="hidden sm:inline">Voltar ao painel</span>
+              <span className="sm:hidden">Painel</span>
             </Link>
           </span>
         </div>

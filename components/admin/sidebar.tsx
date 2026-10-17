@@ -27,6 +27,7 @@ import {
   X,
 } from "lucide-react";
 import { signOut } from "@/lib/auth-actions";
+import { BrandLockup, BrandMark } from "./brand";
 import { cx } from "./ui";
 
 const NAV = [
@@ -80,10 +81,10 @@ export function Sidebar({
             <Icon className="size-4 shrink-0" aria-hidden />
             <span className="flex-1">{item.label}</span>
             {item.badge === "messages" && unreadMessages > 0 && (
-              <span className="rounded-full bg-orange-500 px-1.5 text-xs font-semibold text-white">{unreadMessages}</span>
+              <span className="rounded-full bg-white px-1.5 text-xs font-semibold text-black">{unreadMessages}</span>
             )}
             {item.badge === "bookings" && newBookings > 0 && (
-              <span className="rounded-full bg-orange-500 px-1.5 text-xs font-semibold text-white" aria-label={`${newBookings} pedidos novos`}>
+              <span className="rounded-full bg-white px-1.5 text-xs font-semibold text-black" aria-label={`${newBookings} pedidos novos`}>
                 {newBookings}
               </span>
             )}
@@ -109,25 +110,26 @@ export function Sidebar({
   );
 
   const brand = (
-    <div className="flex h-16 items-center gap-3 border-b border-white/10 px-5">
-      <span className="flex size-8 items-center justify-center rounded-lg bg-orange-500 text-sm font-bold text-white">PR</span>
-      <div>
-        <p className="text-sm font-semibold text-white">Ponto Radical</p>
-        <p className="text-xs text-slate-400">Painel de administração</p>
-      </div>
-    </div>
+    <Link href="/admin" onClick={() => setOpen(false)} className="flex h-20 items-center border-b border-white/10 px-5" aria-label="Ponto Radical — Visão Geral">
+      <BrandLockup subtitle="Painel de administração" />
+    </Link>
   );
 
   return (
     <>
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col bg-[#0B1B26] lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col bg-black lg:flex">
         {brand}
         {nav}
         {footer}
       </aside>
 
-      <div className="sticky top-0 z-30 flex h-14 items-center justify-between bg-[#0B1B26] px-4 lg:hidden">
-        <span className="text-sm font-semibold text-white">Ponto Radical · Painel</span>
+      <div className="sticky top-0 z-30 flex h-14 items-center justify-between bg-black px-4 lg:hidden">
+        <Link href="/admin" className="flex items-center gap-2.5 text-white" aria-label="Ponto Radical — Visão Geral">
+          <BrandMark className="size-7" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/ponto-radical-wordmark-white.png" alt="" width={641} height={253} className="h-auto w-20" />
+          <span className="text-xs text-white/50">Painel</span>
+        </Link>
         <button type="button" onClick={() => setOpen(true)} className="rounded-lg p-2 text-white" aria-label="Abrir menu do painel">
           <MenuIcon className="size-5" />
         </button>
@@ -135,7 +137,7 @@ export function Sidebar({
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Menu do painel">
           <div className="absolute inset-0 bg-slate-900/60" onClick={() => setOpen(false)} />
-          <aside className="absolute inset-y-0 left-0 flex w-72 flex-col bg-[#0B1B26]">
+          <aside className="absolute inset-y-0 left-0 flex w-72 flex-col bg-black">
             <button type="button" onClick={() => setOpen(false)} className="absolute right-3 top-4 p-1 text-slate-300" aria-label="Fechar menu">
               <X className="size-5" />
             </button>

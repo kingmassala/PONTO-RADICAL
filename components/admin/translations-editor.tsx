@@ -15,7 +15,7 @@ type Translations = SiteDocument["translations"];
 const stripHtml = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 
 /**
- * Tradução do conteúdo para espanhol, francês e inglês. À esquerda o texto
+ * Tradução do conteúdo para espanhol, francês, inglês, russo e chinês. À esquerda o texto
  * original (português, editado nas outras páginas); à direita a tradução.
  * Campos vazios usam o texto em português no website.
  */
@@ -48,7 +48,7 @@ export function TranslationsEditor({ entries, value }: { entries: TextEntry[]; v
 
   return (
     <div className="space-y-6">
-      <Notice tone="info" title="O website existe em português, espanhol, francês e inglês.">
+      <Notice tone="info" title="O website existe em português, espanhol, francês, inglês, russo e chinês (mandarim).">
         Edite o conteúdo em português nas outras páginas do painel e traduza-o aqui. Um campo sem tradução mostra o texto em português.
         Os textos fixos do website (botões do formulário, calendário, etc.) já estão traduzidos.
       </Notice>

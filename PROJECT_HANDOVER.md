@@ -8,7 +8,7 @@ Claude sem reconstruir nada. Instruções permanentes: [CLAUDE.md](CLAUDE.md) ·
 
 | Componente | Onde | Estado |
 |---|---|---|
-| Website público | https://ponto-radical.vercel.app (`/`, `/es`, `/fr`, `/en`) | Online |
+| Website público | https://ponto-radical.vercel.app (`/`, `/es`, `/fr`, `/en`, `/ru`, `/zh`) | Online |
 | Painel | https://ponto-radical.vercel.app/admin | Online |
 | Código | https://github.com/kingmassala/PONTO-RADICAL (ramo `main`) | Actualizado |
 | Alojamento | Vercel `kingmassala-s-projects/ponto-radical` (deploy automático a cada push para `main`) | Ligado |
@@ -85,7 +85,7 @@ Definições. Pré-visualização com escolha de língua e «Ver entrada». Guia
 - Reservas por pedido, sem pagamento online por agora.
 - Loja online externa na **Quicksell**; enquanto não houver link, os botões da loja levam ao WhatsApp (se houver
   número) ou à secção de contactos (Loja Online › «Enquanto a loja não estiver activa»).
-- Línguas por endereço (`/es`, `/fr`, `/en`) para SEO, com traduções editáveis no painel.
+- Línguas por endereço (`/es`, `/fr`, `/en`, `/ru`, `/zh`) para SEO, com traduções editáveis no painel.
 - Ecrã de entrada em todos os carregamentos (pedido do cliente), sem memorizar a língua.
 - Backups guardados no iCloud Drive (escolha do cliente), sem cópia das chaves (`.env.local`).
 

@@ -8,7 +8,7 @@ import { siteMetadata } from "../site-metadata";
 // completa (links normais e ecrã de entrada), por isso não há App Shell partilhado a validar.
 export const instant = false;
 
-// Só /es, /fr e /en existem (o português está em «/»); outros valores dão 404.
+// Só /es, /fr, /en, /ru e /zh existem (o português está em «/»); outros valores dão 404.
 export function generateStaticParams() {
   return TRANSLATED_LOCALES.map((lang) => ({ lang }));
 }

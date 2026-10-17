@@ -17,7 +17,8 @@ export function Title({
 }) {
   const tokens = tokenizeTitle(text);
   const mode = animate === "load" ? "pr-load-words" : animate === "scroll" ? "pr-scroll-words" : "";
-  // Palavras coladas (ex.: pontuação a seguir a um destaque) ficam juntas, sem quebra de linha entre elas.
+  // Palavras coladas (ex.: pontuação a seguir a um destaque) ficam juntas, sem quebra de linha entre elas;
+  // os caracteres chineses («joined») não levam espaço mas podem quebrar a linha.
   const groups: { token: (typeof tokens)[number]; index: number }[][] = [];
   tokens.forEach((token, index) => {
     if (token.glued && groups.length) groups[groups.length - 1].push({ token, index });
@@ -34,7 +35,7 @@ export function Title({
               </span>
             </span>
           ))}
-          {g < groups.length - 1 ? " " : ""}
+          {g < groups.length - 1 && !groups[g + 1][0].token.joined ? " " : ""}
         </span>
       ))}
     </Tag>

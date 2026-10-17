@@ -17,7 +17,7 @@ export function skipNextGate() {
   }
 }
 
-/** Selector de língua do cabeçalho. `variant="pills"` mostra as quatro línguas lado a lado (menu móvel). */
+/** Selector de língua do cabeçalho. `variant="pills"` mostra todas as línguas lado a lado (menu móvel). */
 export function LanguageSwitcher({ variant = "menu", tabIndex }: { variant?: "menu" | "pills"; tabIndex?: number }) {
   const locale = useLocale();
   const t = useMessages().header;
