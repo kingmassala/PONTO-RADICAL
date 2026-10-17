@@ -202,6 +202,33 @@ function TypeFields({ section, set, linkProps }: FieldsProps) {
       );
     case "marquee":
       return <MarqueeFields s={section} set={set} />;
+    case "blog":
+      return (
+        <Card title="Conteúdo" description="Os artigos são escritos e publicados em «Blog»; esta secção mostra os mais recentes.">
+          <TextInput label="Antetítulo" value={section.eyebrow} maxLength={120} onChange={(v) => set({ eyebrow: v })} />
+          <TextInput label="Título" value={section.title} maxLength={200} onChange={(v) => set({ title: v })} required hint={TITLE_HINT} />
+          <TextArea label="Introdução" value={section.intro} maxLength={1000} onChange={(v) => set({ intro: v })} />
+          <Select
+            label="Número de artigos"
+            value={String(section.count)}
+            onChange={(v) => set({ count: v === "6" ? 6 : 3 })}
+            options={[
+              { value: "3", label: "3 artigos" },
+              { value: "6", label: "6 artigos" },
+            ]}
+          />
+          <TextInput
+            label="Texto do botão para o blog"
+            value={section.buttonLabel}
+            maxLength={60}
+            placeholder="Ver todos os artigos"
+            onChange={(v) => set({ buttonLabel: v })}
+          />
+          <Link href="/admin/blog" className="inline-block text-sm text-sky-700 hover:underline">
+            Escrever e gerir artigos →
+          </Link>
+        </Card>
+      );
     case "contact":
       return (
         <Card title="Conteúdo" description="Telefone, email, morada e redes sociais são editados em «Contactos».">

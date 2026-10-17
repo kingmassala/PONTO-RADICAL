@@ -931,3 +931,34 @@ html:not([data-pr-locale]):has(.pr-gate) :is(.pr-cursor-dot, .pr-cursor-ring) {
     will-change: auto;
   }
 }
+
+/* Texto dos artigos do blog: leitura confortável e títulos na letra da marca. */
+.pr-article h3,
+.pr-article h4 {
+  font-size: 1.6em;
+  line-height: 1.15;
+  letter-spacing: var(--pr-heading-tracking);
+  margin: 1.8em 0 0.6em;
+}
+.pr-article h4 {
+  font-size: 1.25em;
+}
+.pr-article p + p,
+.pr-article ul + p,
+.pr-article ol + p {
+  margin-top: 1.2em;
+}
+.pr-article li + li {
+  margin-top: 0.4em;
+}
+.pr-article blockquote {
+  margin: 2em 0;
+  padding: 0.2em 0 0.2em 1.2em;
+  border-left-width: 4px;
+  font-family: var(--font-instrument), Georgia, serif;
+  font-size: 1.45em;
+  line-height: 1.35;
+}
+.pr-article a {
+  font-weight: 600;
+}

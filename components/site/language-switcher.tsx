@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Check, Globe } from "lucide-react";
-import { GATE_SKIP_KEY, LOCALE_INFO, LOCALES, localePath } from "@/lib/i18n/config";
-import { useLocale, useMessages } from "./i18n";
+import { GATE_SKIP_KEY, LOCALE_INFO, LOCALES, type Locale } from "@/lib/i18n/config";
+import { useLocale, useLocaleHref, useMessages } from "./i18n";
 
 /**
  * Antes de abrir a página de outra língua: o ecrã de entrada não volta a aparecer
@@ -21,6 +21,11 @@ export function skipNextGate() {
 export function LanguageSwitcher({ variant = "menu", tabIndex }: { variant?: "menu" | "pills"; tabIndex?: number }) {
   const locale = useLocale();
   const t = useMessages().header;
+  const target = useLocaleHref();
+  // Só a página inicial tem ecrã de entrada: saltá-lo apenas quando é para lá que se vai.
+  const onPick = (l: Locale) => () => {
+    if (target(l).home) skipNextGate();
+  };
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -42,12 +47,12 @@ export function LanguageSwitcher({ variant = "menu", tabIndex }: { variant?: "me
         {LOCALES.map((l) => (
           <a
             key={l}
-            href={localePath(l)}
+            href={target(l).href}
             hrefLang={LOCALE_INFO[l].htmlLang}
             lang={LOCALE_INFO[l].htmlLang}
             tabIndex={tabIndex}
             aria-current={l === locale ? "true" : undefined}
-            onClick={skipNextGate}
+            onClick={onPick(l)}
             className={`flex-1 rounded-full border py-2.5 text-center text-sm font-bold tracking-widest ${
               l === locale ? "border-white bg-white text-dark" : "border-white/25 text-white/80"
             }`}
@@ -77,11 +82,11 @@ export function LanguageSwitcher({ variant = "menu", tabIndex }: { variant?: "me
           {LOCALES.map((l) => (
             <li key={l}>
               <a
-                href={localePath(l)}
+                href={target(l).href}
                 hrefLang={LOCALE_INFO[l].htmlLang}
                 lang={LOCALE_INFO[l].htmlLang}
                 aria-current={l === locale ? "true" : undefined}
-                onClick={skipNextGate}
+                onClick={onPick(l)}
                 className="flex items-center justify-between gap-4 rounded-xl px-3.5 py-2.5 text-sm font-semibold text-white/85 hover:bg-white/10 hover:text-white"
               >
                 <span>

@@ -15,6 +15,8 @@ type Props = {
   store: ResolvedLink | null;
   headerStyle: "transparent" | "solid";
   topOffset?: number;
+  /** Destino do logótipo fora da página inicial (blog): a página inicial na língua. */
+  logoHref?: string;
 };
 
 const newTabProps = (l: ResolvedLink) => (l.newTab ? { target: "_blank", rel: "noopener noreferrer" } : {});
@@ -31,7 +33,7 @@ function RollText({ children }: { children: string }) {
   );
 }
 
-export function SiteHeader({ logoText, logoUrl, logoAlt, items, cta, store, headerStyle, topOffset = 0 }: Props) {
+export function SiteHeader({ logoText, logoUrl, logoAlt, items, cta, store, headerStyle, topOffset = 0, logoHref }: Props) {
   const t = useMessages().header;
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -65,7 +67,7 @@ export function SiteHeader({ logoText, logoUrl, logoAlt, items, cta, store, head
             : "max-w-[90rem] border border-transparent py-3 pl-2 pr-1 sm:px-4"
         }`}
       >
-        <a href="#top" className="group flex items-center gap-3" aria-label={`${logoText || t.home} — ${t.backToStart}`}>
+        <a href={logoHref ?? "#top"} className="group flex items-center gap-3" aria-label={logoHref ? logoText || t.home : `${logoText || t.home} — ${t.backToStart}`}>
           {logoUrl && (
             // eslint-disable-next-line @next/next/no-img-element
             <img

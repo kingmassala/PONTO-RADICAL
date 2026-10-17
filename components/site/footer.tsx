@@ -27,10 +27,11 @@ const SOCIAL_LABELS: Record<string, string> = {
   tiktok: "TikTok",
 };
 
-export function SiteFooter({ doc, m, locale }: { doc: SiteDocument; m: Messages; locale: Locale }) {
+/** `base`: endereço da página inicial quando o rodapé está noutra página (blog). */
+export function SiteFooter({ doc, m, locale, base = "" }: { doc: SiteDocument; m: Messages; locale: Locale; base?: string }) {
   const social = Object.entries(doc.contact.social).filter(([, url]) => url);
-  const links = doc.footer.links.map((l) => resolveLink(l, doc, locale)).filter(Boolean);
-  const store = storeLink(doc, locale);
+  const links = doc.footer.links.map((l) => resolveLink(l, doc, locale, base)).filter(Boolean);
+  const store = storeLink(doc, locale, base);
 
   return (
     <footer className="pr-tone-dark pr-diagonal relative overflow-hidden bg-dark text-white">
@@ -69,7 +70,7 @@ export function SiteFooter({ doc, m, locale }: { doc: SiteDocument; m: Messages;
           <nav aria-label={m.footer.label} className="lg:col-span-3">
             <p className="pr-eyebrow text-white/50">{m.footer.navigation}</p>
             <ul className="mt-5 space-y-3">
-              {navItems(doc).map((item) => (
+              {navItems(doc, base).map((item) => (
                 <li key={item.href}>
                   <a href={item.href} className="text-lg text-white/80 transition hover:pl-2 hover:text-accent">
                     {item.label}

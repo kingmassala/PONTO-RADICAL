@@ -25,7 +25,8 @@ export type TemplateKey =
   | "cta"
   | "contact"
   | "marquee"
-  | "services";
+  | "services"
+  | "blog";
 
 type Template = {
   key: TemplateKey;
@@ -280,6 +281,25 @@ SECTION_TEMPLATES.push({
   }),
 });
 
+SECTION_TEMPLATES.push({
+  key: "blog",
+  type: "blog",
+  label: "Blog",
+  description: "Os artigos mais recentes do blog (geridos em «Blog»), com link para a página com todos os artigos.",
+  anchor: "blog",
+  create: (base) => ({
+    ...base,
+    ...common,
+    type: "blog",
+    background: "surface",
+    eyebrow: "Blog",
+    title: "Histórias, produtos e *novidades*.",
+    intro: "Dicas sobre equipamento, curiosidades do mar e as notícias da Ponto Radical.",
+    count: 3,
+    buttonLabel: "Ver todos os artigos",
+  }),
+});
+
 export const SECTION_TYPE_LABELS: Record<SectionType, string> = {
   hero: "Hero",
   split: "Texto e imagem",
@@ -292,6 +312,7 @@ export const SECTION_TYPE_LABELS: Record<SectionType, string> = {
   contact: "Contactos",
   marquee: "Texto em movimento",
   services: "Experiências e reservas",
+  blog: "Blog",
 };
 
 /** Gera uma âncora única a partir de uma sugestão. */

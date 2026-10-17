@@ -221,6 +221,17 @@ const servicesSection = z.object({
   note: text(300),
 });
 
+/** Blog: os artigos publicados mais recentes (geridos em «Blog»), com link para a página do blog. */
+const blogSection = z.object({
+  ...sectionBase,
+  type: z.literal("blog"),
+  eyebrow: text(120),
+  title: requiredText(200),
+  intro: text(1000),
+  count: z.union([z.literal(3), z.literal(6)]).default(3),
+  buttonLabel: text(60),
+});
+
 export const sectionSchema = z.discriminatedUnion("type", [
   heroSection,
   splitSection,
@@ -233,6 +244,7 @@ export const sectionSchema = z.discriminatedUnion("type", [
   contactSection,
   marqueeSection,
   servicesSection,
+  blogSection,
 ]);
 export type Section = z.infer<typeof sectionSchema>;
 export type SectionType = Section["type"];

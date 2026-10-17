@@ -17,6 +17,7 @@ import { collectImages } from "../lib/cms/validate";
 import { bookingWindow, formatDuration, formatPeople, formatPrice, todayIso, validateBooking, FLEXIBLE_SLOT } from "../lib/booking/rules";
 import { collectTexts, localizeDoc } from "../lib/i18n/content";
 import { translateServerMessage } from "../lib/i18n/messages";
+import { blogPath, blogPostInputSchema, localizePost, readingMinutes, slugify, type BlogPost } from "../lib/blog/schema";
 
 let passed = 0;
 function test(name: string, fn: () => void) {
@@ -392,6 +393,38 @@ test("formatação e mensagens do servidor na língua do visitante", () => {
   assert.equal(translateServerMessage("es", "Indique o seu nome."), "Indique su nombre.");
   assert.equal(translateServerMessage("en", "Entre 2 e 8 pessoas por reserva."), "Between 2 and 8 people per booking.");
   assert.equal(translateServerMessage("pt", "Indique o seu nome."), "Indique o seu nome.");
+});
+
+
+test("blog: secção «Blog» válida no documento e links para a página inicial a partir do blog", () => {
+  const doc = clone();
+  const blog = SECTION_TEMPLATES.find((t) => t.key === "blog")!.create({ id: "sec-blog", anchor: "blog" });
+  const parsed = siteDocumentSchema.parse({ ...doc, sections: [...doc.sections, { ...blog, showInNav: true, navLabel: "Blog" }] });
+  assert.equal(parsed.sections.at(-1)?.type, "blog");
+  assert.ok(navItems(parsed, "/es").every((i) => i.href.startsWith("/es#")));
+  assert.ok(navItems(parsed).every((i) => i.href.startsWith("#")));
+});
+
+test("blog: endereços, tradução com recurso ao português e tempo de leitura", () => {
+  assert.equal(slugify("Óleo Motul 2T: como escolher?"), "oleo-motul-2t-como-escolher");
+  assert.equal(blogPath("pt"), "/blog");
+  assert.equal(blogPath("zh", "artigo"), "/zh/blog/artigo");
+  const input = blogPostInputSchema.parse({
+    slug: "artigo",
+    category: "produtos",
+    title: "Título",
+    excerpt: "Resumo",
+    body: "<p>texto</p>",
+    cover: {},
+    translations: { en: { title: "Title" } },
+  });
+  const post: BlogPost = { ...input, id: "1", status: "publicado", createdAt: "", updatedAt: "" };
+  const en = localizePost(post, "en");
+  assert.equal(en.title, "Title");
+  assert.equal(en.excerpt, "Resumo"); // sem tradução: fica em português
+  assert.equal(localizePost(post, "pt").title, "Título");
+  assert.equal(readingMinutes(`<p>${"palavra ".repeat(600)}</p>`), 3);
+  assert.throws(() => blogPostInputSchema.parse({ ...input, slug: "Com Espaços" }));
 });
 
 console.log(`\n${passed} testes passaram.`);

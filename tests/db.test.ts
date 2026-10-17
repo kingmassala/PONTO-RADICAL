@@ -297,6 +297,28 @@ async function main() {
     assert.equal((await as(NOBODY, "select * from public.media")).length, 0);
   });
 
+  await test("blog: a equipa escreve; o website só vê artigos publicados", async () => {
+    await as(EDITOR, "insert into public.blog_posts (slug, title, category) values ('rascunho-a', 'Rascunho', 'produtos')");
+    await as(EDITOR, "insert into public.blog_posts (slug, title, status) values ('publicado-b', 'Publicado', 'publicado')");
+    await as(EDITOR, "insert into public.blog_posts (slug, title, status, published_at) values ('futuro-c', 'Futuro', 'publicado', now() + interval '2 days')");
+    const pub = await as<{ slug: string; published_at: string | null; created_by: string }>("anon", "select slug, published_at, created_by from public.blog_posts order by slug");
+    assert.deepEqual(pub.map((p) => p.slug), ["publicado-b"]);
+    assert.ok(pub[0].published_at, "data de publicação preenchida automaticamente");
+    assert.equal((await as(EDITOR, "select * from public.blog_posts")).length, 3);
+    assert.equal((await as(NOBODY, "select * from public.blog_posts")).length, 1);
+    await rejects(as("anon", "insert into public.blog_posts (slug, title) values ('x', 'X')"), /row-level security|permission denied/);
+    await rejects(as(NOBODY, "insert into public.blog_posts (slug, title) values ('y', 'Y')"), /row-level security/);
+    await rejects(as(EDITOR, "insert into public.blog_posts (slug, title) values ('Mau Endereço', 'Z')"), /check constraint/);
+  });
+
+  await test("blog: publicar e eliminar ficam na auditoria", async () => {
+    await as(EDITOR, "update public.blog_posts set status = 'publicado' where slug = 'rascunho-a'");
+    assert.equal((await as("anon", "select * from public.blog_posts")).length, 2);
+    await as(EDITOR, "delete from public.blog_posts where slug = 'futuro-c'");
+    const audit = await as<{ action: string }>(ADMIN, "select action from public.audit_log where entity = 'blog_posts' order by id");
+    assert.deepEqual(audit.map((a) => a.action), ["blog.create", "blog.create", "blog.create", "blog.status", "blog.delete"]);
+  });
+
   console.log(`\n${passed} testes passaram.`);
 }
 

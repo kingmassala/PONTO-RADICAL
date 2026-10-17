@@ -14,20 +14,23 @@ export type ResolvedLink = {
  * Transforma um link do CMS num destino real. Devolve null quando o botão não
  * deve aparecer (desactivado, secção oculta/inexistente ou loja desactivada),
  * para que o website nunca mostre links inválidos.
+ *
+ * `base` = página onde ficam as secções: vazio na página inicial; nas páginas do blog
+ * é o endereço da página inicial na língua (ex.: «/es»), para «#contactos» → «/es#contactos».
  */
-export function resolveLink(link: CmsLink, doc: SiteDocument, locale: Locale = DEFAULT_LOCALE): ResolvedLink | null {
+export function resolveLink(link: CmsLink, doc: SiteDocument, locale: Locale = DEFAULT_LOCALE, base = ""): ResolvedLink | null {
   if (!link.enabled || !link.label) return null;
-  const base = { label: link.label, style: link.style };
+  const common = { label: link.label, style: link.style };
   switch (link.type) {
     case "anchor": {
       const target = doc.sections.find((s) => s.anchor === link.anchor && s.visible);
-      return target ? { ...base, href: `#${target.anchor}`, newTab: false } : null;
+      return target ? { ...common, href: `${base}#${target.anchor}`, newTab: false } : null;
     }
     case "external":
-      return link.url ? { ...base, href: link.url, newTab: link.newTab } : null;
+      return link.url ? { ...common, href: link.url, newTab: link.newTab } : null;
     case "store": {
       const target = storeTarget(doc, locale);
-      return target ? { ...base, href: target.href, newTab: target.newTab } : null;
+      return target ? { ...common, href: target.href.startsWith("#") ? `${base}${target.href}` : target.href, newTab: target.newTab } : null;
     }
   }
 }
@@ -48,14 +51,14 @@ export function storeTarget(doc: SiteDocument, locale: Locale = DEFAULT_LOCALE):
 }
 
 /** Botão «Loja Online» configurado em «Loja Online». */
-export function storeLink(doc: SiteDocument, locale: Locale = DEFAULT_LOCALE): ResolvedLink | null {
+export function storeLink(doc: SiteDocument, locale: Locale = DEFAULT_LOCALE, base = ""): ResolvedLink | null {
   const target = storeTarget(doc, locale);
   if (!target) return null;
-  return { href: target.href, newTab: target.newTab, label: doc.store.label || "Loja Online", style: "primary" };
+  return { href: target.href.startsWith("#") ? `${base}${target.href}` : target.href, newTab: target.newTab, label: doc.store.label || "Loja Online", style: "primary" };
 }
 
-export function navItems(doc: SiteDocument) {
+export function navItems(doc: SiteDocument, base = "") {
   return doc.sections
     .filter((s) => s.visible && s.showInNav && s.navLabel)
-    .map((s) => ({ href: `#${s.anchor}`, label: s.navLabel }));
+    .map((s) => ({ href: `${base}#${s.anchor}`, label: s.navLabel }));
 }
