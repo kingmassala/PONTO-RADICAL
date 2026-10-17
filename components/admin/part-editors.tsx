@@ -112,6 +112,11 @@ export function StoreEditor({ value, fallback }: { value: StoreConfig; fallback:
             <Toggle label="Mostrar no cabeçalho (menu)" checked={s.showInHeader} onChange={(v) => set({ showInHeader: v })} />
             <Toggle label="Mostrar na abertura (Hero)" checked={s.showInHero} onChange={(v) => set({ showInHero: v })} />
             <Toggle
+              label="Faixa grande e animada para a loja (a seguir à abertura)"
+              checked={s.showBanner}
+              onChange={(v) => set({ showBanner: v })}
+            />
+            <Toggle
               label="Mostrar chamada para a loja na secção «Marcas»"
               checked={s.showInBrands}
               onChange={(v) => set({ showInBrands: v })}

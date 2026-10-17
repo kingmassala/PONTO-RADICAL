@@ -10,6 +10,12 @@ export const FONT_PAIRING_OPTIONS: Record<Appearance["fontPairing"], { label: st
     body: "var(--font-hanken)",
     description: "Unbounded + Hanken Grotesk · expansiva, ousada e divertida",
   },
+  geometrico: {
+    label: "Geométrico",
+    heading: "var(--font-jost)",
+    body: "var(--font-jost)",
+    description: "Jost · geométrica e elegante, próxima do texto do logótipo",
+  },
   vibrante: {
     label: "Vibrante",
     heading: "var(--font-bricolage)",

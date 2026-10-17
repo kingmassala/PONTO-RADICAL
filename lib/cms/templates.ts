@@ -196,9 +196,9 @@ export const SECTION_TEMPLATES: Template[] = [
       intro: "",
       columns: 3,
       items: [
-        { icon: "compass", title: "Destaque 1", text: "" },
-        { icon: "anchor", title: "Destaque 2", text: "" },
-        { icon: "waves", title: "Destaque 3", text: "" },
+        { icon: "compass", logo: { url: "", alt: "", mediaId: null }, title: "Destaque 1", text: "" },
+        { icon: "anchor", logo: { url: "", alt: "", mediaId: null }, title: "Destaque 2", text: "" },
+        { icon: "waves", logo: { url: "", alt: "", mediaId: null }, title: "Destaque 3", text: "" },
       ],
     }),
   },

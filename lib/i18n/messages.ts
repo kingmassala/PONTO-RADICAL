@@ -133,6 +133,9 @@ const pt = {
   },
   store: {
     whatsappMessage: "Olá! Gostaria de saber que produtos têm disponíveis na loja.",
+    ctaEyebrow: "Loja Online",
+    ctaTitle: "Todo o equipamento náutico, a um clique.",
+    ctaText: "Electrónica, motores, acessórios e desportos de água das marcas que representamos.",
   },
 };
 
@@ -250,7 +253,12 @@ const es: Messages = {
     atTime: (slot) => `a las ${slot}`,
     flexibleLabel: "A convenir",
   },
-  store: { whatsappMessage: "¡Hola! Me gustaría saber qué productos tienen disponibles en la tienda." },
+  store: {
+    whatsappMessage: "¡Hola! Me gustaría saber qué productos tienen disponibles en la tienda.",
+    ctaEyebrow: "Tienda online",
+    ctaTitle: "Todo el equipamiento náutico, a un clic.",
+    ctaText: "Electrónica, motores, accesorios y deportes acuáticos de las marcas que representamos.",
+  },
 };
 
 const fr: Messages = {
@@ -365,7 +373,12 @@ const fr: Messages = {
     atTime: (slot) => `à ${slot}`,
     flexibleLabel: "À convenir",
   },
-  store: { whatsappMessage: "Bonjour ! J’aimerais savoir quels produits sont disponibles en boutique." },
+  store: {
+    whatsappMessage: "Bonjour ! J’aimerais savoir quels produits sont disponibles en boutique.",
+    ctaEyebrow: "Boutique en ligne",
+    ctaTitle: "Tout l’équipement nautique, en un clic.",
+    ctaText: "Électronique, moteurs, accessoires et sports nautiques des marques que nous représentons.",
+  },
 };
 
 const en: Messages = {
@@ -480,7 +493,12 @@ const en: Messages = {
     atTime: (slot) => `at ${slot}`,
     flexibleLabel: "To be arranged",
   },
-  store: { whatsappMessage: "Hello! I’d like to know which products you have available in the shop." },
+  store: {
+    whatsappMessage: "Hello! I’d like to know which products you have available in the shop.",
+    ctaEyebrow: "Online store",
+    ctaTitle: "All your marine gear, one click away.",
+    ctaText: "Electronics, engines, accessories and water sports from the brands we carry.",
+  },
 };
 
 const MESSAGES: Record<Locale, Messages> = { pt, es, fr, en };

@@ -9,5 +9,7 @@ import { DEFAULT_LOCALE, LOCALE_STORAGE_KEY, LOCALES, localePath, type Locale } 
 export function languageGateScript(locale: Locale): string {
   const paths = Object.fromEntries(LOCALES.map((l) => [l, localePath(l)]));
   const isDefaultHome = locale === DEFAULT_LOCALE;
-  return `(function(){try{var l=localStorage.getItem(${JSON.stringify(LOCALE_STORAGE_KEY)});var p=${JSON.stringify(paths)};if(!l||!p[l])return;document.documentElement.dataset.prLocale=l;if(${isDefaultHome}&&l!==${JSON.stringify(DEFAULT_LOCALE)}&&!location.hash&&location.pathname==="/")location.replace(p[l]);}catch(e){}})();`;
+  const key = JSON.stringify(LOCALE_STORAGE_KEY);
+  // localStorage, ou o cookie de reserva gravado por rememberLocale().
+  return `(function(){try{var l=null;try{l=localStorage.getItem(${key});}catch(e){}if(!l){var m=document.cookie.match(new RegExp("(?:^|; )"+${key}+"=([a-z]{2})"));l=m&&m[1];}var p=${JSON.stringify(paths)};if(!l||!p[l])return;document.documentElement.dataset.prLocale=l;if(${isDefaultHome}&&l!==${JSON.stringify(DEFAULT_LOCALE)}&&!location.hash&&location.pathname==="/")location.replace(p[l]);}catch(e){}})();`;
 }

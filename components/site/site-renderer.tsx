@@ -13,6 +13,7 @@ import { navItems, resolveLink, storeLink } from "./links";
 import {
   BannerSection,
   BrandsSection,
+  StoreCallout,
   ContactSection,
   CtaSection,
   FeaturesSection,
@@ -117,8 +118,12 @@ export function SiteRenderer({
       <main id="conteudo" className={startsWithHero ? "" : "pt-28"}>
         {doc.sections
           .filter((s) => s.visible)
-          .map((section) => (
-            <div key={section.id}>{renderSection(section, doc, preview, m, locale)}</div>
+          .map((section, i) => (
+            <div key={section.id}>
+              {renderSection(section, doc, preview, m, locale)}
+              {/* A faixa da loja fica logo a seguir à primeira secção (a abertura). */}
+              {i === 0 && <StoreCallout doc={doc} m={m} locale={locale} />}
+            </div>
           ))}
       </main>
       <SiteFooter doc={doc} m={m} locale={locale} />

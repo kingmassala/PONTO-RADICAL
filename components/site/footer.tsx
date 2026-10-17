@@ -42,7 +42,8 @@ export function SiteFooter({ doc, m, locale }: { doc: SiteDocument; m: Messages;
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={doc.navigation.logo.url} alt="" className="h-14 w-auto max-w-[200px] object-contain" />
               )}
-              <p className="pr-heading text-2xl uppercase tracking-[0.06em]">{doc.navigation.logoText || doc.settings.siteName}</p>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/brand/ponto-radical-wordmark-white.png" alt={doc.navigation.logoText || doc.settings.siteName} width={641} height={253} className="h-14 w-auto" />
             </div>
             {doc.footer.tagline && <p className="mt-6 max-w-sm text-lg text-white/65">{doc.footer.tagline}</p>}
             {doc.footer.showSocial && social.length > 0 && (

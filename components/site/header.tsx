@@ -74,7 +74,17 @@ export function SiteHeader({ logoText, logoUrl, logoAlt, items, cta, store, head
               className={`w-auto object-contain transition-all duration-500 group-hover:rotate-[-12deg] ${compact ? "h-9" : "h-11"}`}
             />
           )}
-          {logoText && <span className="pr-heading whitespace-nowrap text-sm tracking-[0.08em] uppercase sm:text-base">{logoText}</span>}
+          {logoText && (
+            // Texto do logótipo oficial («PONTO RADICAL», com o N característico).
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src="/brand/ponto-radical-wordmark-white.png"
+              alt={logoText}
+              width={641}
+              height={253}
+              className={`w-auto transition-all duration-500 ${compact ? "h-7" : "h-8 sm:h-9"}`}
+            />
+          )}
         </a>
 
         <nav aria-label={t.mainNav} className="hidden items-center gap-1 lg:flex">

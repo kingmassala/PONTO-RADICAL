@@ -170,6 +170,8 @@ const marqueeSection = z.object({
 
 const featureItem = z.object({
   icon: z.enum(FEATURE_ICONS).default("compass"),
+  /** Logótipo opcional (ex.: empresa parceira recomendada), mostrado no cartão. */
+  logo: mediaRefSchema.default({ url: "", alt: "", mediaId: null }),
   title: requiredText(120),
   text: text(600),
 });
@@ -324,7 +326,7 @@ export const DEFAULT_BOOKING_SETTINGS: BookingSettings = {
   whatsappFollowUp: true,
 };
 
-export const FONT_PAIRINGS = ["radical", "vibrante", "editorial", "moderno", "tecnico", "classico"] as const;
+export const FONT_PAIRINGS = ["radical", "geometrico", "vibrante", "editorial", "moderno", "tecnico", "classico"] as const;
 
 export const appearanceSchema = z.object({
   colors: z.object({
@@ -401,6 +403,8 @@ export const storeSchema = z.object({
   whenNoLink: z.enum(["contact", "hide"]).default("contact"),
   /** Chamada para a loja por baixo das marcas. */
   showInBrands: z.boolean().default(true),
+  /** Faixa grande e animada a chamar para a loja, logo a seguir à abertura. */
+  showBanner: z.boolean().default(true),
   brandsTitle: z.string().trim().max(120).default("Todas estas marcas estão disponíveis na nossa loja."),
   brandsText: z.string().trim().max(300).default("Equipamento, electrónica e acessórios com aconselhamento técnico da nossa equipa."),
 });

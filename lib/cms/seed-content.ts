@@ -131,32 +131,32 @@ export const SEED_CONTENT: SiteDocument = {
       columns: 3,
       items: [
         {
-          icon: "radar",
+          icon: "radar", logo: { url: "", alt: "", mediaId: null },
           title: "Navegação e electrónica",
           text: "Plotters, sondas, radares, instrumentos e comunicações para navegar com precisão e segurança.",
         },
         {
-          icon: "anchor",
+          icon: "anchor", logo: { url: "", alt: "", mediaId: null },
           title: "Equipamento de convés",
           text: "Ferragens, dobradiças, cunhos e acessórios em aço inoxidável de grau marítimo.",
         },
         {
-          icon: "sparkles",
+          icon: "sparkles", logo: { url: "", alt: "", mediaId: null },
           title: "Limpeza e manutenção",
           text: "Produtos especializados para proteger casco, convés, metais e estofos do sal e do sol.",
         },
         {
-          icon: "life-buoy",
+          icon: "life-buoy", logo: { url: "", alt: "", mediaId: null },
           title: "Bombas e sistemas de bordo",
           text: "Bombas de esgoto, arejadores e sistemas que mantêm a embarcação segura e operacional.",
         },
         {
-          icon: "wind",
+          icon: "wind", logo: { url: "", alt: "", mediaId: null },
           title: "Kitesurf e desportos de vento",
           text: "Kites, pranchas, trapézios e acessórios para todos os níveis de prática.",
         },
         {
-          icon: "wrench",
+          icon: "wrench", logo: { url: "", alt: "", mediaId: null },
           title: "Aconselhamento técnico",
           text: "Apoio na escolha, instalação e manutenção para tirar o máximo partido de cada equipamento.",
         },
@@ -418,6 +418,7 @@ export const SEED_CONTENT: SiteDocument = {
     showInHero: true,
     whenNoLink: "contact",
     showInBrands: true,
+    showBanner: true,
     brandsTitle: "Todas estas marcas estão disponíveis na nossa loja.",
     brandsText: "Equipamento, electrónica e acessórios com aconselhamento técnico da nossa equipa.",
   },

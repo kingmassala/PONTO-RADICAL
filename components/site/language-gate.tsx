@@ -7,14 +7,14 @@ import { rememberLocale } from "./language-switcher";
 
 const noopSubscribe = () => () => {};
 
-/** Logótipo (círculo preto com o «R»), igual a public/brand/ponto-radical-mark.svg. */
+/** Símbolo do logótipo oficial (círculo e «R»), igual a public/brand/ponto-radical-mark.svg. */
 function LogoMark() {
   return (
-    <svg viewBox="14 14 410 410" className="size-full" aria-hidden>
-      <circle cx="219" cy="219" r="205" fill="#000" />
-      <g fill="#fff">
-        <path d="M152 120H262A51 51 0 0 1 262 222H228Z" />
-        <path d="M152 222H228L310 332H152Z" />
+    <svg viewBox="226 66 801 801" className="size-full" aria-hidden>
+      <circle cx="626.5" cy="466" r="383.5" fill="#fff" stroke="#000" strokeWidth="32" />
+      <g fill="#000">
+        <path d="M486 238H690A98.75 98.75 0 0 1 690 435.5H639Z" />
+        <path d="M480.5 435.5H639L829 683H480.5Z" />
       </g>
     </svg>
   );
@@ -57,6 +57,8 @@ export function LanguageGate({
     if (!preview) rememberLocale(l);
     if (l !== locale) return; // segue o link para a página dessa língua
     e.preventDefault();
+    // Na pré-visualização, actualizar a página já não volta a mostrar a entrada.
+    if (previewHrefs) window.history.replaceState(null, "", previewHrefs[l]);
     setState("closing");
     window.setTimeout(() => setState("closed"), 700);
   };
@@ -85,11 +87,13 @@ export function LanguageGate({
           </div>
           <div className="pr-coin-shadow" />
         </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/brand/ponto-radical-wordmark.png" alt="" aria-hidden width={641} height={253} className="mt-6 h-auto w-[clamp(9rem,26vw,13rem)]" />
 
         <h1 id="pr-gate-title" className="sr-only">
           {siteName} — {getMessages(locale).intro.prompt}
         </h1>
-        <ul className="pr-gate-prompts mt-12 text-center" aria-hidden>
+        <ul className="pr-gate-prompts mt-9 text-center" aria-hidden>
           {order.map((l) => (
             <li key={l} lang={LOCALE_INFO[l].htmlLang} className="pr-heading text-[clamp(1.4rem,4vw,2.2rem)] leading-tight first:text-black">
               {getMessages(l).intro.prompt}

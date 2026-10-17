@@ -592,10 +592,16 @@ function FeaturesFields({ s, set }: { s: SectionOf<"features">; set: FieldsProps
               rows={2}
               onChange={(v) => set({ items: s.items.map((x, j) => (j === i ? { ...x, text: v } : x)) })}
             />
+            <MediaField
+              label="Logótipo (opcional)"
+              value={item.logo}
+              onChange={(v) => set({ items: s.items.map((x, j) => (j === i ? { ...x, logo: v } : x)) })}
+              hint="Por exemplo, o logótipo de uma empresa parceira recomendada."
+            />
           </div>
         ))}
         {s.items.length < 12 && (
-          <Button size="sm" onClick={() => set({ items: [...s.items, { icon: "compass", title: "Novo destaque", text: "" }] })}>
+          <Button size="sm" onClick={() => set({ items: [...s.items, { icon: "compass", title: "Novo destaque", text: "", logo: { url: "", alt: "", mediaId: null } }] })}>
             <Plus className="size-3.5" /> Adicionar destaque
           </Button>
         )}

@@ -7,6 +7,7 @@ import {
   Hanken_Grotesk,
   Inter,
   Instrument_Serif,
+  Jost,
   Manrope,
   Unbounded,
 } from "next/font/google";
@@ -21,6 +22,9 @@ export const instrumentSerif = Instrument_Serif({
   variable: "--font-instrument",
   display: "swap",
 });
+
+// Combinação «Geométrico» (próxima do texto do logótipo): carregada de imediato.
+export const jost = Jost({ subsets: ["latin"], variable: "--font-jost", display: "swap" });
 
 // Painel de administração.
 export const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
@@ -45,6 +49,6 @@ export const cormorant = Cormorant_Garamond({
   preload: false,
 });
 
-export const fontVariables = [unbounded, hanken, instrumentSerif, inter, bricolage, fraunces, manrope, barlow, barlowCondensed, cormorant]
+export const fontVariables = [unbounded, hanken, instrumentSerif, jost, inter, bricolage, fraunces, manrope, barlow, barlowCondensed, cormorant]
   .map((f) => f.variable)
   .join(" ");

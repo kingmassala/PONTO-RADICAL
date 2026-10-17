@@ -9,6 +9,7 @@ import {
   Shield,
   Ship,
   ShoppingBag,
+  ArrowUpRight,
   Sparkles,
   Sun,
   Truck,
@@ -193,6 +194,42 @@ export function HeroSection({ section, doc, m, locale }: Props<"hero">) {
   );
 }
 
+/* ------------------------------ Chamada para a loja ------------------------------ */
+
+/** Faixa grande e animada com o botão para a Loja Online (a seguir à abertura). */
+export function StoreCallout({ doc, m, locale }: { doc: SiteDocument; m: Messages; locale: Locale }) {
+  const store = doc.store.showBanner ? storeLink(doc, locale) : null;
+  if (!store) return null;
+  const external = /^https?:\/\//i.test(store.href);
+  return (
+    <section aria-label={store.label} className="pr-tone-dark relative overflow-clip bg-dark py-16 text-white sm:py-24">
+      <div className="pr-store-glow" aria-hidden />
+      <div className="relative mx-auto flex max-w-[90rem] flex-col items-start gap-10 px-5 sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-12">
+        <div className="pr-scroll-reveal max-w-2xl">
+          <p className="pr-eyebrow flex items-center gap-3 text-white/60">
+            <ShoppingBag className="size-4" aria-hidden /> {m.store.ctaEyebrow}
+          </p>
+          <p className="pr-heading pr-h2 mt-5">{m.store.ctaTitle}</p>
+          <p className="mt-5 max-w-xl text-lg leading-relaxed text-white/70">{m.store.ctaText}</p>
+        </div>
+        <a
+          href={store.href}
+          {...(store.newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+          data-cursor={store.label}
+          className="pr-store-cta group relative inline-flex shrink-0 items-center gap-5 rounded-full bg-accent py-5 pl-8 pr-5 text-xl font-bold uppercase tracking-[0.12em] text-on-accent sm:py-6 sm:pl-10 sm:text-2xl"
+        >
+          <ShoppingBag className="size-7 sm:size-8" aria-hidden />
+          {store.label}
+          <span className="pr-store-cta-arrow flex size-12 items-center justify-center rounded-full bg-on-accent text-accent sm:size-14">
+            <ArrowUpRight className="size-6 transition-transform duration-500 group-hover:rotate-45" aria-hidden />
+          </span>
+          {external && store.newTab && <span className="sr-only"> {m.common.newTab}</span>}
+        </a>
+      </div>
+    </section>
+  );
+}
+
 /* ------------------------------ Texto e imagem ------------------------------ */
 
 export function SplitSection({ section, doc, locale }: Props<"split">) {
@@ -282,31 +319,29 @@ export function BrandsSection({ section, doc, m, locale }: Props<"brands">) {
         </div>
         {authorized.length > 0 && (
           <div
-            className={`pr-scroll-reveal mt-16 grid gap-8 rounded-[2rem] border p-8 sm:mt-20 sm:p-12 lg:grid-cols-12 lg:items-center ${
-              dark ? "border-white/15" : "border-ink/15 bg-white"
-            }`}
+            className={`pr-scroll-reveal mt-16 rounded-[2rem] border p-8 sm:mt-20 sm:p-12 ${dark ? "border-white/15" : "border-ink/15 bg-white"}`}
           >
-            <div className="lg:col-span-5">
+            <div className="max-w-2xl">
               <p className="pr-eyebrow flex items-center gap-2 text-accent">
                 <BadgeCheck className="size-4" aria-hidden /> {m.brands.authorized}
               </p>
               <p className="pr-heading pr-h3 mt-4 text-2xl sm:text-3xl">{m.brands.authorizedTitle}</p>
               <p className={`mt-3 max-w-md leading-relaxed ${dark ? "text-white/70" : "text-ink/70"}`}>{m.brands.authorizedText}</p>
             </div>
-            <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-7">
+            <ul className="mt-10 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
               {authorized.map((brand) => (
                 <li
                   key={brand.id}
-                  className={`flex min-h-36 flex-col items-center justify-center gap-4 rounded-[1.5rem] p-6 text-center ${dark ? "bg-white/[0.06]" : "bg-surface"}`}
+                  className={`flex min-h-36 flex-col items-center justify-center gap-4 rounded-[1.5rem] p-5 text-center sm:p-6 ${dark ? "bg-white/[0.06]" : "bg-surface"}`}
                 >
                   {brand.logo.url ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={brand.logo.url} alt={brand.logo.alt || brand.name} loading="lazy" className={`h-12 w-auto max-w-[220px] object-contain ${dark ? "pr-logo-white" : ""}`} />
+                    <img src={brand.logo.url} alt={brand.logo.alt || brand.name} loading="lazy" className={`h-12 w-auto max-w-full object-contain ${dark ? "pr-logo-white" : ""}`} />
                   ) : (
                     <span className="pr-heading text-3xl">{brand.name}</span>
                   )}
                   <span className={`inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.16em] ${dark ? "text-white/70" : "text-ink/60"}`}>
-                    <BadgeCheck className="size-4 text-accent" aria-hidden /> {m.brands.authorized} {brand.name}
+                    <BadgeCheck className="size-4 shrink-0 text-accent" aria-hidden /> {brand.name}
                   </span>
                 </li>
               ))}
@@ -512,6 +547,15 @@ export function FeaturesSection({ section }: Props<"features">) {
                   <h3 className={`pr-heading mt-auto pt-16 ${featured ? "text-3xl sm:text-4xl" : "pr-h3"}`}>{item.title}</h3>
                   {item.text && (
                     <p className={`mt-4 leading-relaxed ${featured ? "text-lg text-on-accent/90" : dark ? "text-white/65" : "text-ink/65"}`}>{item.text}</p>
+                  )}
+                  {item.logo.url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={item.logo.url}
+                      alt={item.logo.alt || item.title}
+                      loading="lazy"
+                      className={`mt-6 h-14 w-auto max-w-[220px] object-contain object-left ${featured || dark ? "pr-logo-white" : ""}`}
+                    />
                   )}
                 </Tilt>
               </li>

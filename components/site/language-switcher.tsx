@@ -10,8 +10,10 @@ export function rememberLocale(locale: Locale) {
   try {
     localStorage.setItem(LOCALE_STORAGE_KEY, locale);
   } catch {
-    // Navegação privada ou armazenamento bloqueado: a escolha vale só para esta visita.
+    // Armazenamento bloqueado: fica o cookie abaixo.
   }
+  // Cookie de reserva (1 ano), para browsers que bloqueiam ou limpam o localStorage.
+  document.cookie = `${LOCALE_STORAGE_KEY}=${locale}; max-age=31536000; path=/; samesite=lax`;
   document.documentElement.dataset.prLocale = locale;
 }
 
