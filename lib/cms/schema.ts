@@ -228,7 +228,7 @@ const blogSection = z.object({
   eyebrow: text(120),
   title: requiredText(200),
   intro: text(1000),
-  count: z.union([z.literal(3), z.literal(6)]).default(3),
+  count: z.union([z.literal(3), z.literal(6), z.literal(9)]).default(6),
   buttonLabel: text(60),
 });
 

@@ -295,7 +295,7 @@ SECTION_TEMPLATES.push({
     eyebrow: "Blog",
     title: "Histórias, produtos e *novidades*.",
     intro: "Dicas sobre equipamento, curiosidades do mar e as notícias da Ponto Radical.",
-    count: 3,
+    count: 6,
     buttonLabel: "Ver todos os artigos",
   }),
 });

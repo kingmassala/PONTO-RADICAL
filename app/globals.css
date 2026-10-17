@@ -962,3 +962,8 @@ html:not([data-pr-locale]):has(.pr-gate) :is(.pr-cursor-dot, .pr-cursor-ring) {
 .pr-article a {
   font-weight: 600;
 }
+
+/* Faixa de artigos do blog: as pontas desvanecem para indicar que continua. */
+.pr-blog-track {
+  mask-image: linear-gradient(to right, transparent 0, #000 1.5rem, #000 calc(100% - 4rem), transparent 100%);
+}

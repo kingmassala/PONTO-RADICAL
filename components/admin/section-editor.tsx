@@ -211,11 +211,13 @@ function TypeFields({ section, set, linkProps }: FieldsProps) {
           <Select
             label="Número de artigos"
             value={String(section.count)}
-            onChange={(v) => set({ count: v === "6" ? 6 : 3 })}
+            onChange={(v) => set({ count: v === "9" ? 9 : v === "6" ? 6 : 3 })}
             options={[
               { value: "3", label: "3 artigos" },
               { value: "6", label: "6 artigos" },
+              { value: "9", label: "9 artigos" },
             ]}
+            hint="Os artigos mais recentes deslizam devagar numa faixa; param quando o visitante passa o rato ou toca."
           />
           <TextInput
             label="Texto do botão para o blog"

@@ -6,9 +6,9 @@ import type { Locale } from "@/lib/i18n/config";
 import type { Messages } from "@/lib/i18n/messages";
 import { BACKGROUNDS, CmsButton, Eyebrow } from "../primitives";
 import { Title } from "../title";
-import { PostCard } from "./post-card";
+import { BlogCarousel } from "./blog-carousel";
 
-/** Secção «Blog» da página inicial: os artigos publicados mais recentes e o link para o blog. */
+/** Secção «Blog» da página inicial: os artigos mais recentes numa faixa que desliza devagar, e o link para o blog. */
 export async function BlogSection({ section, m, locale }: { section: SectionOf<"blog">; doc: SiteDocument; m: Messages; locale: Locale }) {
   const bg = BACKGROUNDS[section.background];
   const dark = bg.tone === "dark";
@@ -37,14 +37,8 @@ export async function BlogSection({ section, m, locale }: { section: SectionOf<"
 
         {posts.length > 0 ? (
           <>
-            <ul className="mt-10 grid gap-x-6 gap-y-12 sm:mt-16 sm:grid-cols-2 lg:grid-cols-3">
-              {posts.map((post) => (
-                <li key={post.id}>
-                  <PostCard post={post} locale={locale} m={m} tone={bg.tone} />
-                </li>
-              ))}
-            </ul>
-            <div className="mt-12 lg:hidden">
+            <BlogCarousel posts={posts} locale={locale} tone={bg.tone} />
+            <div className="mt-10 lg:hidden">
               <CmsButton link={button} tone={bg.tone} />
             </div>
           </>

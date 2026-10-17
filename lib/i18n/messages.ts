@@ -157,6 +157,8 @@ const pt = {
     by: "Por",
     gallery: "Galeria",
     storeTitle: "Encontre estes produtos na nossa loja.",
+    previous: "Artigos anteriores",
+    next: "Artigos seguintes",
     storeButton: "Visitar a loja online",
   },
 };
@@ -301,6 +303,8 @@ const es: Messages = {
     by: "Por",
     gallery: "Galería",
     storeTitle: "Encuentra estos productos en nuestra tienda.",
+    previous: "Artículos anteriores",
+    next: "Artículos siguientes",
     storeButton: "Visitar la tienda online",
   },
 };
@@ -443,6 +447,8 @@ const fr: Messages = {
     by: "Par",
     gallery: "Galerie",
     storeTitle: "Retrouvez ces produits dans notre boutique.",
+    previous: "Articles précédents",
+    next: "Articles suivants",
     storeButton: "Visiter la boutique en ligne",
   },
 };
@@ -585,6 +591,8 @@ const en: Messages = {
     by: "By",
     gallery: "Gallery",
     storeTitle: "Find these products in our store.",
+    previous: "Previous articles",
+    next: "Next articles",
     storeButton: "Visit the online store",
   },
 };
@@ -738,6 +746,8 @@ const ru: Messages = {
     by: "Автор:",
     gallery: "Галерея",
     storeTitle: "Эти товары есть в нашем магазине.",
+    previous: "Предыдущие статьи",
+    next: "Следующие статьи",
     storeButton: "Перейти в интернет-магазин",
   },
 };
@@ -880,6 +890,8 @@ const zh: Messages = {
     by: "作者：",
     gallery: "图库",
     storeTitle: "在我们的商店中找到这些产品。",
+    previous: "上一篇文章",
+    next: "下一篇文章",
     storeButton: "逛逛网上商店",
   },
 };
