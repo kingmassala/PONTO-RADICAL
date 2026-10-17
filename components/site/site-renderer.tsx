@@ -8,6 +8,7 @@ import { languageGateScript } from "@/lib/i18n/gate-script";
 import { LanguageGate } from "./language-gate";
 import { SiteHeader } from "./header";
 import { CustomCursor } from "./fx/cursor";
+import { ScrollMagic } from "./fx/scroll-magic";
 import { SiteFooter } from "./footer";
 import { navItems, resolveLink, storeLink } from "./links";
 import {
@@ -98,6 +99,7 @@ export function SiteRenderer({
       {preview && previewGateHrefs && <LanguageGate locale={locale} siteName={doc.settings.siteName} previewHrefs={previewGateHrefs} />}
       <div className="pr-progress" aria-hidden />
       {fx.customCursor && <CustomCursor />}
+      {fx.animations && <ScrollMagic />}
       <a
         href="#conteudo"
         className="sr-only z-50 bg-accent px-4 py-2 text-on-accent focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
