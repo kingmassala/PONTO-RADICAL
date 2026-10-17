@@ -124,7 +124,9 @@ export function LanguageGate({
             </a>
           ))}
         </nav>
-        <p className="pr-logo-type mt-10 text-center text-[clamp(0.75rem,2vw,1rem)] text-black">We share the same passion</p>
+        <p className="pr-logo-type mt-10 text-center text-[clamp(0.75rem,2vw,1rem)] text-black" style={{ fontWeight: 600 }}>
+          We share the same passion
+        </p>
       </div>
     </div>
   );
