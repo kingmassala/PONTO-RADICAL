@@ -82,8 +82,11 @@ function SpinBadge({ text, logo }: { text: string; logo: string }) {
         <defs>
           <path id="pr-badge-path" d="M100,100 m-78,0 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0" />
         </defs>
-        <text fill="currentColor" style={{ font: "700 13px var(--pr-font-body)", letterSpacing: "0.3em", textTransform: "uppercase" }}>
-          <textPath href="#pr-badge-path">{text}</textPath>
+        {/* textLength = perímetro do círculo (2π × 78 ≈ 490): o texto ocupa a volta completa sem se sobrepor. */}
+        <text fill="currentColor" style={{ font: "700 10px var(--pr-font-body)", textTransform: "uppercase" }}>
+          <textPath href="#pr-badge-path" textLength="488" lengthAdjust="spacing">
+            {text}
+          </textPath>
         </text>
       </svg>
       <div className="absolute inset-[30%] flex items-center justify-center rounded-full bg-accent p-3">
@@ -100,7 +103,7 @@ export function HeroSection({ section, doc, m, locale }: Props<"hero">) {
   const centered = section.align === "center";
   const stripBrands = doc.brands.filter((b) => b.visible);
   const brandNames = stripBrands.map((b) => b.name);
-  const badgeText = `${doc.settings.siteName} • Mar • Vento • Aventura • `;
+  const badgeText = `${doc.settings.siteName} • Boating • Water sports • Camping • Fishing & Co • `;
 
   return (
     <section
@@ -150,7 +153,7 @@ export function HeroSection({ section, doc, m, locale }: Props<"hero">) {
           </div>
           {!centered && (
             <div className="pr-load-fade hidden shrink-0 lg:block" style={{ ["--d" as string]: "1s" }}>
-              <SpinBadge text={badgeText.repeat(2)} logo={doc.navigation.logo.url} />
+              <SpinBadge text={badgeText} logo={doc.navigation.logo.url} />
             </div>
           )}
         </div>

@@ -22,7 +22,7 @@ const newTabProps = (l: ResolvedLink) => (l.newTab ? { target: "_blank", rel: "n
 /** Texto que «rola» para cima ao passar o rato. */
 function RollText({ children }: { children: string }) {
   return (
-    <span className="relative inline-flex overflow-hidden">
+    <span className="relative inline-flex overflow-hidden whitespace-nowrap">
       <span className="transition-transform duration-500 ease-[cubic-bezier(0.7,0,0.2,1)] group-hover:-translate-y-full">{children}</span>
       <span aria-hidden className="absolute left-0 top-full text-accent transition-transform duration-500 ease-[cubic-bezier(0.7,0,0.2,1)] group-hover:-translate-y-full">
         {children}
