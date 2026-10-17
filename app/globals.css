@@ -869,3 +869,12 @@ html:not([data-pr-locale]):has(.pr-gate) :is(.pr-cursor-dot, .pr-cursor-ring) {
       0 0 0 14px color-mix(in srgb, var(--pr-accent) 0%, transparent);
   }
 }
+
+/* Texto no estilo do logótipo (fino, geométrico, em maiúsculas e espaçado). */
+.pr-logo-type {
+  font-family: var(--font-jost), var(--pr-font-body);
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.32em;
+  line-height: 1.6;
+}

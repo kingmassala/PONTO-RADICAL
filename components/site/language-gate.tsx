@@ -92,6 +92,7 @@ export function LanguageGate({
         </div>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/brand/ponto-radical-wordmark.png" alt="" aria-hidden width={641} height={253} className="mt-6 h-auto w-[clamp(9rem,26vw,13rem)]" />
+        <p className="pr-logo-type mt-5 text-center text-[clamp(0.62rem,1.6vw,0.8rem)] text-black/70">Boating · Water Sports · Camping · Fishing &amp; Co</p>
 
         <h1 id="pr-gate-title" className="sr-only">
           {siteName} — {getMessages(locale).intro.prompt}
@@ -123,6 +124,7 @@ export function LanguageGate({
             </a>
           ))}
         </nav>
+        <p className="pr-logo-type mt-10 text-center text-[clamp(0.75rem,2vw,1rem)] text-black">We share the same passion</p>
       </div>
     </div>
   );
