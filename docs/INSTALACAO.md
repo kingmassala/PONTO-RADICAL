@@ -185,7 +185,8 @@ a maioria dos enganos do dia-a-dia.
 - O Supabase faz cópias diárias automáticas nos planos pagos (**Database → Backups**), com restauro a um ponto no
   tempo (PITR) como opção. No plano gratuito não há cópias automáticas descarregáveis — recomenda-se o plano Pro
   para um website em produção.
-- Cópia manual (recomendada mensalmente e antes de grandes alterações), com a Supabase CLI:
+- Cópia manual recomendada: `npm run backup` (ver [BACKUP-E-RECUPERACAO.md](BACKUP-E-RECUPERACAO.md)), que inclui
+  também os ficheiros do Storage. Alternativa com a Supabase CLI:
 
   ```bash
   supabase db dump --linked -f backup-$(date +%F).sql --data-only

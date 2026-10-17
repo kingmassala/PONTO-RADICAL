@@ -8,11 +8,30 @@ versões — e caixa de entrada de **pedidos de reserva** com agenda.
 **Stack:** Next.js 16 (App Router, Cache Components) · TypeScript · Tailwind CSS 4 · Supabase (PostgreSQL, Auth,
 Storage, RLS) · Vercel.
 
+**Produção:** https://ponto-radical.vercel.app · **Painel:** https://ponto-radical.vercel.app/admin ·
+**Línguas:** português (`/`), espanhol (`/es`), francês (`/fr`) e inglês (`/en`).
+
 ## Documentação
 
+- [CLAUDE.md](CLAUDE.md) — instruções permanentes para o Claude (regras, comandos, arquitectura, armadilhas).
+- [PROJECT_HANDOVER.md](PROJECT_HANDOVER.md) — estado actual, identidade visual, marcas, estrutura do site e do
+  painel, decisões e pendências.
+- [SETUP_NEW_COMPUTER.md](SETUP_NEW_COMPUTER.md) — instalar e continuar o projecto noutro computador.
+- [docs/BACKUP-E-RECUPERACAO.md](docs/BACKUP-E-RECUPERACAO.md) — backups da base de dados e do Storage e
+  recuperação.
 - [docs/INSTALACAO.md](docs/INSTALACAO.md) — configuração do Supabase, administrador inicial, publicação na Vercel,
-  ligação da Quicksell, cópias de segurança.
+  ligação da Quicksell.
 - [docs/GUIA-CMS.md](docs/GUIA-CMS.md) — guia de utilização do painel.
+
+## Funcionalidades
+
+- Ecrã de entrada com o logótipo a girar em 3D e escolha da língua (aparece em cada visita).
+- Website em 4 línguas: textos fixos traduzidos no código (`lib/i18n/messages.ts`) e conteúdo traduzido no painel
+  (**Traduções**), com `hreflang`, sitemap por língua e imagem de partilha com o logótipo.
+- Modo preto e branco, tipografia geométrica (Jost), animações 3D em CSS e logótipo oficial em SVG.
+- Marcas com logótipos e selo de **revendedor autorizado**; faixa animada e botões para a **Loja Online**
+  (Quicksell, com alternativa por WhatsApp/contactos enquanto não houver link).
+- Experiências reserváveis com pedidos de reserva e agenda no painel; formulário de contacto; histórico de versões.
 
 ## Arranque rápido
 
@@ -83,6 +102,19 @@ O pagamento acontece fora do website, mas a tabela já tem os campos para pagame
 npm test
 ```
 
-Inclui 27 testes da lógica do CMS e das reservas (validação, XSS, links, loja, serviços, regras dos pedidos) e 22
-testes da base de dados num Postgres embutido (RLS, permissões por papel, rascunho vs. publicado, publicação,
-restauro, armazenamento, pedidos de reserva).
+Inclui 31 testes da lógica do CMS, das reservas e das traduções (validação, XSS, links, loja, serviços, regras dos
+pedidos, chaves de tradução) e 22 testes da base de dados num Postgres embutido (RLS, permissões por papel, rascunho
+vs. publicado, publicação, restauro, armazenamento, pedidos de reserva).
+
+## Backups
+
+```bash
+npm run backup -- --out="/pasta/privada/AAAA-MM-DD"
+```
+
+```bash
+npm run backup:verify -- --dir="/pasta/privada/AAAA-MM-DD"
+```
+
+Só leitura: exporta contas, conteúdos, versões, mensagens, reservas, auditoria, políticas e os ficheiros do Storage,
+e prova que o backup se repõe numa base vazia. Detalhes em [docs/BACKUP-E-RECUPERACAO.md](docs/BACKUP-E-RECUPERACAO.md).

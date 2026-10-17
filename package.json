@@ -14,7 +14,9 @@
     "db:seed-sql": "node --conditions=react-server --import tsx scripts/generate-seed-sql.ts",
     "db:seed": "node --env-file=.env.local --conditions=react-server --import tsx scripts/seed.ts",
     "admin:create": "node --env-file=.env.local scripts/create-admin.mjs",
-    "db:migrate": "node --env-file=.env.local scripts/db-migrate.mjs"
+    "db:migrate": "node --env-file=.env.local scripts/db-migrate.mjs",
+    "backup": "node --env-file=.env.local scripts/backup.mjs",
+    "backup:verify": "node scripts/verify-backup.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
