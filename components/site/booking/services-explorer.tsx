@@ -100,7 +100,7 @@ export function ServicesExplorer({
         </div>
       )}
 
-      <ul className={`grid gap-5 sm:grid-cols-2 ${showFilters && used.length > 1 ? "mt-8" : "mt-16"}`} aria-live="polite">
+      <ul className={`grid gap-5 sm:grid-cols-2 ${showFilters && used.length > 1 ? "mt-8" : "mt-10 sm:mt-16"}`} aria-live="polite">
         {shown.map((service, i) => {
           const image = service.gallery.find((g) => g.url);
           const price = formatPrice(service, locale);

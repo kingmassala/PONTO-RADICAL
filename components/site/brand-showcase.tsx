@@ -69,7 +69,7 @@ export function BrandShowcase({ brands, layout, tone }: { brands: Brand[]; layou
 
   if (layout === "grid") {
     return (
-      <ul className="mt-20 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="mt-10 grid gap-5 sm:mt-20 sm:grid-cols-2 lg:grid-cols-3">
         {brands.map((brand) => (
           <li key={brand.id} className={`group overflow-hidden rounded-[2rem] ${dark ? "bg-white/[0.06]" : "bg-white"}`}>
             <div className="relative aspect-[16/11] overflow-hidden">
@@ -97,7 +97,7 @@ export function BrandShowcase({ brands, layout, tone }: { brands: Brand[]; layou
   };
 
   return (
-    <div ref={listRef} className="relative mt-20" onPointerMove={onMove} onPointerLeave={() => setHovered(null)}>
+    <div ref={listRef} className="relative mt-10 sm:mt-20" onPointerMove={onMove} onPointerLeave={() => setHovered(null)}>
       <div
         ref={floatRef}
         aria-hidden

@@ -19,6 +19,7 @@ import {
   Wrench,
   type LucideIcon,
 } from "lucide-react";
+import { Fragment } from "react";
 import type { SectionOf, SectionType, SiteDocument } from "@/lib/cms/schema";
 import { sanitizeRichText } from "@/lib/cms/sanitize";
 import { plainText } from "@/lib/cms/text";
@@ -137,11 +138,22 @@ export function HeroSection({ section, doc, m, locale }: Props<"hero">) {
       >
         {section.eyebrow && (
           <p
-            className={`pr-load-fade pr-eyebrow mb-8 inline-flex w-fit items-center gap-3 rounded-full border border-white/20 bg-white/5 px-4 py-2 text-white/85 backdrop-blur ${centered ? "mx-auto" : ""}`}
+            className={`pr-load-fade pr-eyebrow pr-hero-eyebrow mb-6 inline-flex w-fit max-w-full items-baseline gap-2.5 rounded-full border border-white/20 bg-white/5 px-3.5 py-1.5 text-white/85 backdrop-blur sm:mb-8 sm:gap-3 sm:px-4 sm:py-2 ${centered ? "mx-auto" : ""}`}
             style={{ ["--d" as string]: "0.05s" }}
           >
-            <span className="size-1.5 animate-pulse rounded-full bg-accent" aria-hidden />
-            {section.eyebrow}
+            <span className="size-1.5 shrink-0 -translate-y-px animate-pulse rounded-full bg-accent" aria-hidden />
+            {/* Cada parte («Boating ·») fica inteira: a linha só quebra entre partes, nunca antes de um «·». */}
+            <span className="min-w-0">
+              {section.eyebrow.split(/\s*·\s*/).map((part, i, all) => (
+                <Fragment key={i}>
+                  <span className="whitespace-nowrap">
+                    {part}
+                    {i < all.length - 1 ? " ·" : ""}
+                  </span>
+                  {i < all.length - 1 ? " " : ""}
+                </Fragment>
+              ))}
+            </span>
           </p>
         )}
         <Title text={section.title} as="h1" animate="load" className={`pr-display max-w-[14ch] ${centered ? "mx-auto" : ""}`} />
@@ -245,14 +257,14 @@ export function SplitSection({ section, doc, locale }: Props<"split">) {
   const dark = bg.tone === "dark";
   const badge = section.stats[0];
   return (
-    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} relative overflow-clip py-28 sm:py-40`}>
+    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} relative overflow-clip py-16 sm:py-28 lg:py-40`}>
       <div className="mx-auto max-w-[90rem] px-5 sm:px-8 lg:px-12">
         <div className="pr-scroll-reveal">
           <Eyebrow tone={bg.tone}>{section.eyebrow}</Eyebrow>
         </div>
         <Title text={section.title} className="pr-h2 max-w-[18ch]" />
 
-        <div className="mt-16 grid items-start gap-16 lg:mt-24 lg:grid-cols-12 lg:gap-20">
+        <div className="mt-10 grid items-start gap-10 sm:mt-16 sm:gap-16 lg:mt-24 lg:grid-cols-12 lg:gap-20">
           <div className={`pr-3d-swing relative lg:col-span-6 ${imageLeft ? "" : "lg:order-2"}`}>
             {section.image.url && (
               <div className="pr-scroll-clip relative aspect-[4/5] overflow-clip rounded-[2rem] [clip-path:polygon(0_0,100%_0,100%_86%,80%_100%,0_100%)]">
@@ -311,7 +323,7 @@ export function BrandsSection({ section, doc, m, locale }: Props<"brands">) {
   const store = doc.store.showInBrands ? storeLink(doc, locale) : null;
   const authorized = doc.brands.filter((b) => b.visible && b.authorized);
   return (
-    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} pr-diagonal relative pb-28 sm:pb-40`}>
+    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} pr-diagonal relative pb-16 sm:pb-28 lg:pb-40`}>
       <div className="mx-auto max-w-[90rem] px-5 sm:px-8 lg:px-12">
         <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
           <div className="lg:col-span-8">
@@ -396,8 +408,8 @@ export function GallerySection({ section }: Props<"gallery">) {
   const items = section.items.filter((i) => i.image.url);
   const dark = bg.tone === "dark";
   return (
-    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} overflow-clip py-28 sm:py-40`}>
-      <div className="mx-auto mb-16 grid max-w-[90rem] gap-8 px-5 sm:px-8 lg:grid-cols-12 lg:items-end lg:px-12">
+    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} overflow-clip py-16 sm:py-28 lg:py-40`}>
+      <div className="mx-auto mb-10 grid max-w-[90rem] sm:mb-16 gap-8 px-5 sm:px-8 lg:grid-cols-12 lg:items-end lg:px-12">
         <div className="lg:col-span-8">
           <div className="pr-scroll-reveal">
             <Eyebrow tone={bg.tone}>{section.eyebrow}</Eyebrow>
@@ -458,7 +470,7 @@ export function BannerSection({ section, doc, locale }: Props<"banner">) {
         <div className="absolute inset-0" style={overlayStyle("dark", section.overlayOpacity)} />
         <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-dark to-transparent" />
       </div>
-      <div className="mx-auto w-full max-w-[90rem] px-5 py-28 sm:px-8 sm:py-40 lg:px-12">
+      <div className="mx-auto w-full max-w-[90rem] px-5 py-16 sm:px-8 sm:py-28 lg:px-12 lg:py-40">
         <div className="pr-scroll-reveal">
           <Eyebrow tone="dark">{section.eyebrow}</Eyebrow>
         </div>
@@ -487,7 +499,7 @@ export function VideoSection({ section, doc, locale }: Props<"video">) {
         )}
         <div className="absolute inset-0" style={overlayStyle("dark", section.overlayOpacity)} />
       </div>
-      <div className="mx-auto w-full max-w-[90rem] px-5 py-28 sm:px-8 lg:px-12">
+      <div className="mx-auto w-full max-w-[90rem] px-5 py-16 sm:px-8 sm:py-28 lg:px-12">
         <div className="pr-scroll-reveal">
           <Eyebrow tone="dark">{section.eyebrow}</Eyebrow>
         </div>
@@ -508,7 +520,7 @@ export function FeaturesSection({ section }: Props<"features">) {
   const dark = bg.tone === "dark";
   const cols = { 2: "md:grid-cols-2", 3: "md:grid-cols-2 lg:grid-cols-3", 4: "md:grid-cols-2 lg:grid-cols-4" }[section.columns];
   return (
-    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} py-28 sm:py-40`}>
+    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} py-16 sm:py-28 lg:py-40`}>
       <div className="mx-auto max-w-[90rem] px-5 sm:px-8 lg:px-12">
         <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
           <div className="lg:col-span-8">
@@ -522,7 +534,7 @@ export function FeaturesSection({ section }: Props<"features">) {
           )}
         </div>
 
-        <ul className={`mt-20 grid gap-4 ${cols}`}>
+        <ul className={`mt-10 grid gap-4 sm:mt-20 ${cols}`}>
           {section.items.map((item, i) => {
             const Icon = ICONS[item.icon] ?? Compass;
             const featured = i === 0;
@@ -579,7 +591,7 @@ export function FeaturesSection({ section }: Props<"features">) {
 export function CtaSection({ section, doc, locale }: Props<"cta">) {
   const bg = BACKGROUNDS[section.background];
   return (
-    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} relative overflow-clip py-28 sm:py-36`}>
+    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} relative overflow-clip py-16 sm:py-28 lg:py-36`}>
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute -right-20 top-0 h-full w-1/2 opacity-10" aria-hidden>
         <path d="M0 0 L100 100 L100 0 Z" fill="currentColor" />
       </svg>
@@ -638,13 +650,13 @@ export function MarqueeSection({ section, doc }: Props<"marquee">) {
 export function ContactSection({ section, doc, m, preview }: Props<"contact"> & { preview?: boolean }) {
   const bg = BACKGROUNDS[section.background];
   return (
-    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} relative overflow-clip py-28 sm:py-40`}>
+    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} relative overflow-clip py-16 sm:py-28 lg:py-40`}>
       <div className="mx-auto max-w-[90rem] px-5 sm:px-8 lg:px-12">
         <div className="pr-scroll-reveal">
           <Eyebrow tone={bg.tone}>{section.eyebrow}</Eyebrow>
         </div>
         <Title text={section.title} className="pr-display max-w-[16ch]" />
-        <div className="mt-20 grid gap-16 lg:grid-cols-12">
+        <div className="mt-10 grid gap-10 sm:mt-20 sm:gap-16 lg:grid-cols-12">
           <div className="pr-scroll-reveal lg:col-span-5">
             {section.intro && <p className={`text-xl leading-relaxed ${bg.tone === "dark" ? "text-white/75" : "text-ink/70"}`}>{section.intro}</p>}
             <ContactDetails contact={doc.contact} tone={bg.tone} m={m} />
@@ -671,7 +683,7 @@ export function ServicesSection({ section, doc, m, preview }: Props<"services"> 
     categoryLabel: doc.serviceCategories.find((c) => c.id === s.categoryId)?.label ?? "",
   }));
   return (
-    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} relative overflow-clip py-28 sm:py-40`}>
+    <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} relative overflow-clip py-16 sm:py-28 lg:py-40`}>
       <div className="mx-auto max-w-[90rem] px-5 sm:px-8 lg:px-12">
         <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
           <div className="lg:col-span-8">
@@ -696,7 +708,7 @@ export function ServicesSection({ section, doc, m, preview }: Props<"services"> 
             preview={preview}
           />
         ) : (
-          <p className={`mt-16 text-lg ${dark ? "text-white/60" : "text-ink/60"}`}>{m.services.soon}</p>
+          <p className={`mt-10 text-lg sm:mt-16 ${dark ? "text-white/60" : "text-ink/60"}`}>{m.services.soon}</p>
         )}
         <ServicesNote text={section.note} tone={bg.tone} />
       </div>
