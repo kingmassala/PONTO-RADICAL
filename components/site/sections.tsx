@@ -165,7 +165,12 @@ export function HeroSection({ section, doc, m, locale }: Props<"hero">) {
           <div className="flex items-center gap-8 overflow-hidden py-6">
             <p className="pr-eyebrow hidden shrink-0 pl-12 text-white/50 xl:block">{m.brands.represented}</p>
             <div className="pr-marquee relative flex-1 overflow-hidden" aria-label={`${m.brands.represented}: ${brandNames.join(", ")}`}>
-              <ul className="pr-marquee-track flex w-max items-center gap-12" aria-hidden>
+              <ul
+                className="pr-marquee-track flex w-max items-center gap-12"
+                // Velocidade constante: a duração cresce com o número de marcas (8,5 s por marca).
+                style={{ ["--pr-marquee-duration" as string]: `${Math.max(36, stripBrands.length * 8.5)}s` }}
+                aria-hidden
+              >
                 {[...stripBrands, ...stripBrands, ...stripBrands, ...stripBrands].map((brand, i) => (
                   <li key={i} className="flex items-center gap-12 whitespace-nowrap">
                     <span className="flex items-center gap-3">

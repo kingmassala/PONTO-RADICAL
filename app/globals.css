@@ -169,8 +169,16 @@ body {
 .pr-btn-secondary {
   border: 1.5px solid currentColor;
 }
+/* O preenchimento usa a cor do texto *antes* do hover (com currentColor, o fundo
+   mudava para a cor nova do texto e o botão ficava todo de uma só cor). */
 .pr-btn-secondary::before {
-  background: currentColor;
+  background: var(--pr-btn-fill, currentColor);
+}
+.pr-btn-secondary.text-white {
+  --pr-btn-fill: #fff;
+}
+.pr-btn-secondary.text-ink {
+  --pr-btn-fill: var(--pr-text);
 }
 .pr-btn-secondary:hover {
   color: var(--pr-dark);
