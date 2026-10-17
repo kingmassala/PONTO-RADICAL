@@ -61,13 +61,13 @@ export function SiteHeader({ logoText, logoUrl, logoAlt, items, cta, store, head
   return (
     <header style={{ top: topOffset }} className="pr-tone-dark fixed inset-x-0 z-50 px-3 pt-3 sm:px-5 sm:pt-4">
       <div
-        className={`mx-auto flex items-center justify-between gap-6 rounded-full text-white transition-all duration-500 ease-[cubic-bezier(0.2,0.75,0.15,1)] ${
+        className={`mx-auto flex items-center justify-between gap-4 rounded-full text-white transition-all duration-500 ease-[cubic-bezier(0.2,0.75,0.15,1)] xl:gap-5 ${
           compact || open
-            ? "max-w-6xl border border-white/10 bg-dark/75 py-2 pl-3 pr-2 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.6)] backdrop-blur-xl"
+            ? "max-w-7xl border border-white/10 bg-dark/75 py-2 pl-3 pr-2 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.6)] backdrop-blur-xl"
             : "max-w-[90rem] border border-transparent py-3 pl-2 pr-1 sm:px-4"
         }`}
       >
-        <a href={logoHref ?? "#top"} className="group flex items-center gap-3" aria-label={logoHref ? logoText || t.home : `${logoText || t.home} — ${t.backToStart}`}>
+        <a href={logoHref ?? "#top"} className="group flex shrink-0 items-center gap-3" aria-label={logoHref ? logoText || t.home : `${logoText || t.home} — ${t.backToStart}`}>
           {logoUrl && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -89,21 +89,22 @@ export function SiteHeader({ logoText, logoUrl, logoAlt, items, cta, store, head
           )}
         </a>
 
-        <nav aria-label={t.mainNav} className="hidden items-center gap-1 lg:flex">
+        {/* Menu completo só a partir de 1280 px (abaixo disso, botão de menu): com 7 entradas não cabe antes. */}
+        <nav aria-label={t.mainNav} className="hidden min-w-0 flex-1 items-center justify-center gap-0.5 xl:flex">
           {items.map((item) => (
-            <a key={item.href} href={item.href} className="group whitespace-nowrap rounded-full px-3 py-2 text-sm font-semibold text-white/85 transition-colors hover:bg-white/10 2xl:px-4">
+            <a key={item.href} href={item.href} className="group whitespace-nowrap rounded-full px-3 py-2 text-sm font-semibold text-white/85 transition-colors hover:bg-white/10">
               <RollText>{item.label}</RollText>
             </a>
           ))}
         </nav>
 
-        <div className="hidden items-center gap-2 lg:flex">
+        <div className="hidden shrink-0 items-center gap-2 xl:flex">
           <LanguageSwitcher />
           {store && (
-            <a href={store.href} {...newTabProps(store)} title={store.label} className="group inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-white/25 px-3.5 py-2.5 text-sm font-semibold hover:border-white 2xl:px-5">
+            <a href={store.href} {...newTabProps(store)} title={store.label} className={`group inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-white/25 py-2.5 text-sm font-semibold hover:border-white ${compact ? "px-3.5" : "px-3.5 2xl:px-5"}`}>
               <ShoppingBag aria-hidden className="size-4" />
-              {/* Abaixo de 2xl o menu fica apertado: só o ícone (o texto continua acessível). */}
-              <span className="sr-only 2xl:not-sr-only">
+              {/* Só há espaço para o texto com a barra larga (topo da página) em ecrãs grandes; senão, só o ícone (o texto continua acessível). */}
+              <span className={compact ? "sr-only" : "sr-only 2xl:not-sr-only"}>
                 <RollText>{store.label}</RollText>
               </span>
             </a>
@@ -120,7 +121,7 @@ export function SiteHeader({ logoText, logoUrl, logoAlt, items, cta, store, head
 
         <button
           type="button"
-          className="relative flex size-12 items-center justify-center rounded-full bg-accent text-on-accent lg:hidden"
+          className="relative flex size-12 items-center justify-center rounded-full bg-accent text-on-accent xl:hidden"
           aria-expanded={open}
           aria-controls="mobile-menu"
           aria-label={open ? t.closeMenu : t.openMenu}
@@ -134,7 +135,7 @@ export function SiteHeader({ logoText, logoUrl, logoAlt, items, cta, store, head
       <div
         id="mobile-menu"
         aria-hidden={!open}
-        className={`fixed inset-0 -z-10 flex flex-col justify-between bg-dark px-6 pb-10 pt-28 text-white transition-[clip-path] duration-700 ease-[cubic-bezier(0.7,0,0.2,1)] lg:hidden ${
+        className={`fixed inset-0 -z-10 flex flex-col justify-between bg-dark px-6 pb-10 pt-28 text-white transition-[clip-path] duration-700 ease-[cubic-bezier(0.7,0,0.2,1)] xl:hidden ${
           open ? "[clip-path:circle(150%_at_calc(100%-2.5rem)_2.5rem)]" : "pointer-events-none [clip-path:circle(0%_at_calc(100%-2.5rem)_2.5rem)]"
         }`}
       >
