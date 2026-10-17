@@ -91,8 +91,9 @@ function SpinBadge({ text, logo }: { text: string; logo: string }) {
           </textPath>
         </text>
       </svg>
-      <div className="absolute inset-[30%] flex items-center justify-center rounded-full bg-accent p-3">
-        <LogoMark url={logo} className="pr-mono-invert size-full object-contain" />
+      {/* Símbolo como no cabeçalho: contorno e «R» a branco sobre o fundo escuro, sem disco à volta. */}
+      <div className="absolute inset-[29%] flex items-center justify-center">
+        <LogoMark url={logo} className="size-full object-contain" />
       </div>
     </div>
   );
