@@ -1,6 +1,7 @@
 "use client";
 
 import { useId } from "react";
+import { createPortal } from "react-dom";
 import { AlertTriangle, CheckCircle2, Info, Loader2, XCircle } from "lucide-react";
 
 import { cx } from "@/lib/cx";
@@ -342,8 +343,10 @@ export function Modal({
   children: React.ReactNode;
   wide?: boolean;
 }) {
-  if (!open) return null;
-  return (
+  if (!open || typeof document === "undefined") return null;
+  // Portal para o <body>: dentro de um antepassado com backdrop-filter/transform (ex.: a barra
+  // de publicação, que tem backdrop-blur) um elemento «fixed» ficaria preso a esse antepassado.
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/50 p-4 backdrop-blur-sm sm:p-10"
       role="dialog"
@@ -361,6 +364,7 @@ export function Modal({
         </div>
         <div className="p-6">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

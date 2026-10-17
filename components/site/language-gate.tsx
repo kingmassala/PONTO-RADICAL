@@ -7,11 +7,12 @@ import { rememberLocale } from "./language-switcher";
 
 const noopSubscribe = () => () => {};
 
-/** «R» do logótipo (mesmos traços de public/brand/ponto-radical-mark.svg). */
-function LogoR() {
+/** Logótipo (círculo preto com o «R»), igual a public/brand/ponto-radical-mark.svg. */
+function LogoMark() {
   return (
-    <svg viewBox="140 108 184 236" className="size-full" aria-hidden>
-      <g fill="currentColor">
+    <svg viewBox="14 14 410 410" className="size-full" aria-hidden>
+      <circle cx="219" cy="219" r="205" fill="#000" />
+      <g fill="#fff">
         <path d="M152 120H262A51 51 0 0 1 262 222H228Z" />
         <path d="M152 222H228L310 332H152Z" />
       </g>
@@ -20,7 +21,7 @@ function LogoR() {
 }
 
 /**
- * Ecrã de entrada: a bola do logótipo a girar em 3D e a escolha da língua.
+ * Ecrã de entrada: o logótipo a girar em 3D sobre fundo branco e a escolha da língua.
  * Aparece só na primeira visita; o script de lib/i18n/gate-script.ts esconde-o antes
  * de ser desenhado quando a escolha já está guardada.
  */
@@ -56,22 +57,21 @@ export function LanguageGate({ locale, siteName }: { locale: Locale; siteName: s
       role="dialog"
       aria-modal="true"
       aria-labelledby="pr-gate-title"
-      className={`pr-gate fixed inset-0 z-[90] flex flex-col items-center justify-center-safe overflow-y-auto bg-black px-6 py-12 text-white ${
+      className={`pr-gate fixed inset-0 z-[90] flex flex-col items-center justify-center-safe overflow-y-auto bg-white px-6 py-12 text-black ${
         state === "closing" ? "pr-gate-out" : ""
       }`}
     >
-      <div className="pr-gate-glow" aria-hidden />
       <div className="relative flex flex-col items-center">
-        <div className="pr-ball-wrap" aria-hidden>
-          <div className="pr-ball">
-            <div className="pr-ball-face">
-              <LogoR />
+        <div className="pr-coin-wrap" aria-hidden>
+          <div className="pr-coin">
+            <div className="pr-coin-face">
+              <LogoMark />
             </div>
-            <div className="pr-ball-face pr-ball-face-back">
-              <LogoR />
+            <div className="pr-coin-face pr-coin-back">
+              <LogoMark />
             </div>
           </div>
-          <div className="pr-ball-shadow" />
+          <div className="pr-coin-shadow" />
         </div>
 
         <h1 id="pr-gate-title" className="sr-only">
@@ -79,7 +79,7 @@ export function LanguageGate({ locale, siteName }: { locale: Locale; siteName: s
         </h1>
         <ul className="pr-gate-prompts mt-12 text-center" aria-hidden>
           {order.map((l) => (
-            <li key={l} lang={LOCALE_INFO[l].htmlLang} className="pr-heading text-[clamp(1.4rem,4vw,2.2rem)] leading-tight first:text-white">
+            <li key={l} lang={LOCALE_INFO[l].htmlLang} className="pr-heading text-[clamp(1.4rem,4vw,2.2rem)] leading-tight first:text-black">
               {getMessages(l).intro.prompt}
             </li>
           ))}
@@ -95,9 +95,9 @@ export function LanguageGate({ locale, siteName }: { locale: Locale; siteName: s
               lang={LOCALE_INFO[l].htmlLang}
               onClick={(e) => choose(e, l)}
               style={{ ["--i" as string]: i }}
-              className="pr-gate-option group flex flex-col items-center gap-1 rounded-2xl border border-white/20 px-4 py-4 transition-colors duration-300 hover:border-white hover:bg-white hover:text-black focus-visible:bg-white focus-visible:text-black focus-visible:outline-none"
+              className="pr-gate-option group flex flex-col items-center gap-1 rounded-2xl border border-black/15 px-4 py-4 transition-colors duration-300 hover:border-black hover:bg-black hover:text-white focus-visible:bg-black focus-visible:text-white focus-visible:outline-none"
             >
-              <span className="text-xs font-bold tracking-[0.3em] text-white/50 transition-colors group-hover:text-black/50 group-focus-visible:text-black/50">
+              <span className="text-xs font-bold tracking-[0.3em] text-black/45 transition-colors group-hover:text-white/60 group-focus-visible:text-white/60">
                 {LOCALE_INFO[l].short}
               </span>
               <span className="text-base font-semibold">{LOCALE_INFO[l].label}</span>
