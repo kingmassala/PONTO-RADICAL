@@ -9,7 +9,8 @@ export async function siteMetadata(locale: Locale): Promise<Metadata> {
   const { doc: source } = await getPublishedSite();
   const doc = localizeDoc(source, locale);
   const { seo, settings } = doc;
-  const image = seo.ogImage.url || undefined;
+  // Imagem de partilha (WhatsApp, Facebook…): a definida em «SEO» ou, por omissão, o logótipo oficial.
+  const image = seo.ogImage.url || "/brand/og-ponto-radical.png";
   return {
     title: seo.title || settings.siteName,
     description: seo.description || undefined,
@@ -30,7 +31,7 @@ export async function siteMetadata(locale: Locale): Promise<Metadata> {
       alternateLocale: LOCALES.filter((l) => l !== locale).map((l) => LOCALE_INFO[l].og),
       type: "website",
       url: localePath(locale),
-      images: image ? [{ url: image, alt: seo.ogImage.alt || settings.siteName }] : undefined,
+      images: [{ url: image, width: 1200, height: 630, alt: seo.ogImage.alt || settings.siteName }],
     },
     twitter: { card: "summary_large_image" },
   };
