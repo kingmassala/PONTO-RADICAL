@@ -10,11 +10,17 @@ import { SiteRenderer } from "@/components/site/site-renderer";
 
 export const metadata: Metadata = { title: "Pré-visualização" };
 
-async function Preview({ searchParams }: { searchParams: Promise<{ versao?: string; lingua?: string }> }) {
+type PreviewParams = { versao?: string; lingua?: string; entrada?: string };
+
+async function Preview({ searchParams }: { searchParams: Promise<PreviewParams> }) {
   await requireStaffPage();
-  const { versao, lingua } = await searchParams;
+  const { versao, lingua, entrada } = await searchParams;
   const locale: Locale = isLocale(lingua) ? lingua : "pt";
-  const langHref = (l: Locale) => `/admin/pre-visualizacao?${new URLSearchParams({ ...(versao ? { versao } : {}), ...(l !== "pt" ? { lingua: l } : {}) })}`;
+  // O ecrã de entrada aparece ao abrir a pré-visualização; «entrada=0» salta-o (ao mudar de língua).
+  const showGate = entrada !== "0";
+  const href = (l: Locale, gate: boolean) =>
+    `/admin/pre-visualizacao?${new URLSearchParams({ ...(versao ? { versao } : {}), ...(l !== "pt" ? { lingua: l } : {}), ...(gate ? {} : { entrada: "0" }) })}`;
+  const gateHrefs = Object.fromEntries(LOCALES.map((l) => [l, href(l, false)])) as Record<Locale, string>;
   let doc = (await getDraft()).doc;
   let label = "Pré-visualização do rascunho · ainda não publicado";
 
@@ -32,6 +38,7 @@ async function Preview({ searchParams }: { searchParams: Promise<{ versao?: stri
     <SiteRenderer
       doc={doc}
       locale={locale}
+      previewGateHrefs={showGate ? gateHrefs : undefined}
       previewBanner={
         <div className="fixed inset-x-0 top-0 z-50 flex h-11 items-center justify-between gap-4 bg-amber-400 px-4 text-sm font-medium text-amber-950">
           <span className="truncate">{label}</span>
@@ -39,13 +46,16 @@ async function Preview({ searchParams }: { searchParams: Promise<{ versao?: stri
             {LOCALES.map((l) => (
               <Link
                 key={l}
-                href={langHref(l)}
+                href={href(l, false)}
                 aria-current={l === locale ? "page" : undefined}
                 className={`rounded px-2 py-1 text-xs font-bold ${l === locale ? "bg-amber-950 text-amber-50" : "hover:bg-amber-950/10"}`}
               >
                 {LOCALE_INFO[l].short}
               </Link>
             ))}
+            <Link href={href(locale, true)} className="ml-2 rounded px-2 py-1 text-xs font-bold hover:bg-amber-950/10">
+              Ver entrada
+            </Link>
             <Link href="/admin" className="ml-2 rounded bg-amber-950/10 px-3 py-1 hover:bg-amber-950/20">
               Voltar ao painel
             </Link>
@@ -59,7 +69,7 @@ async function Preview({ searchParams }: { searchParams: Promise<{ versao?: stri
 export default function PreviewPage({ searchParams }: PageProps<"/admin/pre-visualizacao">) {
   return (
     <Suspense fallback={<div className="p-10 text-center text-slate-500">A preparar a pré-visualização…</div>}>
-      <Preview searchParams={searchParams as Promise<{ versao?: string; lingua?: string }>} />
+      <Preview searchParams={searchParams as Promise<PreviewParams>} />
     </Suspense>
   );
 }

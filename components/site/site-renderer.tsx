@@ -61,10 +61,13 @@ export function SiteRenderer({
   doc: source,
   locale = DEFAULT_LOCALE,
   previewBanner,
+  previewGateHrefs,
 }: {
   doc: SiteDocument;
   locale?: Locale;
   previewBanner?: React.ReactNode;
+  /** Pré-visualização: mostra o ecrã de entrada com links para a pré-visualização em cada língua. */
+  previewGateHrefs?: Record<Locale, string>;
 }) {
   const preview = Boolean(previewBanner);
   const doc = localizeDoc(source, locale);
@@ -91,6 +94,7 @@ export function SiteRenderer({
           <LanguageGate locale={locale} siteName={doc.settings.siteName} />
         </>
       )}
+      {preview && previewGateHrefs && <LanguageGate locale={locale} siteName={doc.settings.siteName} previewHrefs={previewGateHrefs} />}
       <div className="pr-progress" aria-hidden />
       {fx.customCursor && <CustomCursor />}
       <a

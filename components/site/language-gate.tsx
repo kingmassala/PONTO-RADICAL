@@ -24,25 +24,37 @@ function LogoMark() {
  * Ecrã de entrada: o logótipo a girar em 3D sobre fundo branco e a escolha da língua.
  * Aparece só na primeira visita; o script de lib/i18n/gate-script.ts esconde-o antes
  * de ser desenhado quando a escolha já está guardada.
+ *
+ * Na pré-visualização do painel (`previewHrefs`) aparece sempre, a escolha não é
+ * guardada e cada língua abre a pré-visualização nessa língua.
  */
-export function LanguageGate({ locale, siteName }: { locale: Locale; siteName: string }) {
+export function LanguageGate({
+  locale,
+  siteName,
+  previewHrefs,
+}: {
+  locale: Locale;
+  siteName: string;
+  previewHrefs?: Record<Locale, string>;
+}) {
+  const preview = Boolean(previewHrefs);
   const [state, setState] = useState<"open" | "closing" | "closed">("open");
   const firstButton = useRef<HTMLAnchorElement>(null);
   // Língua já escolhida numa visita anterior (marcada no <html> pelo script de entrada).
   const chosenBefore = useSyncExternalStore(
     noopSubscribe,
-    () => Boolean(document.documentElement.dataset.prLocale) && state === "open",
+    () => !preview && Boolean(document.documentElement.dataset.prLocale) && state === "open",
     () => false,
   );
 
   useEffect(() => {
-    if (!document.documentElement.dataset.prLocale) firstButton.current?.focus({ preventScroll: true });
-  }, []);
+    if (preview || !document.documentElement.dataset.prLocale) firstButton.current?.focus({ preventScroll: true });
+  }, [preview]);
 
   if (state === "closed" || chosenBefore) return null;
 
   const choose = (e: React.MouseEvent, l: Locale) => {
-    rememberLocale(l);
+    if (!preview) rememberLocale(l);
     if (l !== locale) return; // segue o link para a página dessa língua
     e.preventDefault();
     setState("closing");
@@ -90,7 +102,7 @@ export function LanguageGate({ locale, siteName }: { locale: Locale; siteName: s
             <a
               key={l}
               ref={i === 0 ? firstButton : undefined}
-              href={localePath(l)}
+              href={previewHrefs ? previewHrefs[l] : localePath(l)}
               hrefLang={LOCALE_INFO[l].htmlLang}
               lang={LOCALE_INFO[l].htmlLang}
               onClick={(e) => choose(e, l)}
