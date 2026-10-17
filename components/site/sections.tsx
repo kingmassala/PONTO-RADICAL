@@ -1,5 +1,6 @@
 import {
   Anchor,
+  BadgeCheck,
 
   Compass,
   LifeBuoy,
@@ -31,8 +32,10 @@ import { CountUp } from "./fx/count-up";
 import { DragScroll } from "./fx/drag-scroll";
 import { ServicesExplorer, ServicesNote } from "./booking/services-explorer";
 import { visibleServices } from "@/lib/cms/validate";
+import type { Locale } from "@/lib/i18n/config";
+import type { Messages } from "@/lib/i18n/messages";
 
-type Props<T extends SectionType> = { section: SectionOf<T>; doc: SiteDocument };
+type Props<T extends SectionType> = { section: SectionOf<T>; doc: SiteDocument; m: Messages; locale: Locale };
 
 const ICONS: Record<string, LucideIcon> = {
   compass: Compass,
@@ -84,7 +87,7 @@ function SpinBadge({ text, logo }: { text: string; logo: string }) {
         </text>
       </svg>
       <div className="absolute inset-[30%] flex items-center justify-center rounded-full bg-accent p-3">
-        <LogoMark url={logo} className="size-full object-contain" />
+        <LogoMark url={logo} className="pr-mono-invert size-full object-contain" />
       </div>
     </div>
   );
@@ -92,17 +95,18 @@ function SpinBadge({ text, logo }: { text: string; logo: string }) {
 
 /* --------------------------------- Hero --------------------------------- */
 
-export function HeroSection({ section, doc }: Props<"hero">) {
-  const store = doc.store.showInHero ? storeLink(doc) : null;
+export function HeroSection({ section, doc, m, locale }: Props<"hero">) {
+  const store = doc.store.showInHero ? storeLink(doc, locale) : null;
   const centered = section.align === "center";
-  const brandNames = doc.brands.filter((b) => b.visible).map((b) => b.name);
+  const stripBrands = doc.brands.filter((b) => b.visible);
+  const brandNames = stripBrands.map((b) => b.name);
   const badgeText = `${doc.settings.siteName} • Mar • Vento • Aventura • `;
 
   return (
     <section
       id={section.anchor}
       aria-label={section.navLabel || plainText(section.title)}
-      className={`relative isolate flex overflow-clip bg-dark text-white ${section.height === "full" ? "min-h-[100svh]" : "min-h-[82svh]"}`}
+      className={`pr-tone-dark relative isolate flex overflow-clip bg-dark text-white ${section.height === "full" ? "min-h-[100svh]" : "min-h-[82svh]"}`}
     >
       <div className="absolute inset-0 -z-10 overflow-clip">
         <div className="pr-ken-burns absolute inset-0">
@@ -139,8 +143,8 @@ export function HeroSection({ section, doc }: Props<"hero">) {
           <div className={`pr-load-fade max-w-xl ${centered ? "mx-auto" : ""}`} style={{ ["--d" as string]: "0.7s" }}>
             {section.subtitle && <p className="text-lg leading-relaxed text-white/80 sm:text-xl">{section.subtitle}</p>}
             <div className={`mt-9 flex flex-wrap gap-4 ${centered ? "justify-center" : ""}`}>
-              <CmsButton link={resolveLink(section.primaryButton, doc)} tone="dark" magnetic />
-              <CmsButton link={resolveLink(section.secondaryButton, doc)} tone="dark" magnetic />
+              <CmsButton link={resolveLink(section.primaryButton, doc, locale)} tone="dark" magnetic />
+              <CmsButton link={resolveLink(section.secondaryButton, doc, locale)} tone="dark" magnetic />
               <CmsButton link={store} tone="dark" magnetic />
             </div>
           </div>
@@ -155,12 +159,25 @@ export function HeroSection({ section, doc }: Props<"hero">) {
       {section.showBrandStrip && brandNames.length > 0 && (
         <div className="absolute inset-x-0 bottom-0 border-t border-white/10 bg-black/30 backdrop-blur-xl">
           <div className="flex items-center gap-8 overflow-hidden py-6">
-            <p className="pr-eyebrow hidden shrink-0 pl-12 text-white/50 xl:block">Marcas representadas</p>
-            <div className="pr-marquee relative flex-1 overflow-hidden" aria-label={`Marcas representadas: ${brandNames.join(", ")}`}>
+            <p className="pr-eyebrow hidden shrink-0 pl-12 text-white/50 xl:block">{m.brands.represented}</p>
+            <div className="pr-marquee relative flex-1 overflow-hidden" aria-label={`${m.brands.represented}: ${brandNames.join(", ")}`}>
               <ul className="pr-marquee-track flex w-max items-center gap-12" aria-hidden>
-                {[...brandNames, ...brandNames, ...brandNames, ...brandNames].map((name, i) => (
+                {[...stripBrands, ...stripBrands, ...stripBrands, ...stripBrands].map((brand, i) => (
                   <li key={i} className="flex items-center gap-12 whitespace-nowrap">
-                    <span className="pr-heading text-xl text-white sm:text-2xl">{name}</span>
+                    <span className="flex items-center gap-3">
+                      {brand.logo.url ? (
+                        // Logótipos a branco sobre a faixa escura, para ficarem uniformes.
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={brand.logo.url} alt="" loading="lazy" className="pr-logo-white h-7 w-auto max-w-[150px] object-contain sm:h-8" />
+                      ) : (
+                        <span className="pr-heading text-xl text-white sm:text-2xl">{brand.name}</span>
+                      )}
+                      {brand.authorized && (
+                        <span className="inline-flex items-center gap-1 rounded-full border border-white/25 px-2.5 py-1 text-[0.6rem] font-bold uppercase tracking-[0.16em] text-white/80">
+                          <BadgeCheck className="size-3.5" aria-hidden /> {m.brands.authorized}
+                        </span>
+                      )}
+                    </span>
                     <LogoMark url={doc.navigation.logo.url} className="size-5 opacity-50" />
                   </li>
                 ))}
@@ -175,7 +192,7 @@ export function HeroSection({ section, doc }: Props<"hero">) {
 
 /* ------------------------------ Texto e imagem ------------------------------ */
 
-export function SplitSection({ section, doc }: Props<"split">) {
+export function SplitSection({ section, doc, locale }: Props<"split">) {
   const bg = BACKGROUNDS[section.background];
   const imageLeft = section.imagePosition === "left";
   const dark = bg.tone === "dark";
@@ -199,7 +216,7 @@ export function SplitSection({ section, doc }: Props<"split">) {
             )}
             {badge && (
               <div className={`absolute -bottom-8 ${imageLeft ? "right-4 sm:-right-8" : "left-4 sm:-left-10"}`}>
-                <div className="flex size-32 rotate-[-8deg] flex-col items-center justify-center rounded-full bg-accent text-center text-white shadow-2xl transition-transform duration-500 hover:rotate-[6deg] hover:scale-110 sm:size-40">
+                <div className="flex size-32 rotate-[-8deg] flex-col items-center justify-center rounded-full bg-accent text-center text-on-accent shadow-2xl transition-transform duration-500 hover:rotate-[6deg] hover:scale-110 sm:size-40">
                   <span className="pr-heading text-4xl sm:text-5xl">
                     <CountUp value={badge.value} />
                   </span>
@@ -229,7 +246,7 @@ export function SplitSection({ section, doc }: Props<"split">) {
               </dl>
             )}
             <div className="mt-12">
-              <CmsButton link={resolveLink(section.button, doc)} tone={bg.tone} magnetic />
+              <CmsButton link={resolveLink(section.button, doc, locale)} tone={bg.tone} magnetic />
             </div>
           </div>
         </div>
@@ -240,11 +257,12 @@ export function SplitSection({ section, doc }: Props<"split">) {
 
 /* --------------------------------- Marcas --------------------------------- */
 
-export function BrandsSection({ section, doc }: Props<"brands">) {
+export function BrandsSection({ section, doc, m, locale }: Props<"brands">) {
   const bg = BACKGROUNDS[section.background];
   const brands = doc.brands.filter((b) => b.visible).map((b) => ({ ...b, description: sanitizeRichText(b.description) }));
   const dark = bg.tone === "dark";
-  const store = doc.store.showInBrands ? storeLink(doc) : null;
+  const store = doc.store.showInBrands ? storeLink(doc, locale) : null;
+  const authorized = doc.brands.filter((b) => b.visible && b.authorized);
   return (
     <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} pr-diagonal relative pb-28 sm:pb-40`}>
       <div className="mx-auto max-w-[90rem] px-5 sm:px-8 lg:px-12">
@@ -259,15 +277,48 @@ export function BrandsSection({ section, doc }: Props<"brands">) {
             <p className={`pr-scroll-reveal text-lg leading-relaxed lg:col-span-4 ${dark ? "text-white/70" : "text-ink/70"}`}>{section.intro}</p>
           )}
         </div>
+        {authorized.length > 0 && (
+          <div
+            className={`pr-scroll-reveal mt-16 grid gap-8 rounded-[2rem] border p-8 sm:mt-20 sm:p-12 lg:grid-cols-12 lg:items-center ${
+              dark ? "border-white/15" : "border-ink/15 bg-white"
+            }`}
+          >
+            <div className="lg:col-span-5">
+              <p className="pr-eyebrow flex items-center gap-2 text-accent">
+                <BadgeCheck className="size-4" aria-hidden /> {m.brands.authorized}
+              </p>
+              <p className="pr-heading pr-h3 mt-4 text-2xl sm:text-3xl">{m.brands.authorizedTitle}</p>
+              <p className={`mt-3 max-w-md leading-relaxed ${dark ? "text-white/70" : "text-ink/70"}`}>{m.brands.authorizedText}</p>
+            </div>
+            <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-7">
+              {authorized.map((brand) => (
+                <li
+                  key={brand.id}
+                  className={`flex min-h-36 flex-col items-center justify-center gap-4 rounded-[1.5rem] p-6 text-center ${dark ? "bg-white/[0.06]" : "bg-surface"}`}
+                >
+                  {brand.logo.url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={brand.logo.url} alt={brand.logo.alt || brand.name} loading="lazy" className={`h-12 w-auto max-w-[220px] object-contain ${dark ? "pr-logo-white" : ""}`} />
+                  ) : (
+                    <span className="pr-heading text-3xl">{brand.name}</span>
+                  )}
+                  <span className={`inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.16em] ${dark ? "text-white/70" : "text-ink/60"}`}>
+                    <BadgeCheck className="size-4 text-accent" aria-hidden /> {m.brands.authorized} {brand.name}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         <BrandShowcase brands={brands} layout={section.layout} tone={bg.tone} />
         {store && (
           <div
             className={`pr-3d-rise mt-16 flex flex-col gap-8 rounded-[2rem] p-8 sm:mt-24 sm:p-12 lg:flex-row lg:items-center lg:justify-between ${
-              dark ? "bg-white/[0.06] text-white ring-1 ring-white/10" : "bg-dark text-white"
+              dark ? "bg-white/[0.06] text-white ring-1 ring-white/10" : "pr-tone-dark bg-dark text-white"
             }`}
           >
             <div className="flex items-start gap-5 sm:gap-7">
-              <span className="pr-float-3d flex size-14 shrink-0 items-center justify-center rounded-2xl bg-accent text-white sm:size-16" aria-hidden>
+              <span className="pr-float-3d flex size-14 shrink-0 items-center justify-center rounded-2xl bg-accent text-on-accent sm:size-16" aria-hidden>
                 <ShoppingBag className="size-7 sm:size-8" strokeWidth={1.6} />
               </span>
               <div>
@@ -322,7 +373,7 @@ export function GallerySection({ section }: Props<"gallery">) {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
               {item.caption && (
-                <figcaption className="absolute bottom-5 left-5 flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-xs font-bold uppercase tracking-widest text-ink backdrop-blur transition-colors group-hover:bg-accent group-hover:text-white">
+                <figcaption className="absolute bottom-5 left-5 flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-xs font-bold uppercase tracking-widest text-ink backdrop-blur transition-colors group-hover:bg-accent group-hover:text-on-accent">
                   <span className="tabular-nums opacity-50">{String(i + 1).padStart(2, "0")}</span>
                   {item.caption}
                 </figcaption>
@@ -348,12 +399,12 @@ export function GallerySection({ section }: Props<"gallery">) {
 
 /* ---------------------------------- Banner ---------------------------------- */
 
-export function BannerSection({ section, doc }: Props<"banner">) {
+export function BannerSection({ section, doc, locale }: Props<"banner">) {
   return (
     <section
       id={section.anchor}
       aria-label={section.navLabel || plainText(section.title)}
-      className={`relative isolate flex items-end overflow-clip bg-dark text-white ${section.height === "tall" ? "min-h-[110svh]" : "min-h-[70svh]"}`}
+      className={`pr-tone-dark relative isolate flex items-end overflow-clip bg-dark text-white ${section.height === "tall" ? "min-h-[110svh]" : "min-h-[70svh]"}`}
     >
       <div className="absolute inset-0 -z-10 overflow-clip">
         <div className="pr-scroll-scale absolute inset-0">
@@ -369,19 +420,19 @@ export function BannerSection({ section, doc }: Props<"banner">) {
         <Title text={section.title} className="pr-display max-w-[13ch]" />
         <div className="pr-scroll-reveal mt-10 flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
           {section.subtitle && <p className="max-w-xl text-lg leading-relaxed text-white/80 sm:text-xl">{section.subtitle}</p>}
-          <CmsButton link={resolveLink(section.button, doc)} tone="dark" magnetic />
+          <CmsButton link={resolveLink(section.button, doc, locale)} tone="dark" magnetic />
         </div>
       </div>
     </section>
   );
 }
 
-export function VideoSection({ section, doc }: Props<"video">) {
+export function VideoSection({ section, doc, locale }: Props<"video">) {
   return (
     <section
       id={section.anchor}
       aria-label={section.navLabel || plainText(section.title)}
-      className="relative isolate flex min-h-[90svh] items-end overflow-clip bg-dark text-white"
+      className="pr-tone-dark relative isolate flex min-h-[90svh] items-end overflow-clip bg-dark text-white"
     >
       <div className="absolute inset-0 -z-10">
         {section.videoUrl ? (
@@ -398,7 +449,7 @@ export function VideoSection({ section, doc }: Props<"video">) {
         <Title text={section.title} className="pr-display max-w-[13ch]" />
         {section.subtitle && <p className="pr-scroll-reveal mt-8 max-w-xl text-lg text-white/80">{section.subtitle}</p>}
         <div className="mt-10">
-          <CmsButton link={resolveLink(section.button, doc)} tone="dark" magnetic />
+          <CmsButton link={resolveLink(section.button, doc, locale)} tone="dark" magnetic />
         </div>
       </div>
     </section>
@@ -437,7 +488,7 @@ export function FeaturesSection({ section }: Props<"features">) {
                 <Tilt
                   className={`flex h-full min-h-72 flex-col overflow-hidden rounded-[2rem] p-8 sm:p-10 ${
                     featured
-                      ? "bg-accent text-white"
+                      ? "bg-accent text-on-accent"
                       : dark
                         ? "bg-white/[0.06] text-white"
                         : "bg-white text-ink shadow-[0_30px_60px_-40px_rgba(5,11,16,0.35)]"
@@ -446,18 +497,18 @@ export function FeaturesSection({ section }: Props<"features">) {
                   <div className="flex items-start justify-between">
                     <span
                       className={`flex size-16 items-center justify-center rounded-2xl transition-transform duration-500 group-hover:rotate-[-12deg] group-hover:scale-110 ${
-                        featured ? "bg-white text-accent" : "bg-accent text-white"
+                        featured ? "bg-on-accent text-accent" : "bg-accent text-on-accent"
                       }`}
                     >
                       <Icon aria-hidden className="size-8" strokeWidth={1.6} />
                     </span>
-                    <span className={`pr-heading text-5xl ${featured ? "text-white/30" : dark ? "text-white/15" : "text-ink/10"}`}>
+                    <span className={`pr-heading text-5xl ${featured ? "text-on-accent/30" : dark ? "text-white/15" : "text-ink/10"}`}>
                       {String(i + 1).padStart(2, "0")}
                     </span>
                   </div>
                   <h3 className={`pr-heading mt-auto pt-16 ${featured ? "text-3xl sm:text-4xl" : "pr-h3"}`}>{item.title}</h3>
                   {item.text && (
-                    <p className={`mt-4 leading-relaxed ${featured ? "text-lg text-white/90" : dark ? "text-white/65" : "text-ink/65"}`}>{item.text}</p>
+                    <p className={`mt-4 leading-relaxed ${featured ? "text-lg text-on-accent/90" : dark ? "text-white/65" : "text-ink/65"}`}>{item.text}</p>
                   )}
                 </Tilt>
               </li>
@@ -471,7 +522,7 @@ export function FeaturesSection({ section }: Props<"features">) {
 
 /* --------------------------------- Chamada --------------------------------- */
 
-export function CtaSection({ section, doc }: Props<"cta">) {
+export function CtaSection({ section, doc, locale }: Props<"cta">) {
   const bg = BACKGROUNDS[section.background];
   return (
     <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} relative overflow-clip py-28 sm:py-36`}>
@@ -484,8 +535,8 @@ export function CtaSection({ section, doc }: Props<"cta">) {
           {section.text && <p className={`pr-scroll-reveal mt-8 max-w-2xl text-xl ${bg.tone === "dark" ? "text-white/80" : "text-ink/70"}`}>{section.text}</p>}
         </div>
         <div className="flex flex-wrap gap-4">
-          <CmsButton link={resolveLink(section.primaryButton, doc)} tone={bg.tone} magnetic />
-          <CmsButton link={resolveLink(section.secondaryButton, doc)} tone={bg.tone} magnetic />
+          <CmsButton link={resolveLink(section.primaryButton, doc, locale)} tone={bg.tone} magnetic />
+          <CmsButton link={resolveLink(section.secondaryButton, doc, locale)} tone={bg.tone} magnetic />
         </div>
       </div>
     </section>
@@ -530,7 +581,7 @@ export function MarqueeSection({ section, doc }: Props<"marquee">) {
 
 /* --------------------------------- Contactos --------------------------------- */
 
-export function ContactSection({ section, doc, preview }: Props<"contact"> & { preview?: boolean }) {
+export function ContactSection({ section, doc, m, preview }: Props<"contact"> & { preview?: boolean }) {
   const bg = BACKGROUNDS[section.background];
   return (
     <section id={section.anchor} aria-label={section.navLabel || plainText(section.title)} className={`${bg.className} relative overflow-clip py-28 sm:py-40`}>
@@ -542,7 +593,7 @@ export function ContactSection({ section, doc, preview }: Props<"contact"> & { p
         <div className="mt-20 grid gap-16 lg:grid-cols-12">
           <div className="pr-scroll-reveal lg:col-span-5">
             {section.intro && <p className={`text-xl leading-relaxed ${bg.tone === "dark" ? "text-white/75" : "text-ink/70"}`}>{section.intro}</p>}
-            <ContactDetails contact={doc.contact} tone={bg.tone} />
+            <ContactDetails contact={doc.contact} tone={bg.tone} m={m} />
           </div>
           {section.showForm && (
             <div className="pr-scroll-reveal lg:col-span-7">
@@ -557,7 +608,7 @@ export function ContactSection({ section, doc, preview }: Props<"contact"> & { p
 
 /* ------------------------- Experiências e reservas ------------------------- */
 
-export function ServicesSection({ section, doc, preview }: Props<"services"> & { preview?: boolean }) {
+export function ServicesSection({ section, doc, m, preview }: Props<"services"> & { preview?: boolean }) {
   const bg = BACKGROUNDS[section.background];
   const dark = bg.tone === "dark";
   const services = visibleServices(doc, section.categoryIds).map((s) => ({
@@ -591,7 +642,7 @@ export function ServicesSection({ section, doc, preview }: Props<"services"> & {
             preview={preview}
           />
         ) : (
-          <p className={`mt-16 text-lg ${dark ? "text-white/60" : "text-ink/60"}`}>Novas experiências em breve.</p>
+          <p className={`mt-16 text-lg ${dark ? "text-white/60" : "text-ink/60"}`}>{m.services.soon}</p>
         )}
         <ServicesNote text={section.note} tone={bg.tone} />
       </div>

@@ -34,6 +34,7 @@ export const SEED_CONTENT: SiteDocument = {
     headings: { uppercase: false, weight: "800", tracking: "tight", scale: "standard" },
     buttons: { shape: "pill", uppercase: true },
     effects: { customCursor: true, grain: true, animations: true },
+    monochrome: false,
   },
   navigation: {
     logo: { url: "/brand/ponto-radical-mark-white.svg", alt: "Ponto Radical", mediaId: null },
@@ -239,6 +240,7 @@ export const SEED_CONTENT: SiteDocument = {
       heroImage: { url: "https://images.unsplash.com/photo-1776802159513-d64fef74f494?auto=format&fit=crop&w=1800&q=80", alt: "Piloto ao leme com ecrã de navegação", mediaId: null },
       externalUrl: "https://www.garmin.com",
       visible: true,
+      authorized: true,
     },
     {
       id: "brand-sea-dog",
@@ -250,6 +252,7 @@ export const SEED_CONTENT: SiteDocument = {
       heroImage: { url: "https://images.unsplash.com/photo-1768080315860-f5c8c15fbd5c?auto=format&fit=crop&w=1800&q=80", alt: "Cabo amarrado a um cunho num cais de madeira", mediaId: null },
       externalUrl: "https://www.sea-dog.com",
       visible: true,
+      authorized: false,
     },
     {
       id: "brand-star-brite",
@@ -261,6 +264,7 @@ export const SEED_CONTENT: SiteDocument = {
       heroImage: { url: "https://images.unsplash.com/photo-1568476612160-787b6a1d5fb1?auto=format&fit=crop&w=1800&q=80", alt: "Lancha branca impecável a navegar no mar", mediaId: null },
       externalUrl: "https://www.starbrite.com",
       visible: true,
+      authorized: false,
     },
     {
       id: "brand-rule",
@@ -272,6 +276,7 @@ export const SEED_CONTENT: SiteDocument = {
       heroImage: { url: "https://images.unsplash.com/photo-1788629325547-041ccf2684f2?auto=format&fit=crop&w=1800&q=80", alt: "Posto de comando e instrumentos de bordo", mediaId: null },
       externalUrl: "https://www.rule-industries.com",
       visible: true,
+      authorized: false,
     },
     {
       id: "brand-duotone",
@@ -283,6 +288,7 @@ export const SEED_CONTENT: SiteDocument = {
       heroImage: { url: "https://images.unsplash.com/photo-1767019462191-0af904b4a6eb?auto=format&fit=crop&w=1800&q=80", alt: "Kitesurfista a saltar sobre as ondas", mediaId: null },
       externalUrl: "https://www.duotonesports.com",
       visible: true,
+      authorized: false,
     },
   ],
   services: [
@@ -429,4 +435,5 @@ export const SEED_CONTENT: SiteDocument = {
     showSocial: true,
     links: [],
   },
+  translations: { es: {}, fr: {}, en: {} },
 };

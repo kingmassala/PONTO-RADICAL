@@ -1,4 +1,6 @@
 import type { SiteDocument } from "@/lib/cms/schema";
+import type { Locale } from "@/lib/i18n/config";
+import type { Messages } from "@/lib/i18n/messages";
 import { navItems, resolveLink, storeLink } from "./links";
 
 const SOCIAL_ICONS: Record<string, React.ReactNode> = {
@@ -25,13 +27,13 @@ const SOCIAL_LABELS: Record<string, string> = {
   tiktok: "TikTok",
 };
 
-export function SiteFooter({ doc }: { doc: SiteDocument }) {
+export function SiteFooter({ doc, m, locale }: { doc: SiteDocument; m: Messages; locale: Locale }) {
   const social = Object.entries(doc.contact.social).filter(([, url]) => url);
-  const links = doc.footer.links.map((l) => resolveLink(l, doc)).filter(Boolean);
-  const store = storeLink(doc);
+  const links = doc.footer.links.map((l) => resolveLink(l, doc, locale)).filter(Boolean);
+  const store = storeLink(doc, locale);
 
   return (
-    <footer className="pr-diagonal relative overflow-hidden bg-dark text-white">
+    <footer className="pr-tone-dark pr-diagonal relative overflow-hidden bg-dark text-white">
       <div className="mx-auto max-w-[90rem] px-5 pb-10 sm:px-8 lg:px-12">
         <div className="grid gap-12 lg:grid-cols-12">
           <div className="lg:col-span-5">
@@ -51,8 +53,8 @@ export function SiteFooter({ doc }: { doc: SiteDocument }) {
                       href={url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      aria-label={`${SOCIAL_LABELS[key]} (abre numa nova janela)`}
-                      className="flex size-12 items-center justify-center rounded-full border border-white/20 transition hover:-translate-y-1 hover:border-accent hover:bg-accent"
+                      aria-label={`${SOCIAL_LABELS[key]} ${m.common.newTab}`}
+                      className="flex size-12 items-center justify-center rounded-full border border-white/20 transition hover:-translate-y-1 hover:border-accent hover:bg-accent hover:text-on-accent"
                     >
                       <svg viewBox="0 0 24 24" className="size-5" fill="currentColor" aria-hidden>
                         {SOCIAL_ICONS[key]}
@@ -63,8 +65,8 @@ export function SiteFooter({ doc }: { doc: SiteDocument }) {
               </ul>
             )}
           </div>
-          <nav aria-label="Rodapé" className="lg:col-span-3">
-            <p className="pr-eyebrow text-white/50">Navegação</p>
+          <nav aria-label={m.footer.label} className="lg:col-span-3">
+            <p className="pr-eyebrow text-white/50">{m.footer.navigation}</p>
             <ul className="mt-5 space-y-3">
               {navItems(doc).map((item) => (
                 <li key={item.href}>
@@ -90,7 +92,7 @@ export function SiteFooter({ doc }: { doc: SiteDocument }) {
             </ul>
           </nav>
           <div className="lg:col-span-4">
-            <p className="pr-eyebrow text-white/50">Contactos</p>
+            <p className="pr-eyebrow text-white/50">{m.footer.contacts}</p>
             <ul className="mt-5 space-y-3 text-white/80">
               {doc.contact.phone && <li>{doc.contact.phone}</li>}
               {doc.contact.email && (
@@ -119,7 +121,7 @@ export function SiteFooter({ doc }: { doc: SiteDocument }) {
         <div className="mt-10 flex flex-col gap-3 border-t border-white/10 pt-8 text-sm text-white/45 sm:flex-row sm:justify-between">
           <p>{doc.footer.copyright}</p>
           <a href="#top" className="font-semibold uppercase tracking-widest hover:text-accent">
-            Voltar ao topo ↑
+            {m.footer.backToTop}
           </a>
         </div>
       </div>

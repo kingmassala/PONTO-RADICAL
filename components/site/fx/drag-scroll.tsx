@@ -2,10 +2,12 @@
 
 import { useRef } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { useMessages } from "../i18n";
 
 /** Faixa horizontal que se arrasta com o rato (e desliza com o dedo/scroll). */
 export function DragScroll({ children, tone }: { children: React.ReactNode; tone: "light" | "dark" }) {
   const ref = useRef<HTMLDivElement>(null);
+  const t = useMessages().common;
   const state = useRef({ down: false, startX: 0, scroll: 0, moved: false });
 
   const onDown = (e: React.PointerEvent) => {
@@ -29,7 +31,7 @@ export function DragScroll({ children, tone }: { children: React.ReactNode; tone
     <div>
       <div
         ref={ref}
-        data-cursor="Arrastar"
+        data-cursor={t.drag}
         onPointerDown={onDown}
         onPointerMove={onMove}
         onPointerUp={onUp}
@@ -45,8 +47,8 @@ export function DragScroll({ children, tone }: { children: React.ReactNode; tone
             key={dir}
             type="button"
             onClick={() => by(dir)}
-            aria-label={dir < 0 ? "Fotografias anteriores" : "Fotografias seguintes"}
-            className={`flex size-14 items-center justify-center rounded-full border transition hover:bg-accent hover:border-accent hover:text-white ${
+            aria-label={dir < 0 ? t.previousPhotos : t.nextPhotos}
+            className={`flex size-14 items-center justify-center rounded-full border transition hover:bg-accent hover:border-accent hover:text-on-accent ${
               tone === "dark" ? "border-white/25 text-white" : "border-ink/20 text-ink"
             }`}
           >

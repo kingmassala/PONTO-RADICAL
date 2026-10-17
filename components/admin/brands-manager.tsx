@@ -61,6 +61,7 @@ export function BrandsManager({ brands }: { brands: Brand[] }) {
             </div>
             <div className="flex items-center gap-1">
               {!b.visible && <Badge tone="amber">Oculta</Badge>}
+              {b.authorized && <Badge tone="green">Revendedor autorizado</Badge>}
               <Button
                 size="sm"
                 variant="ghost"
@@ -157,6 +158,12 @@ export function BrandEditor({ brand }: { brand: Brand }) {
         </div>
         <Card title="Visibilidade">
           <Toggle label="Mostrar no website" checked={b.visible} onChange={(v) => set({ visible: v })} />
+          <Toggle
+            label="Revendedor autorizado"
+            description="Mostra o selo «Revendedor autorizado» na faixa de marcas e destaca a marca na secção «Marcas»."
+            checked={b.authorized}
+            onChange={(v) => set({ authorized: v })}
+          />
           <p className="text-xs text-slate-500">A ordem das marcas altera-se na lista de marcas.</p>
         </Card>
       </div>

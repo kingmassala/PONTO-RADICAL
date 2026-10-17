@@ -6,6 +6,7 @@ import { useState } from "react";
 import {
   BadgeCheck,
   CalendarCheck,
+  Languages,
   ExternalLink,
   FileText,
   History,
@@ -40,6 +41,7 @@ const NAV = [
   { href: "/admin/menu", label: "Menu e Botões", icon: MousePointerClick },
   { href: "/admin/contactos", label: "Contactos", icon: Phone },
   { href: "/admin/loja", label: "Loja Online", icon: ShoppingBag },
+  { href: "/admin/traducoes", label: "Traduções", icon: Languages },
   { href: "/admin/seo", label: "SEO", icon: Search },
   { href: "/admin/publicacoes", label: "Publicações e Histórico", icon: History },
   { href: "/admin/mensagens", label: "Mensagens", icon: Inbox, badge: "messages" as const },

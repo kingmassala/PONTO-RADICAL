@@ -14,7 +14,9 @@ import { navItems, resolveLink, storeLink } from "../components/site/links";
 import { detectImageType, svgIsSafe } from "../lib/media/files";
 import { plainText, tokenizeTitle } from "../lib/cms/text";
 import { collectImages } from "../lib/cms/validate";
-import { bookingWindow, formatDuration, formatPrice, todayIso, validateBooking, FLEXIBLE_SLOT } from "../lib/booking/rules";
+import { bookingWindow, formatDuration, formatPeople, formatPrice, todayIso, validateBooking, FLEXIBLE_SLOT } from "../lib/booking/rules";
+import { collectTexts, localizeDoc } from "../lib/i18n/content";
+import { translateServerMessage } from "../lib/i18n/messages";
 
 let passed = 0;
 function test(name: string, fn: () => void) {
@@ -337,6 +339,44 @@ test("formatação de duração e preço", () => {
   assert.equal(formatDuration(1440), "1 dia");
   assert.equal(formatPrice({ priceFrom: null, priceUnit: "pessoa" }), null);
   assert.match(formatPrice({ priceFrom: 35000, priceUnit: "pessoa" }) ?? "", /^35\s000 Kz \/ pessoa$/);
+});
+
+test("traduções: chaves estáveis por id, aplicadas por língua e nomes de marcas excluídos", () => {
+  const doc = clone();
+  const entries = collectTexts(doc);
+  const hero = doc.sections[0];
+  const titleKey = `sections.${hero.id}.title`;
+  assert.ok(entries.some((e) => e.key === titleKey));
+  assert.ok(!entries.some((e) => e.key.startsWith("brands.") && e.key.endsWith(".name")), "nomes das marcas não se traduzem");
+  assert.ok(entries.some((e) => e.rich), "há campos de texto rico");
+
+  doc.translations.en[titleKey] = "Gear up on land.";
+  // Reordenar as secções não altera as chaves.
+  doc.sections.reverse();
+  const titleOf = (d: SiteDocument) => {
+    const s = d.sections.find((x) => x.id === hero.id);
+    return s && "title" in s ? s.title : undefined;
+  };
+  const original = titleOf(doc);
+  assert.equal(titleOf(localizeDoc(doc, "en")), "Gear up on land.");
+  // As outras línguas e o original ficam intactos.
+  assert.equal(titleOf(localizeDoc(doc, "pt")), original);
+  assert.equal(titleOf(localizeDoc(doc, "fr")), original);
+  assert.equal(titleOf(doc), original);
+});
+
+test("documento antigo sem traduções continua válido", () => {
+  const doc = clone() as unknown as Record<string, unknown>;
+  delete doc.translations;
+  assert.deepEqual(siteDocumentSchema.parse(doc).translations, { es: {}, fr: {}, en: {} });
+});
+
+test("formatação e mensagens do servidor na língua do visitante", () => {
+  assert.equal(formatPeople({ minPeople: 2, maxPeople: 8 }, "en"), "2–8 people");
+  assert.match(formatPrice({ priceFrom: 35000, priceUnit: "grupo" }, "fr") ?? "", /Kz \/ groupe$/);
+  assert.equal(translateServerMessage("es", "Indique o seu nome."), "Indique su nombre.");
+  assert.equal(translateServerMessage("en", "Entre 2 e 8 pessoas por reserva."), "Between 2 and 8 people per booking.");
+  assert.equal(translateServerMessage("pt", "Indique o seu nome."), "Indique o seu nome.");
 });
 
 console.log(`\n${passed} testes passaram.`);

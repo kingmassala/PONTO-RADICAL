@@ -9,6 +9,8 @@
   --pr-surface: #e9e3d6;
   --pr-text: #0b1218;
   --pr-dark: #050b10;
+  /* Cor do texto sobre a cor de destaque (no modo preto e branco alterna entre preto e branco). */
+  --pr-on-accent: #fff;
   --pr-font-heading: var(--font-unbounded);
   --pr-font-body: var(--font-hanken);
   --pr-heading-transform: none;
@@ -23,6 +25,7 @@
   --color-primary: var(--pr-primary);
   --color-secondary: var(--pr-secondary);
   --color-accent: var(--pr-accent);
+  --color-on-accent: var(--pr-on-accent);
   --color-background: var(--pr-background);
   --color-surface: var(--pr-surface);
   --color-ink: var(--pr-text);
@@ -600,6 +603,56 @@ body {
   border-color: var(--pr-accent);
 }
 
+/* ---------- Preto e branco («Aparência» › monocromático) ----------
+   O destaque é preto sobre fundos claros e branco sobre fundos escuros
+   (.pr-tone-dark), com o texto por cima a inverter (--pr-on-accent). */
+.pr-mono {
+  --pr-accent: #0a0a0a;
+  --pr-on-accent: #fff;
+}
+.pr-mono .pr-tone-dark {
+  --pr-accent: #fff;
+  --pr-on-accent: #0a0a0a;
+}
+.pr-mono .pr-tone-light {
+  --pr-accent: #0a0a0a;
+  --pr-on-accent: #fff;
+}
+.pr-mono .pr-tone-dark.bg-accent {
+  background-color: var(--pr-dark);
+}
+.pr-mono img,
+.pr-mono video {
+  filter: grayscale(1);
+}
+.pr-mono .pr-tone-dark .pr-mono-invert {
+  filter: grayscale(1) invert(1);
+}
+.pr-mono .pr-btn-primary {
+  color: var(--pr-on-accent);
+  box-shadow: none;
+}
+.pr-mono .pr-btn-primary::before {
+  background: var(--pr-on-accent);
+  box-shadow: inset 0 0 0 1.5px var(--pr-accent);
+}
+.pr-mono .pr-btn-primary:hover {
+  color: var(--pr-accent);
+}
+.pr-mono .pr-cursor-dot {
+  background: #fff;
+  mix-blend-mode: difference;
+}
+.pr-mono .pr-cursor-ring {
+  border-color: #fff;
+  mix-blend-mode: difference;
+}
+.pr-mono .pr-cursor-ring[data-state="label"] {
+  background: #fff;
+  border-color: #fff;
+  color: #000;
+}
+
 /* ---------- Editor de texto rico (painel) ---------- */
 .rte .ProseMirror {
   min-height: 9rem;
@@ -623,4 +676,136 @@ body {
 .rte .ProseMirror h3 {
   font-weight: 600;
   font-size: 1.1em;
+}
+
+/* Logótipos de marcas a branco (faixa do hero e fundos escuros), também no modo preto e branco. */
+.pr-logo-white,
+.pr-mono img.pr-logo-white {
+  filter: brightness(0) invert(1);
+}
+.pr-logo-black,
+.pr-mono img.pr-logo-black {
+  filter: brightness(0);
+}
+
+/* ---------- Ecrã de entrada: bola do logótipo em 3D e escolha da língua ---------- */
+html[data-pr-locale] .pr-gate {
+  display: none;
+}
+html:not([data-pr-locale]):has(.pr-gate) body {
+  overflow: hidden;
+}
+.pr-gate-out {
+  animation: pr-gate-out 0.7s cubic-bezier(0.7, 0, 0.2, 1) forwards;
+}
+@keyframes pr-gate-out {
+  to {
+    opacity: 0;
+    transform: scale(1.04);
+    visibility: hidden;
+  }
+}
+.pr-gate-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(60% 45% at 50% 38%, rgba(255, 255, 255, 0.09), transparent 70%);
+}
+.pr-ball-wrap {
+  --s: clamp(110px, min(34vw, 24vh), 220px);
+  position: relative;
+  width: var(--s);
+  height: calc(var(--s) * 1.25);
+}
+.pr-ball {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: var(--s);
+  border-radius: 50%;
+  overflow: hidden;
+  perspective: calc(var(--s) * 3);
+  background: radial-gradient(circle at 34% 30%, #4a4a4a 0%, #161616 34%, #050505 62%, #000 100%);
+  box-shadow:
+    inset calc(var(--s) * -0.08) calc(var(--s) * -0.1) calc(var(--s) * 0.18) rgba(0, 0, 0, 0.95),
+    inset calc(var(--s) * 0.04) calc(var(--s) * 0.05) calc(var(--s) * 0.12) rgba(255, 255, 255, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 30px 90px -20px rgba(255, 255, 255, 0.18);
+}
+/* Brilho fixo por cima (a luz não roda com a bola). */
+.pr-ball::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.38), transparent 22%),
+    radial-gradient(circle at 70% 85%, rgba(255, 255, 255, 0.07), transparent 40%);
+}
+.pr-ball-face {
+  position: absolute;
+  inset: 24%;
+  color: #fff;
+  backface-visibility: hidden;
+  transform: translateZ(calc(var(--s) * 0.3));
+}
+.pr-ball-face-back {
+  display: none;
+}
+.pr-ball-shadow {
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: 0;
+  height: calc(var(--s) * 0.09);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.22), transparent);
+  filter: blur(6px);
+}
+.pr-gate-prompts li + li {
+  color: rgba(255, 255, 255, 0.35);
+  font-size: clamp(0.9rem, 2vw, 1.05rem);
+  font-family: var(--pr-font-body);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  margin-top: 0.35rem;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .pr-ball-face {
+    animation: pr-ball-spin 7s linear infinite;
+  }
+  .pr-ball-face-back {
+    display: block;
+    animation-delay: -3.5s;
+  }
+  .pr-ball {
+    animation: pr-ball-float 4.5s ease-in-out infinite;
+  }
+  .pr-ball-shadow {
+    animation: pr-ball-shadow 4.5s ease-in-out infinite;
+  }
+  .pr-gate-option {
+    animation: pr-fade-up 0.8s cubic-bezier(0.2, 0.75, 0.15, 1) backwards;
+    animation-delay: calc(0.35s + var(--i, 0) * 0.08s);
+  }
+}
+@keyframes pr-ball-spin {
+  from {
+    transform: rotateY(0deg) translateZ(calc(var(--s) * 0.3));
+  }
+  to {
+    transform: rotateY(360deg) translateZ(calc(var(--s) * 0.3));
+  }
+}
+@keyframes pr-ball-float {
+  50% {
+    transform: translateY(-10px);
+  }
+}
+@keyframes pr-ball-shadow {
+  50% {
+    transform: scaleX(0.82);
+    opacity: 0.6;
+  }
 }

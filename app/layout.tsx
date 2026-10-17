@@ -8,7 +8,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="pt-PT" className={fontVariables}>
+    // O script do ecrã de entrada marca o <html> (data-pr-locale) antes da hidratação.
+    <html lang="pt-PT" className={fontVariables} suppressHydrationWarning>
       <body>{children}</body>
     </html>
   );

@@ -6,6 +6,7 @@ import { ArrowUpRight, Clock, Info, Users } from "lucide-react";
 import type { BookingSettings, ServiceCategory } from "@/lib/cms/schema";
 import { formatDuration, formatPeople, formatPrice } from "@/lib/booking/rules";
 import { BookingDialog, type DialogService } from "./booking-dialog";
+import { useLocale, useMessages } from "../i18n";
 
 const OPTIMIZABLE = /^(\/|https:\/\/images\.unsplash\.com\/|https:\/\/[^/]+\.supabase\.co\/)/;
 const HASH_PREFIX = "#reservar-";
@@ -34,6 +35,9 @@ export function ServicesExplorer({
   tone: "light" | "dark";
   preview?: boolean;
 }) {
+  const locale = useLocale();
+  const m = useMessages();
+  const t = m.services;
   const [filter, setFilter] = useState<string>("todas");
   const [open, setOpen] = useState<{ service: DialogService; n: number } | null>(null);
   const dark = tone === "dark";
@@ -64,8 +68,8 @@ export function ServicesExplorer({
   return (
     <>
       {showFilters && used.length > 1 && (
-        <div role="group" aria-label="Filtrar por categoria" className="mt-14 flex flex-wrap gap-2">
-          {[{ id: "todas", label: "Todas" }, ...used].map((c) => {
+        <div role="group" aria-label={t.filter} className="mt-14 flex flex-wrap gap-2">
+          {[{ id: "todas", label: t.all }, ...used].map((c) => {
             const count = c.id === "todas" ? services.length : services.filter((s) => s.categoryId === c.id).length;
             const active = filter === c.id;
             return (
@@ -76,7 +80,7 @@ export function ServicesExplorer({
                 onClick={() => setFilter(c.id)}
                 className={`group inline-flex items-center gap-2.5 rounded-full border-2 px-5 py-2.5 text-sm font-bold uppercase tracking-[0.12em] transition-all duration-300 ${
                   active
-                    ? "border-accent bg-accent text-white"
+                    ? "border-accent bg-accent text-on-accent"
                     : dark
                       ? "border-white/20 text-white hover:border-white"
                       : "border-ink/15 text-ink hover:border-ink"
@@ -99,16 +103,16 @@ export function ServicesExplorer({
       <ul className={`grid gap-5 sm:grid-cols-2 ${showFilters && used.length > 1 ? "mt-8" : "mt-16"}`} aria-live="polite">
         {shown.map((service, i) => {
           const image = service.gallery.find((g) => g.url);
-          const price = formatPrice(service);
-          const duration = formatDuration(service.durationMinutes);
+          const price = formatPrice(service, locale);
+          const duration = formatDuration(service.durationMinutes, locale);
           const wide = shown.length % 2 === 1 && i === 0;
           const bookable = service.bookable && settings.enabled;
-          const label = buttonLabel || "Pedir reserva";
+          const label = buttonLabel || t.request;
           return (
             <li key={service.id} className={`pr-card-in ${wide ? "sm:col-span-2" : ""}`} style={{ ["--i" as string]: i }}>
               <article
-                data-cursor={bookable ? "Reservar" : "Ver"}
-                className="pr-3d-rise group relative overflow-hidden rounded-[2rem] bg-dark text-white has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-accent"
+                data-cursor={bookable ? t.book : m.common.view}
+                className="pr-3d-rise pr-tone-dark group relative overflow-hidden rounded-[2rem] bg-dark text-white has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-accent"
               >
                 <div className={`relative ${wide ? "aspect-[4/5] sm:aspect-[21/9]" : "aspect-[4/5] lg:aspect-[5/4]"}`}>
                   {image ? (
@@ -145,17 +149,17 @@ export function ServicesExplorer({
                           </li>
                         )}
                         <li className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 backdrop-blur">
-                          <Users className="size-3.5" aria-hidden /> {formatPeople(service)}
+                          <Users className="size-3.5" aria-hidden /> {formatPeople(service, locale)}
                         </li>
                       </ul>
                       <div className="flex items-center gap-3">
                         <p className="text-right leading-tight">
-                          <span className="block text-[0.65rem] font-bold uppercase tracking-[0.2em] text-white/55">{price ? "desde" : "preço"}</span>
-                          <span className="pr-heading text-lg sm:text-xl">{price ?? "sob consulta"}</span>
+                          <span className="block text-[0.65rem] font-bold uppercase tracking-[0.2em] text-white/55">{price ? t.from : t.price}</span>
+                          <span className="pr-heading text-lg sm:text-xl">{price ?? t.onRequest}</span>
                         </p>
-                        <span aria-hidden className="flex h-14 shrink-0 items-center rounded-full bg-accent px-4 text-sm font-bold uppercase tracking-[0.12em]">
+                        <span aria-hidden className="flex h-14 shrink-0 items-center rounded-full bg-accent px-4 text-sm font-bold uppercase tracking-[0.12em] text-on-accent">
                           <span className="max-w-0 overflow-hidden whitespace-nowrap transition-all duration-500 group-hover:mr-2 group-hover:max-w-[12rem]">
-                            {bookable ? label : "Ver"}
+                            {bookable ? label : m.common.view}
                           </span>
                           <ArrowUpRight className="size-6 transition-transform duration-500 group-hover:rotate-45" />
                         </span>
@@ -168,7 +172,7 @@ export function ServicesExplorer({
                   type="button"
                   onClick={() => openService(service)}
                   aria-haspopup="dialog"
-                  aria-label={`${service.name} — ${bookable ? label : "ver detalhes"}`}
+                  aria-label={`${service.name} — ${bookable ? label : t.details}`}
                   className="absolute inset-0 z-10 rounded-[2rem] outline-none"
                 />
               </article>

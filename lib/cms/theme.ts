@@ -50,9 +50,20 @@ function color(value: string, fallback: string) {
   return HEX_COLOR.test(value) ? value : fallback;
 }
 
+/** Paleta usada no modo «Preto e branco» (substitui as cores configuradas). */
+export const MONOCHROME_COLORS: Appearance["colors"] = {
+  primary: "#111111",
+  secondary: "#3A3A3A",
+  accent: "#0A0A0A",
+  background: "#FFFFFF",
+  surface: "#EFEFEF",
+  text: "#0A0A0A",
+  dark: "#000000",
+};
+
 /** Converte a configuração visual em variáveis CSS (design tokens). */
 export function themeStyle(appearance: Appearance): CSSProperties {
-  const c = appearance.colors;
+  const c = appearance.monochrome ? MONOCHROME_COLORS : appearance.colors;
   const fonts = FONT_PAIRING_OPTIONS[appearance.fontPairing] ?? FONT_PAIRING_OPTIONS.radical;
   return {
     "--pr-primary": color(c.primary, "#0E3B52"),

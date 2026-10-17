@@ -1,5 +1,7 @@
 import { z } from "zod";
 import type { BookingSettings, Service, SiteDocument } from "@/lib/cms/schema";
+import { LOCALE_INFO, type Locale } from "@/lib/i18n/config";
+import { getMessages } from "@/lib/i18n/messages";
 
 /**
  * Regras dos pedidos de reserva, partilhadas pelo formulário (browser) e pela
@@ -73,8 +75,14 @@ export function dateProblem(service: Service, settings: BookingSettings, iso: st
   return null;
 }
 
-export function slotPhrase(slot: string): string {
-  return slot === FLEXIBLE_SLOT ? "horário a combinar" : `às ${slot}`;
+export function slotPhrase(slot: string, locale: Locale = "pt"): string {
+  const f = getMessages(locale).format;
+  return slot === FLEXIBLE_SLOT ? f.flexibleSlot : f.atTime(slot);
+}
+
+/** Etiqueta de um horário na interface (o valor «A combinar» é traduzido). */
+export function slotLabel(slot: string, locale: Locale = "pt"): string {
+  return slot === FLEXIBLE_SLOT ? getMessages(locale).format.flexibleLabel : slot;
 }
 
 export function slotOptions(service: Service): string[] {
@@ -154,36 +162,37 @@ export function validateBooking(
 
 /* ------------------------------ Formatação ------------------------------ */
 
-export function formatKwanza(value: number): string {
-  return `${new Intl.NumberFormat("pt-PT", { maximumFractionDigits: 0 }).format(value)} Kz`;
+export function formatKwanza(value: number, locale: Locale = "pt"): string {
+  return `${new Intl.NumberFormat(LOCALE_INFO[locale].intl, { maximumFractionDigits: 0 }).format(value)} Kz`;
 }
 
-export function formatPrice(service: Pick<Service, "priceFrom" | "priceUnit">): string | null {
+export function formatPrice(service: Pick<Service, "priceFrom" | "priceUnit">, locale: Locale = "pt"): string | null {
   if (service.priceFrom === null) return null;
-  return `${formatKwanza(service.priceFrom)} / ${service.priceUnit === "pessoa" ? "pessoa" : "grupo"}`;
+  const f = getMessages(locale).format;
+  return `${formatKwanza(service.priceFrom, locale)} / ${service.priceUnit === "pessoa" ? f.perPerson : f.perGroup}`;
 }
 
-export function formatDuration(minutes: number): string | null {
+export function formatDuration(minutes: number, locale: Locale = "pt"): string | null {
   if (!minutes) return null;
   if (minutes < 60) return `${minutes} min`;
   if (minutes >= 24 * 60 && minutes % (24 * 60) === 0) {
-    const days = minutes / (24 * 60);
-    return `${days} dia${days > 1 ? "s" : ""}`;
+    return getMessages(locale).format.days(minutes / (24 * 60));
   }
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
   return m ? `${h} h ${m} min` : `${h} h`;
 }
 
-export function formatPeople(service: Pick<Service, "minPeople" | "maxPeople">): string {
-  if (service.minPeople === service.maxPeople) return `${service.maxPeople} pessoa${service.maxPeople > 1 ? "s" : ""}`;
-  return `${service.minPeople}–${service.maxPeople} pessoas`;
+export function formatPeople(service: Pick<Service, "minPeople" | "maxPeople">, locale: Locale = "pt"): string {
+  const f = getMessages(locale).format;
+  if (service.minPeople === service.maxPeople) return f.person(service.maxPeople);
+  return f.peopleRange(service.minPeople, service.maxPeople);
 }
 
-/** Data longa em português (ex.: «sábado, 24 de outubro de 2026»). */
-export function formatLongDate(iso: string): string {
+/** Data longa (ex.: «sábado, 24 de outubro de 2026»). */
+export function formatLongDate(iso: string, locale: Locale = "pt"): string {
   if (!isValidIsoDate(iso)) return iso;
-  return new Intl.DateTimeFormat("pt-PT", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(
+  return new Intl.DateTimeFormat(LOCALE_INFO[locale].intl, { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(
     new Date(`${iso}T12:00:00Z`),
   );
 }

@@ -1,5 +1,7 @@
 import type { CmsLink, SiteDocument } from "@/lib/cms/schema";
 import { isStoreActive } from "@/lib/cms/validate";
+import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n/config";
+import { getMessages } from "@/lib/i18n/messages";
 
 export type ResolvedLink = {
   href: string;
@@ -13,7 +15,7 @@ export type ResolvedLink = {
  * deve aparecer (desactivado, secção oculta/inexistente ou loja desactivada),
  * para que o website nunca mostre links inválidos.
  */
-export function resolveLink(link: CmsLink, doc: SiteDocument): ResolvedLink | null {
+export function resolveLink(link: CmsLink, doc: SiteDocument, locale: Locale = DEFAULT_LOCALE): ResolvedLink | null {
   if (!link.enabled || !link.label) return null;
   const base = { label: link.label, style: link.style };
   switch (link.type) {
@@ -24,32 +26,30 @@ export function resolveLink(link: CmsLink, doc: SiteDocument): ResolvedLink | nu
     case "external":
       return link.url ? { ...base, href: link.url, newTab: link.newTab } : null;
     case "store": {
-      const target = storeTarget(doc);
+      const target = storeTarget(doc, locale);
       return target ? { ...base, href: target.href, newTab: target.newTab } : null;
     }
   }
 }
 
-const STORE_WHATSAPP_MESSAGE = "Olá! Gostaria de saber que produtos têm disponíveis na loja.";
-
 /**
  * Destino dos botões da loja: a Quicksell quando está activa; enquanto o link não
  * existir (e «whenNoLink» for «contact»), o WhatsApp ou a secção de contactos.
  */
-export function storeTarget(doc: SiteDocument): { href: string; newTab: boolean; pending: boolean } | null {
+export function storeTarget(doc: SiteDocument, locale: Locale = DEFAULT_LOCALE): { href: string; newTab: boolean; pending: boolean } | null {
   if (isStoreActive(doc)) return { href: doc.store.url!, newTab: doc.store.openInNewTab, pending: false };
   if (doc.store.whenNoLink !== "contact") return null;
   const whatsapp = doc.contact.whatsapp.replace(/[^0-9]/g, "");
   if (whatsapp) {
-    return { href: `https://wa.me/${whatsapp}?text=${encodeURIComponent(STORE_WHATSAPP_MESSAGE)}`, newTab: true, pending: true };
+    return { href: `https://wa.me/${whatsapp}?text=${encodeURIComponent(getMessages(locale).store.whatsappMessage)}`, newTab: true, pending: true };
   }
   const contact = doc.sections.find((s) => s.type === "contact" && s.visible);
   return contact ? { href: `#${contact.anchor}`, newTab: false, pending: true } : null;
 }
 
 /** Botão «Loja Online» configurado em «Loja Online». */
-export function storeLink(doc: SiteDocument): ResolvedLink | null {
-  const target = storeTarget(doc);
+export function storeLink(doc: SiteDocument, locale: Locale = DEFAULT_LOCALE): ResolvedLink | null {
+  const target = storeTarget(doc, locale);
   if (!target) return null;
   return { href: target.href, newTab: target.newTab, label: doc.store.label || "Loja Online", style: "primary" };
 }

@@ -360,6 +360,14 @@ export function AppearanceEditor({ value }: { value: Appearance }) {
           </div>
           <Toggle label="Títulos em maiúsculas" checked={a.headings.uppercase} onChange={(v) => setHeadings({ uppercase: v })} />
         </Card>
+        <Card title="Preto e branco">
+          <Toggle
+            label="Website a preto e branco"
+            description="Usa só preto e branco (substitui as cores acima) e mostra todas as fotografias em tons de cinzento."
+            checked={a.monochrome}
+            onChange={(v) => editor.update((cur) => ({ ...cur, monochrome: v }))}
+          />
+        </Card>
         <Card title="Efeitos interactivos" description="Todos respeitam a opção «reduzir movimento» do sistema do visitante.">
           <Toggle
             label="Animações"

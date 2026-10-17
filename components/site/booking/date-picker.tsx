@@ -3,18 +3,29 @@
 import { useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { addDays, weekdayOf } from "@/lib/booking/rules";
+import { LOCALE_INFO, type Locale } from "@/lib/i18n/config";
+import { useLocale, useMessages } from "../i18n";
 
-const MONTHS = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-// Semana a começar à segunda-feira, como é habitual em português.
-const HEAD = [
-  { short: "S", long: "segunda-feira" },
-  { short: "T", long: "terça-feira" },
-  { short: "Q", long: "quarta-feira" },
-  { short: "Q", long: "quinta-feira" },
-  { short: "S", long: "sexta-feira" },
-  { short: "S", long: "sábado" },
-  { short: "D", long: "domingo" },
-];
+/** Nomes dos meses na língua da página. */
+function monthNames(locale: Locale): string[] {
+  const fmt = new Intl.DateTimeFormat(LOCALE_INFO[locale].intl, { month: "long", timeZone: "UTC" });
+  return Array.from({ length: 12 }, (_, i) => {
+    const name = fmt.format(new Date(Date.UTC(2026, i, 15)));
+    return name.charAt(0).toUpperCase() + name.slice(1);
+  });
+}
+
+/** Cabeçalho da semana (a começar à segunda-feira) na língua da página. */
+function weekHead(locale: Locale): { short: string; long: string }[] {
+  const intl = LOCALE_INFO[locale].intl;
+  const long = new Intl.DateTimeFormat(intl, { weekday: "long", timeZone: "UTC" });
+  const narrow = new Intl.DateTimeFormat(intl, { weekday: "narrow", timeZone: "UTC" });
+  // 2026-01-05 foi uma segunda-feira.
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(Date.UTC(2026, 0, 5 + i));
+    return { short: narrow.format(d).toUpperCase(), long: long.format(d) };
+  });
+}
 
 const monthOf = (iso: string) => iso.slice(0, 7);
 const shiftMonth = (ym: string, delta: number) => {
@@ -46,6 +57,10 @@ export function DatePicker({
   invalid?: boolean;
   describedBy?: string;
 }) {
+  const locale = useLocale();
+  const t = useMessages().booking;
+  const MONTHS = monthNames(locale);
+  const HEAD = weekHead(locale);
   const [month, setMonth] = useState(monthOf(value || first));
   const gridRef = useRef<HTMLDivElement>(null);
 
@@ -89,7 +104,7 @@ export function DatePicker({
             type="button"
             onClick={() => setMonth(shiftMonth(month, -1))}
             disabled={!canPrev}
-            aria-label="Mês anterior"
+            aria-label={t.previousMonth}
             className="flex size-10 items-center justify-center rounded-full border border-ink/15 transition hover:border-accent hover:text-accent disabled:opacity-30"
           >
             <ChevronLeft className="size-4" aria-hidden />
@@ -98,14 +113,14 @@ export function DatePicker({
             type="button"
             onClick={() => setMonth(shiftMonth(month, 1))}
             disabled={!canNext}
-            aria-label="Mês seguinte"
+            aria-label={t.nextMonth}
             className="flex size-10 items-center justify-center rounded-full border border-ink/15 transition hover:border-accent hover:text-accent disabled:opacity-30"
           >
             <ChevronRight className="size-4" aria-hidden />
           </button>
         </div>
       </div>
-      <div className="grid grid-cols-7 gap-1 text-center" role="group" aria-label="Escolher data" aria-describedby={describedBy} ref={gridRef}>
+      <div className="grid grid-cols-7 gap-1 text-center" role="group" aria-label={t.chooseDateLabel} aria-describedby={describedBy} ref={gridRef}>
         {HEAD.map((d, i) => (
           <abbr key={i} title={d.long} className="pb-1 text-[0.68rem] font-bold uppercase tracking-widest text-ink/40 no-underline">
             {d.short}
@@ -123,14 +138,14 @@ export function DatePicker({
               disabled={!on}
               tabIndex={iso === focusTarget ? 0 : -1}
               aria-pressed={selected}
-              aria-label={new Intl.DateTimeFormat("pt-PT", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" }).format(
+              aria-label={new Intl.DateTimeFormat(LOCALE_INFO[locale].intl, { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" }).format(
                 new Date(`${iso}T12:00:00Z`),
               )}
               onClick={() => onChange(iso)}
               onKeyDown={(e) => onKeyDown(e, iso)}
               className={`relative flex aspect-square items-center justify-center rounded-full text-sm font-semibold tabular-nums transition-all duration-200 ${
                 selected
-                  ? "scale-110 bg-accent text-white shadow-[0_10px_24px_-10px_var(--pr-accent)]"
+                  ? "scale-110 bg-accent text-on-accent shadow-[0_10px_24px_-10px_var(--pr-accent)]"
                   : on
                     ? "text-ink hover:bg-accent/10 hover:text-accent"
                     : "text-ink/20 line-through decoration-ink/20"

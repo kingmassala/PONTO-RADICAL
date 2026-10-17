@@ -89,9 +89,9 @@ export function RichText({ html, className }: { html: string; className?: string
 export const BACKGROUNDS: Record<SectionBackground, { className: string; tone: "light" | "dark" }> = {
   light: { className: "bg-background text-ink", tone: "light" },
   surface: { className: "bg-surface text-ink", tone: "light" },
-  dark: { className: "bg-dark text-white", tone: "dark" },
-  primary: { className: "bg-primary text-white", tone: "dark" },
-  accent: { className: "bg-accent text-white", tone: "dark" },
+  dark: { className: "pr-tone-dark bg-dark text-white", tone: "dark" },
+  primary: { className: "pr-tone-dark bg-primary text-white", tone: "dark" },
+  accent: { className: "pr-tone-dark bg-accent text-white", tone: "dark" },
 };
 
 export function Eyebrow({ children, tone }: { children: React.ReactNode; tone: "light" | "dark" }) {

@@ -3,6 +3,8 @@
 import { startTransition, useActionState, useEffect, useRef } from "react";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { submitContact, type ContactState } from "@/lib/contact/actions";
+import { translateServerMessage } from "@/lib/i18n/messages";
+import { useLocale, useMessages } from "./i18n";
 
 const initial: ContactState = { status: "idle" };
 
@@ -18,6 +20,8 @@ export function ContactForm({
   disabled?: boolean;
 }) {
   const [state, action, pending] = useActionState(submitContact, initial);
+  const locale = useLocale();
+  const t = useMessages().form;
   const formRef = useRef<HTMLFormElement>(null);
   // Momento em que o formulário ficou disponível (verificação anti-spam no servidor).
   // Definido após a montagem (não no render) para não divergir do HTML gerado no servidor.
@@ -39,7 +43,7 @@ export function ContactForm({
   const err = (name: keyof NonNullable<ContactState["fieldErrors"]>) =>
     state.fieldErrors?.[name] ? (
       <p id={`${name}-error`} className="mt-2 text-sm text-red-600">
-        {state.fieldErrors[name]}
+        {translateServerMessage(locale, state.fieldErrors[name])}
       </p>
     ) : null;
 
@@ -47,7 +51,7 @@ export function ContactForm({
     return (
       <div role="status" className={`flex h-full flex-col items-start justify-center gap-5 rounded-[2rem] p-10 ${dark ? "bg-white/[0.06]" : "bg-white"}`}>
         <CheckCircle2 aria-hidden className="size-10 text-accent" />
-        <p className="pr-heading pr-h3">{successMessage || "Mensagem enviada."}</p>
+        <p className="pr-heading pr-h3">{successMessage || t.sent}</p>
       </div>
     );
   }
@@ -78,35 +82,35 @@ export function ContactForm({
       <div className="grid gap-8 sm:grid-cols-2">
         <div>
           <label htmlFor="cf-name" className={label}>
-            Nome *
+            {t.name}
           </label>
           <input id="cf-name" name="name" required autoComplete="name" className={field} aria-invalid={!!state.fieldErrors?.name} aria-describedby={state.fieldErrors?.name ? "name-error" : undefined} />
           {err("name")}
         </div>
         <div>
           <label htmlFor="cf-email" className={label}>
-            Email *
+            {t.email}
           </label>
           <input id="cf-email" name="email" type="email" required autoComplete="email" className={field} aria-invalid={!!state.fieldErrors?.email} aria-describedby={state.fieldErrors?.email ? "email-error" : undefined} />
           {err("email")}
         </div>
         <div>
           <label htmlFor="cf-phone" className={label}>
-            Telefone
+            {t.phone}
           </label>
           <input id="cf-phone" name="phone" type="tel" autoComplete="tel" className={field} aria-invalid={!!state.fieldErrors?.phone} />
           {err("phone")}
         </div>
         <div>
           <label htmlFor="cf-subject" className={label}>
-            Assunto *
+            {t.subject}
           </label>
           <input id="cf-subject" name="subject" required className={field} aria-invalid={!!state.fieldErrors?.subject} aria-describedby={state.fieldErrors?.subject ? "subject-error" : undefined} />
           {err("subject")}
         </div>
         <div className="sm:col-span-2">
           <label htmlFor="cf-message" className={label}>
-            Mensagem *
+            {t.message}
           </label>
           <textarea id="cf-message" name="message" required rows={5} className={`${field} resize-y`} aria-invalid={!!state.fieldErrors?.message} aria-describedby={state.fieldErrors?.message ? "message-error" : undefined} />
           {err("message")}
@@ -115,17 +119,17 @@ export function ContactForm({
 
       {state.status === "error" && state.message && (
         <p role="alert" className="mt-8 border-l-2 border-red-600 bg-red-50 px-4 py-3 text-sm text-red-800">
-          {state.message}
+          {translateServerMessage(locale, state.message)}
         </p>
       )}
 
       <div className="mt-10 flex flex-wrap items-center justify-between gap-6">
         <p className={`text-xs ${dark ? "text-white/50" : "text-ink/50"}`}>
-          Os seus dados são usados apenas para responder ao seu pedido.
+          {t.privacy}
         </p>
         <button type="submit" disabled={pending || disabled} className="pr-btn pr-btn-primary disabled:opacity-60">
           {pending && <Loader2 aria-hidden className="size-4 animate-spin" />}
-          {disabled ? "Envio desactivado na pré-visualização" : pending ? "A enviar…" : "Enviar mensagem"}
+          {disabled ? t.previewDisabled : pending ? t.sending : t.send}
         </button>
       </div>
     </form>

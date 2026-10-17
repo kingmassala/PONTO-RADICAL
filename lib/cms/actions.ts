@@ -63,6 +63,7 @@ const SUMMARIES: Record<SiteDocumentKey, string> = {
   store: "Loja Online",
   seo: "SEO",
   footer: "Rodapé",
+  translations: "Traduções",
 };
 
 /** Substitui uma parte do documento (ex.: «store», «seo», «appearance»). */
@@ -217,6 +218,7 @@ export async function addBrand(name: string, revision: number) {
       heroImage: emptyMedia(),
       externalUrl: "",
       visible: false,
+      authorized: false,
     });
     return doc;
   });

@@ -245,6 +245,8 @@ export const brandSchema = z.object({
   heroImage: mediaRefSchema,
   externalUrl: safeLinkUrl,
   visible: z.boolean().default(true),
+  /** Revendedor autorizado oficial da marca (selo e destaque no website). */
+  authorized: z.boolean().default(false),
 });
 export type Brand = z.infer<typeof brandSchema>;
 
@@ -353,6 +355,8 @@ export const appearanceSchema = z.object({
       animations: z.boolean().default(true),
     })
     .default({ customCursor: true, grain: true, animations: true }),
+  /** Website a preto e branco: paleta monocromática e fotografias em tons de cinzento. */
+  monochrome: z.boolean().default(false),
 });
 export type Appearance = z.infer<typeof appearanceSchema>;
 
@@ -417,6 +421,12 @@ export const footerSchema = z.object({
   links: z.array(linkSchema).max(8).default([]),
 });
 
+/** Traduções do conteúdo: por língua, «chave do campo → texto» (ver lib/i18n/content.ts). */
+const translationMap = z.record(z.string().max(200), z.string().max(8000)).default({});
+export const translationsSchema = z
+  .object({ es: translationMap, fr: translationMap, en: translationMap })
+  .default({ es: {}, fr: {}, en: {} });
+
 export const settingsSchema = z.object({
   siteName: requiredText(80),
   language: z.literal("pt-PT").default("pt-PT"),
@@ -436,6 +446,7 @@ export const siteDocumentSchema = z.object({
   store: storeSchema,
   seo: seoSchema,
   footer: footerSchema,
+  translations: translationsSchema,
 });
 export type SiteDocument = z.infer<typeof siteDocumentSchema>;
 export type SiteDocumentKey = Exclude<keyof SiteDocument, "schemaVersion">;
@@ -453,4 +464,5 @@ export const DOCUMENT_KEYS: SiteDocumentKey[] = [
   "store",
   "seo",
   "footer",
+  "translations",
 ];

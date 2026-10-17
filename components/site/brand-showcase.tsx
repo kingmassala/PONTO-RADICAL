@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import { ArrowUpRight, Plus } from "lucide-react";
 import type { Brand } from "@/lib/cms/schema";
+import { useMessages } from "./i18n";
 
 const OPTIMIZABLE = /^(\/|https:\/\/images\.unsplash\.com\/|https:\/\/[^/]+\.supabase\.co\/)/;
 
@@ -22,15 +23,23 @@ function BrandImage({ brand, sizes, className }: { brand: Brand; sizes: string; 
   );
 }
 
-function BrandLogo({ brand, className }: { brand: Brand; className?: string }) {
+/** Logótipo numa só cor (branco sobre fundo escuro, preto sobre fundo claro), para ficarem uniformes. */
+function BrandLogo({ brand, className, onDark }: { brand: Brand; className?: string; onDark: boolean }) {
   if (brand.logo.url) {
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img src={brand.logo.url} alt={brand.logo.alt || brand.name} className={`h-10 w-auto max-w-[160px] object-contain ${className ?? ""}`} />;
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={brand.logo.url}
+        alt={brand.logo.alt || brand.name}
+        className={`h-10 w-auto max-w-[160px] object-contain ${onDark ? "pr-logo-white" : "pr-logo-black"} ${className ?? ""}`}
+      />
+    );
   }
   return <span className={`pr-heading text-xl ${className ?? ""}`}>{brand.name}</span>;
 }
 
 function ExternalLink({ brand, dark }: { brand: Brand; dark: boolean }) {
+  const m = useMessages();
   if (!brand.externalUrl) return null;
   return (
     <a
@@ -41,15 +50,16 @@ function ExternalLink({ brand, dark }: { brand: Brand; dark: boolean }) {
         dark ? "border-white/40 text-white" : "border-ink/40 text-ink"
       } hover:border-accent hover:text-accent`}
     >
-      Site oficial {brand.name}
+      {m.brands.officialSite} {brand.name}
       <ArrowUpRight aria-hidden className="size-4 transition-transform group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5" />
-      <span className="sr-only">(abre numa nova janela)</span>
+      <span className="sr-only">{m.common.newTab}</span>
     </a>
   );
 }
 
 export function BrandShowcase({ brands, layout, tone }: { brands: Brand[]; layout: "editorial" | "grid"; tone: "light" | "dark" }) {
   const dark = tone === "dark";
+  const t = useMessages().common;
   const [hovered, setHovered] = useState<number | null>(null);
   const [open, setOpen] = useState<number | null>(0);
   const listRef = useRef<HTMLDivElement>(null);
@@ -66,7 +76,7 @@ export function BrandShowcase({ brands, layout, tone }: { brands: Brand[]; layou
               <BrandImage brand={brand} sizes="(min-width: 1024px) 33vw, 100vw" className="object-cover transition-transform duration-700 group-hover:scale-110" />
             </div>
             <div className="p-8">
-              <BrandLogo brand={brand} />
+              <BrandLogo brand={brand} onDark={dark} />
               {brand.specialisation && <p className="pr-eyebrow mt-4 text-accent">{brand.specialisation}</p>}
               <div className={`pr-rich mt-4 leading-relaxed ${dark ? "text-white/70" : "text-ink/70"}`} dangerouslySetInnerHTML={{ __html: brand.description }} />
               <ExternalLink brand={brand} dark={dark} />
@@ -112,7 +122,7 @@ export function BrandShowcase({ brands, layout, tone }: { brands: Brand[]; layou
                   type="button"
                   aria-expanded={expanded}
                   aria-controls={`brand-panel-${brand.id}`}
-                  data-cursor={expanded ? "Fechar" : "Abrir"}
+                  data-cursor={expanded ? t.close : t.open}
                   onClick={() => setOpen(expanded ? null : i)}
                   onPointerEnter={() => setHovered(i)}
                   className="group flex w-full items-center gap-5 py-7 text-left sm:gap-8 sm:py-9"
@@ -128,7 +138,7 @@ export function BrandShowcase({ brands, layout, tone }: { brands: Brand[]; layou
                   <span className={`hidden max-w-[18ch] text-right text-sm md:block ${dark ? "text-white/55" : "text-ink/55"}`}>{brand.specialisation}</span>
                   <span
                     className={`flex size-12 shrink-0 items-center justify-center rounded-full border transition-all duration-500 sm:size-14 ${
-                      expanded ? "rotate-45 border-accent bg-accent text-white" : dark ? "border-white/25 group-hover:border-accent" : "border-ink/20 group-hover:border-accent"
+                      expanded ? "rotate-45 border-accent bg-accent text-on-accent" : dark ? "border-white/25 group-hover:border-accent" : "border-ink/20 group-hover:border-accent"
                     }`}
                     aria-hidden
                   >
@@ -147,7 +157,7 @@ export function BrandShowcase({ brands, layout, tone }: { brands: Brand[]; layou
                     <div className="relative aspect-[16/10] overflow-hidden rounded-[1.5rem] lg:col-span-7">
                       <BrandImage brand={brand} sizes="(min-width: 1024px) 55vw, 100vw" />
                       <div className="absolute bottom-4 left-4 rounded-full bg-dark/80 px-5 py-2.5 text-white backdrop-blur">
-                        <BrandLogo brand={brand} className="h-7 text-base" />
+                        <BrandLogo brand={brand} onDark className="h-7 text-base" />
                       </div>
                     </div>
                     <div className="flex flex-col justify-center lg:col-span-5">

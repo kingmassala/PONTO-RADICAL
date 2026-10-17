@@ -29,13 +29,17 @@ import {
   formatLongDate,
   formatPeople,
   formatPrice,
+  slotLabel,
   slotOptions,
   slotPhrase,
   todayIso,
   whatsappHref,
   type BookingField,
 } from "@/lib/booking/rules";
+import { translateServerMessage } from "@/lib/i18n/messages";
+import type { Locale } from "@/lib/i18n/config";
 import { DatePicker } from "./date-picker";
+import { useLocale, useMessages } from "../i18n";
 
 const initial: BookingState = { status: "idle" };
 const OPTIMIZABLE = /^(\/|https:\/\/images\.unsplash\.com\/|https:\/\/[^/]+\.supabase\.co\/)/;
@@ -61,6 +65,10 @@ export function BookingDialog({
   onClose: () => void;
 }) {
   const [state, action, pending] = useActionState(submitBooking, initial);
+  const locale = useLocale();
+  const m = useMessages();
+  const t = m.booking;
+  const tr = (msg: string | undefined) => translateServerMessage(locale, msg);
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -121,11 +129,11 @@ export function BookingDialog({
   }, [state]);
 
   const images = service.gallery.filter((g) => g.url);
-  const price = formatPrice(service);
+  const price = formatPrice(service, locale);
   const estimate =
-    service.priceFrom !== null ? formatKwanza(service.priceUnit === "pessoa" ? service.priceFrom * people : service.priceFrom) : null;
-  const duration = formatDuration(service.durationMinutes);
-  const fallbackWhatsapp = whatsapp ? whatsappHref(whatsapp, `Olá! Gostaria de saber mais sobre: ${service.name}.`) : null;
+    service.priceFrom !== null ? formatKwanza(service.priceUnit === "pessoa" ? service.priceFrom * people : service.priceFrom, locale) : null;
+  const duration = formatDuration(service.durationMinutes, locale);
+  const fallbackWhatsapp = whatsapp ? whatsappHref(whatsapp, t.whatsappAbout(service.name)) : null;
 
   const fieldCls = (key: BookingField) =>
     `w-full rounded-2xl border bg-white px-4 py-3.5 text-base outline-none transition focus:border-accent focus:ring-4 focus:ring-accent/15 ${
@@ -134,7 +142,7 @@ export function BookingDialog({
   const err = (key: BookingField) =>
     errors[key] ? (
       <p id={`bk-${key}-error`} className="mt-2 text-sm font-medium text-red-600">
-        {errors[key]}
+        {tr(errors[key])}
       </p>
     ) : null;
   const step = (n: number, label: string) => (
@@ -152,22 +160,22 @@ export function BookingDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="pr-drawer-in relative h-full w-full max-w-[72rem] overflow-hidden bg-background text-ink shadow-2xl lg:rounded-l-[2.5rem]"
+        className="pr-drawer-in pr-tone-light relative h-full w-full max-w-[72rem] overflow-hidden bg-background text-ink shadow-2xl lg:rounded-l-[2.5rem]"
       >
         <button
           ref={closeRef}
           type="button"
           onClick={onClose}
-          aria-label="Fechar"
-          data-cursor="Fechar"
-          className="absolute right-4 top-4 z-20 flex size-12 items-center justify-center rounded-full bg-white/90 text-ink shadow-lg backdrop-blur transition-transform duration-500 hover:rotate-90 hover:bg-accent hover:text-white"
+          aria-label={m.common.close}
+          data-cursor={m.common.close}
+          className="absolute right-4 top-4 z-20 flex size-12 items-center justify-center rounded-full bg-white/90 text-ink shadow-lg backdrop-blur transition-transform duration-500 hover:rotate-90 hover:bg-accent hover:text-on-accent"
         >
           <X className="size-5" aria-hidden />
         </button>
         <div className="flex h-full flex-col overflow-y-auto overscroll-contain lg:flex-row lg:overflow-hidden">
 
         {/* ------------------------- Detalhes do serviço ------------------------- */}
-        <section className="relative shrink-0 bg-dark text-white lg:w-[42%] lg:overflow-y-auto">
+        <section className="pr-tone-dark relative shrink-0 bg-dark text-white lg:w-[42%] lg:overflow-y-auto">
           <div className="relative aspect-[4/3] overflow-hidden sm:aspect-[16/10] lg:aspect-[4/5]">
             {images.length > 0 ? (
               images.map((img, i) => (
@@ -187,7 +195,7 @@ export function BookingDialog({
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/20 to-transparent" />
             <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
-              <p className="pr-eyebrow mb-3 inline-flex rounded-full bg-accent px-3 py-1.5 text-white">{service.categoryLabel}</p>
+              <p className="pr-eyebrow mb-3 inline-flex rounded-full bg-accent px-3 py-1.5 text-on-accent">{service.categoryLabel}</p>
               <h2 id={titleId} className="pr-heading text-[clamp(1.9rem,4vw,3rem)] leading-[0.95]">
                 {service.name}
               </h2>
@@ -199,7 +207,7 @@ export function BookingDialog({
                     key={img.url}
                     type="button"
                     onClick={() => setPhoto(i)}
-                    aria-label={`Fotografia ${i + 1} de ${images.length}`}
+                    aria-label={t.photo(i + 1, images.length)}
                     aria-pressed={i === photo}
                     className={`h-2 rounded-full transition-all duration-500 ${i === photo ? "w-8 bg-white" : "w-2 bg-white/45 hover:bg-white/80"}`}
                   />
@@ -216,10 +224,10 @@ export function BookingDialog({
                 </li>
               )}
               <li className="inline-flex items-center gap-2 rounded-full border border-white/15 px-3.5 py-2">
-                <Users className="size-4 text-accent" aria-hidden /> {formatPeople(service)}
+                <Users className="size-4 text-accent" aria-hidden /> {formatPeople(service, locale)}
               </li>
               <li className="inline-flex items-center gap-2 rounded-full border border-white/15 px-3.5 py-2">
-                <Wallet className="size-4 text-accent" aria-hidden /> {price ? `desde ${price}` : "Preço sob consulta"}
+                <Wallet className="size-4 text-accent" aria-hidden /> {price ? t.priceFrom(price) : t.priceOnRequest}
               </li>
             </ul>
 
@@ -231,11 +239,11 @@ export function BookingDialog({
 
             {service.included.length > 0 && (
               <div>
-                <p className="pr-eyebrow mb-4 text-white/50">Incluído</p>
+                <p className="pr-eyebrow mb-4 text-white/50">{t.included}</p>
                 <ul className="grid gap-2.5">
                   {service.included.map((item) => (
                     <li key={item} className="flex items-start gap-3">
-                      <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-accent">
+                      <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-accent text-on-accent">
                         <Check className="size-3" aria-hidden strokeWidth={3} />
                       </span>
                       {item}
@@ -247,7 +255,7 @@ export function BookingDialog({
 
             {service.requirements.length > 0 && (
               <div>
-                <p className="pr-eyebrow mb-4 text-white/50">Antes de reservar</p>
+                <p className="pr-eyebrow mb-4 text-white/50">{t.beforeBooking}</p>
                 <ul className="grid gap-2.5 text-white/75">
                   {service.requirements.map((item) => (
                     <li key={item} className="flex items-start gap-3">
@@ -263,7 +271,7 @@ export function BookingDialog({
               <p className="flex items-start gap-3 rounded-2xl bg-white/[0.06] p-4">
                 <MapPin className="mt-0.5 size-5 shrink-0 text-accent" aria-hidden />
                 <span>
-                  <span className="pr-eyebrow block text-white/50">Ponto de encontro</span>
+                  <span className="pr-eyebrow block text-white/50">{t.meetingPoint}</span>
                   <span className="mt-1 block">{service.meetingPoint}</span>
                 </span>
               </p>
@@ -272,7 +280,7 @@ export function BookingDialog({
         </section>
 
         {/* ------------------------------ Formulário ------------------------------ */}
-        <section className="flex-1 p-6 sm:p-10 lg:overflow-y-auto lg:p-12" aria-label="Pedido de reserva">
+        <section className="flex-1 p-6 sm:p-10 lg:overflow-y-auto lg:p-12" aria-label={t.dialog}>
           {state.status === "success" ? (
             <BookingSuccess
               state={state}
@@ -281,15 +289,16 @@ export function BookingDialog({
               slot={slot}
               people={people}
               settings={settings}
+              locale={locale}
               onClose={onClose}
             />
           ) : !bookable ? (
             <div className="flex h-full flex-col justify-center gap-6">
               <p className="pr-heading pr-h2 max-w-[14ch]">
-                Reservas <span className="pr-accent">por contacto</span>
+                {t.byContactA} <span className="pr-accent">{t.byContactB}</span>
               </p>
               <p className="max-w-md text-lg text-ink/70">
-                Esta experiência não aceita pedidos online de momento. Fale connosco para saber datas e condições.
+                {t.byContactText}
               </p>
               <div className="flex flex-wrap gap-3">
                 {fallbackWhatsapp && (
@@ -298,7 +307,7 @@ export function BookingDialog({
                   </a>
                 )}
                 <a href="#contactos" onClick={onClose} className="pr-btn pr-btn-secondary text-ink">
-                  Contactos <ArrowRight className="pr-btn-arrow size-4" aria-hidden />
+                  {t.contacts} <ArrowRight className="pr-btn-arrow size-4" aria-hidden />
                 </a>
               </div>
             </div>
@@ -314,9 +323,9 @@ export function BookingDialog({
                 startTransition(() => action(data));
               }}
             >
-              <p className="pr-eyebrow text-accent">Pedido de reserva</p>
+              <p className="pr-eyebrow text-accent">{t.dialog}</p>
               <p className="pr-heading mt-3 text-[clamp(1.8rem,3.4vw,2.8rem)] leading-[0.95]">
-                Escolha o dia. <span className="pr-accent">Nós</span> confirmamos.
+                {t.titleA} <span className="pr-accent">{t.titleB}</span> {t.titleC}
               </p>
 
               <input type="hidden" name="serviceId" value={service.id} />
@@ -334,7 +343,7 @@ export function BookingDialog({
 
               <div className="mt-10 space-y-10">
                 <fieldset data-field="date">
-                  <legend className="contents">{step(1, "Quando?")}</legend>
+                  <legend className="contents">{step(1, t.when)}</legend>
                   <DatePicker
                     value={date}
                     onChange={setDate}
@@ -347,14 +356,14 @@ export function BookingDialog({
                   />
                   <p className="mt-3 flex items-center gap-2 text-sm text-ink/60" aria-live="polite">
                     <CalendarDays className="size-4 text-accent" aria-hidden />
-                    {date ? <strong className="font-semibold text-ink first-letter:uppercase">{formatLongDate(date)}</strong> : "Escolha uma data disponível."}
+                    {date ? <strong className="font-semibold text-ink first-letter:uppercase">{formatLongDate(date, locale)}</strong> : t.chooseDate}
                   </p>
                   {err("date")}
                 </fieldset>
 
                 <fieldset data-field="slot">
-                  <legend className="contents">{step(2, slots.length === 1 && slots[0] !== FLEXIBLE_SLOT ? "Horário de partida" : "A que horas?")}</legend>
-                  <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Horário" aria-describedby={errors.slot ? "bk-slot-error" : undefined}>
+                  <legend className="contents">{step(2, slots.length === 1 && slots[0] !== FLEXIBLE_SLOT ? t.departure : t.whatTime)}</legend>
+                  <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t.time} aria-describedby={errors.slot ? "bk-slot-error" : undefined}>
                     {slots.map((s) => (
                       <button
                         key={s}
@@ -363,49 +372,49 @@ export function BookingDialog({
                         aria-checked={slot === s}
                         onClick={() => setSlot(s)}
                         className={`inline-flex items-center gap-2 rounded-full border-2 px-5 py-3 text-base font-bold tabular-nums transition-all duration-300 ${
-                          slot === s ? "border-accent bg-accent text-white" : "border-ink/15 bg-white hover:-translate-y-0.5 hover:border-accent"
+                          slot === s ? "border-accent bg-accent text-on-accent" : "border-ink/15 bg-white hover:-translate-y-0.5 hover:border-accent"
                         }`}
                       >
-                        <Clock className="size-4" aria-hidden /> {s}
+                        <Clock className="size-4" aria-hidden /> {slotLabel(s, locale)}
                       </button>
                     ))}
                   </div>
-                  {slots[0] === FLEXIBLE_SLOT && <p className="mt-2 text-sm text-ink/55">O horário é combinado com a equipa na confirmação.</p>}
+                  {slots[0] === FLEXIBLE_SLOT && <p className="mt-2 text-sm text-ink/55">{t.flexibleNote}</p>}
                   {err("slot")}
                 </fieldset>
 
                 <fieldset data-field="people">
-                  <legend className="contents">{step(3, "Quantas pessoas?")}</legend>
+                  <legend className="contents">{step(3, t.howMany)}</legend>
                   <div className="flex flex-wrap items-center gap-5">
                     <div className="inline-flex items-center gap-2 rounded-full border border-ink/15 bg-white p-1.5">
                       <button
                         type="button"
                         onClick={() => setPeople((p) => Math.max(service.minPeople, p - 1))}
                         disabled={people <= service.minPeople}
-                        aria-label="Menos uma pessoa"
-                        className="flex size-11 items-center justify-center rounded-full bg-ink/5 transition hover:bg-accent hover:text-white disabled:opacity-30"
+                        aria-label={t.lessPerson}
+                        className="flex size-11 items-center justify-center rounded-full bg-ink/5 transition hover:bg-accent hover:text-on-accent disabled:opacity-30"
                       >
                         <Minus className="size-4" aria-hidden />
                       </button>
-                      <output className="pr-heading w-14 text-center text-3xl tabular-nums" aria-live="polite" aria-label={`${people} pessoa(s)`}>
+                      <output className="pr-heading w-14 text-center text-3xl tabular-nums" aria-live="polite" aria-label={t.peopleCount(people)}>
                         {people}
                       </output>
                       <button
                         type="button"
                         onClick={() => setPeople((p) => Math.min(service.maxPeople, p + 1))}
                         disabled={people >= service.maxPeople}
-                        aria-label="Mais uma pessoa"
-                        className="flex size-11 items-center justify-center rounded-full bg-ink/5 transition hover:bg-accent hover:text-white disabled:opacity-30"
+                        aria-label={t.morePerson}
+                        className="flex size-11 items-center justify-center rounded-full bg-ink/5 transition hover:bg-accent hover:text-on-accent disabled:opacity-30"
                       >
                         <Plus className="size-4" aria-hidden />
                       </button>
                     </div>
                     <p className="text-sm text-ink/55">
-                      {formatPeople(service)} por reserva
+                      {formatPeople(service, locale)} {t.perBooking}
                       {estimate && (
                         <>
                           <br />
-                          Estimativa: <strong className="text-base text-ink">desde {estimate}</strong>
+                          {t.estimate} <strong className="text-base text-ink">{t.priceFrom(estimate)}</strong>
                         </>
                       )}
                     </p>
@@ -414,34 +423,34 @@ export function BookingDialog({
                 </fieldset>
 
                 <fieldset>
-                  <legend className="contents">{step(4, "Os seus contactos")}</legend>
+                  <legend className="contents">{step(4, t.yourDetails)}</legend>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div data-field="name" className="sm:col-span-2">
                       <label htmlFor="bk-name" className="mb-2 block text-sm font-semibold">
-                        Nome *
+                        {t.name}
                       </label>
                       <input id="bk-name" name="name" autoComplete="name" required className={fieldCls("name")} aria-invalid={!!errors.name} aria-describedby={errors.name ? "bk-name-error" : undefined} />
                       {err("name")}
                     </div>
                     <div data-field="email">
                       <label htmlFor="bk-email" className="mb-2 block text-sm font-semibold">
-                        Email *
+                        {t.email}
                       </label>
                       <input id="bk-email" name="email" type="email" autoComplete="email" required className={fieldCls("email")} aria-invalid={!!errors.email} aria-describedby={errors.email ? "bk-email-error" : undefined} />
                       {err("email")}
                     </div>
                     <div data-field="phone">
                       <label htmlFor="bk-phone" className="mb-2 block text-sm font-semibold">
-                        Telefone / WhatsApp *
+                        {t.phone}
                       </label>
                       <input id="bk-phone" name="phone" type="tel" autoComplete="tel" required placeholder="+244" className={fieldCls("phone")} aria-invalid={!!errors.phone} aria-describedby={errors.phone ? "bk-phone-error" : undefined} />
                       {err("phone")}
                     </div>
                     <div data-field="notes" className="sm:col-span-2">
                       <label htmlFor="bk-notes" className="mb-2 block text-sm font-semibold">
-                        Observações <span className="font-normal text-ink/50">(opcional)</span>
+                        {t.notes} <span className="font-normal text-ink/50">{t.optional}</span>
                       </label>
-                      <textarea id="bk-notes" name="notes" rows={3} maxLength={2000} placeholder="Ocasião especial, crianças, nível de experiência…" className={`${fieldCls("notes")} resize-y`} />
+                      <textarea id="bk-notes" name="notes" rows={3} maxLength={2000} placeholder={t.notesPlaceholder} className={`${fieldCls("notes")} resize-y`} />
                       {err("notes")}
                     </div>
                   </div>
@@ -450,12 +459,12 @@ export function BookingDialog({
 
               {errors.serviceId && (
                 <p role="alert" className="mt-8 rounded-2xl border-l-4 border-red-600 bg-red-50 px-4 py-3 text-sm text-red-800">
-                  {errors.serviceId}
+                  {tr(errors.serviceId)}
                 </p>
               )}
               {state.status === "error" && state.message && !errors.serviceId && (
                 <div role="alert" className="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl border-l-4 border-red-600 bg-red-50 px-4 py-3 text-sm text-red-800">
-                  <span>{state.message}</span>
+                  <span>{tr(state.message)}</span>
                   {state.whatsapp && (
                     <a href={state.whatsapp} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 font-bold underline">
                       <MessageCircle className="size-4" aria-hidden /> WhatsApp
@@ -472,10 +481,10 @@ export function BookingDialog({
                   </p>
                 )}
                 <div className="mt-5 flex flex-col-reverse items-stretch justify-between gap-4 sm:flex-row sm:items-center">
-                  <p className="text-xs text-ink/50">Os seus dados são usados apenas para tratar este pedido.</p>
-                  <button type="submit" disabled={pending || disabled} className="pr-btn pr-btn-primary disabled:opacity-60" data-cursor="Enviar">
+                  <p className="text-xs text-ink/50">{t.privacy}</p>
+                  <button type="submit" disabled={pending || disabled} className="pr-btn pr-btn-primary disabled:opacity-60" data-cursor={t.send}>
                     {pending && <Loader2 aria-hidden className="size-4 animate-spin" />}
-                    {disabled ? "Envio desactivado na pré-visualização" : pending ? "A enviar…" : "Enviar pedido"}
+                    {disabled ? m.form.previewDisabled : pending ? m.form.sending : t.send}
                     {!pending && !disabled && <ArrowRight aria-hidden className="pr-btn-arrow size-4" />}
                   </button>
                 </div>
@@ -496,6 +505,7 @@ function BookingSuccess({
   slot,
   people,
   settings,
+  locale,
   onClose,
 }: {
   state: BookingState;
@@ -504,27 +514,30 @@ function BookingSuccess({
   slot: string;
   people: number;
   settings: BookingSettings;
+  locale: Locale;
   onClose: () => void;
 }) {
+  const m = useMessages();
+  const t = m.booking;
   return (
     <div role="status" className="flex min-h-full flex-col justify-center">
-      <div className="pr-pop flex size-20 items-center justify-center rounded-full bg-accent text-white shadow-[0_20px_50px_-15px_var(--pr-accent)]">
+      <div className="pr-pop flex size-20 items-center justify-center rounded-full bg-accent text-on-accent shadow-[0_20px_50px_-15px_var(--pr-accent)]">
         <CheckCircle2 className="size-10" aria-hidden />
       </div>
       <p className="pr-heading mt-8 text-[clamp(2.2rem,4.5vw,3.6rem)] leading-[0.95]">
-        Pedido <span className="pr-accent">enviado!</span>
+        {t.sentA} <span className="pr-accent">{t.sentB}</span>
       </p>
       {state.reference && (
         <p className="mt-6 inline-flex w-fit items-center gap-3 rounded-full bg-ink px-5 py-2.5 text-white">
-          <span className="pr-eyebrow text-white/60">Referência</span>
+          <span className="pr-eyebrow text-white/60">{t.reference}</span>
           <span className="font-mono text-lg font-bold tracking-widest">{state.reference}</span>
         </p>
       )}
       <dl className="mt-8 grid gap-px overflow-hidden rounded-[1.5rem] bg-ink/10 sm:grid-cols-3">
         {[
-          { label: "Experiência", value: service.name },
-          { label: "Data", value: date ? `${formatLongDate(date)}, ${slotPhrase(slot)}` : "—" },
-          { label: "Pessoas", value: String(people) },
+          { label: t.experience, value: service.name },
+          { label: t.date, value: date ? `${formatLongDate(date, locale)}, ${slotPhrase(slot, locale)}` : "—" },
+          { label: t.people, value: String(people) },
         ].map((row) => (
           <div key={row.label} className="bg-white p-5">
             <dt className="pr-eyebrow text-ink/45">{row.label}</dt>
@@ -533,7 +546,7 @@ function BookingSuccess({
         ))}
       </dl>
       <p className="mt-8 max-w-xl text-lg leading-relaxed text-ink/75">
-        {settings.successMessage || "Recebemos o seu pedido. A nossa equipa vai confirmar a disponibilidade e responder em breve."}
+        {settings.successMessage || t.defaultSuccess}
       </p>
       {settings.paymentInfo && (
         <p className="mt-4 flex max-w-xl items-start gap-3 text-sm text-ink/60">
@@ -544,12 +557,12 @@ function BookingSuccess({
       <div className="mt-10 flex flex-wrap gap-3">
         {state.whatsapp && (
           <a href={state.whatsapp} target="_blank" rel="noopener noreferrer" className="pr-btn pr-btn-primary">
-            <MessageCircle className="size-4" aria-hidden /> Continuar no WhatsApp
-            <span className="sr-only"> (abre numa nova janela)</span>
+            <MessageCircle className="size-4" aria-hidden /> {t.continueWhatsapp}
+            <span className="sr-only"> {m.common.newTab}</span>
           </a>
         )}
         <button type="button" onClick={onClose} className="pr-btn pr-btn-secondary text-ink">
-          Fechar
+          {m.common.close}
         </button>
       </div>
     </div>
