@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { LOCALE_INFO, LOCALES, localePath, type Locale } from "@/lib/i18n/config";
 import { getMessages } from "@/lib/i18n/messages";
+import { BRAND_TAGLINE } from "@/lib/brand";
 import { skipNextGate } from "./language-switcher";
 
 const noopSubscribe = () => () => {};
@@ -92,7 +93,7 @@ export function LanguageGate({
         </div>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/brand/ponto-radical-wordmark.png" alt="" aria-hidden width={641} height={253} className="mt-6 h-auto w-[clamp(9rem,26vw,13rem)]" />
-        <p className="pr-logo-type mt-5 text-center text-[clamp(0.62rem,1.6vw,0.8rem)] text-black/70">Boating · Water Sports · Camping · Fishing &amp; Co</p>
+        <p className="pr-logo-type mt-5 text-center text-[clamp(0.62rem,1.6vw,0.8rem)] text-black/70">{BRAND_TAGLINE}</p>
 
         <h1 id="pr-gate-title" className="sr-only">
           {siteName} — {getMessages(locale).intro.prompt}

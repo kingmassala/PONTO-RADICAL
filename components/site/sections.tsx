@@ -33,6 +33,7 @@ import { CountUp } from "./fx/count-up";
 import { DragScroll } from "./fx/drag-scroll";
 import { ServicesExplorer, ServicesNote } from "./booking/services-explorer";
 import { visibleServices } from "@/lib/cms/validate";
+import { BRAND_TAGLINE_PARTS } from "@/lib/brand";
 import type { Locale } from "@/lib/i18n/config";
 import type { Messages } from "@/lib/i18n/messages";
 
@@ -84,7 +85,7 @@ function SpinBadge({ text, logo }: { text: string; logo: string }) {
           <path id="pr-badge-path" d="M100,100 m-78,0 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0" />
         </defs>
         {/* textLength = perímetro do círculo (2π × 78 ≈ 490): o texto ocupa a volta completa sem se sobrepor. */}
-        <text fill="currentColor" style={{ font: "700 10px var(--pr-font-body)", textTransform: "uppercase" }}>
+        <text fill="currentColor" style={{ font: "700 9px var(--pr-font-body)", textTransform: "uppercase" }}>
           <textPath href="#pr-badge-path" textLength="488" lengthAdjust="spacing">
             {text}
           </textPath>
@@ -104,7 +105,7 @@ export function HeroSection({ section, doc, m, locale }: Props<"hero">) {
   const centered = section.align === "center";
   const stripBrands = doc.brands.filter((b) => b.visible);
   const brandNames = stripBrands.map((b) => b.name);
-  const badgeText = `${doc.settings.siteName} • Boating • Water sports • Camping • Fishing & Co • `;
+  const badgeText = `${[doc.settings.siteName, ...BRAND_TAGLINE_PARTS].join(" • ")} • `;
 
   return (
     <section
