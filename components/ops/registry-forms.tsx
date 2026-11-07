@@ -133,7 +133,7 @@ export function VesselFormButton({
     fd.set("entity_id", saved.data.id);
     fd.set("caption", REGISTRATION_DOC_CAPTION);
     const up = await uploadAttachment(fd);
-    if (!up.ok) return { ok: false as const, error: `A embarcação foi guardada, mas o documento de registo não foi carregado: ${up.error}` };
+    if (!up.ok) return { ok: false as const, error: `A embarcação foi guardada, mas o ficheiro de identificação não foi carregado: ${up.error}` };
     return saved;
   }
   return (
@@ -173,18 +173,20 @@ export function VesselFormButton({
           </div>
           <div className="rounded-lg border border-dashed border-slate-300 p-3">
             <label className="block text-sm font-medium text-slate-700" htmlFor="vessel-registration-doc">
-              Documento de registo da matrícula
+              Identificação da embarcação
             </label>
-            <p className="mt-0.5 text-xs text-slate-500">Fotografia ou PDF do certificado/livrete de registo (até 10 MB). No telemóvel pode tirar a fotografia na hora.</p>
+            <p className="mt-0.5 text-xs text-slate-500">
+              Documento de registo da matrícula (foto ou PDF) ou simplesmente uma fotografia da embarcação. Até 10 MB; no telemóvel pode tirar a fotografia na hora.
+            </p>
             {registrationDoc && (
               <p className="mt-2 flex items-center gap-1.5 text-sm">
                 <FileText className="size-4 text-slate-500" aria-hidden />
                 {registrationDoc.url ? (
                   <a href={registrationDoc.url} target="_blank" rel="noopener noreferrer" className="underline">
-                    Documento actual
+                    Ficheiro actual
                   </a>
                 ) : (
-                  "Documento actual"
+                  "Ficheiro actual"
                 )}
                 <span className="text-xs text-slate-500">carregado a {fmtDate(registrationDoc.created_at)} · escolha outro ficheiro para o substituir</span>
               </p>

@@ -86,19 +86,25 @@ export default async function EmbarcacaoPage({ params }: PageProps<"/gestao/emba
               ))}
             </dl>
           </Card>
-          <Card title="Registo da matrícula">
+          <Card title="Identificação">
+            {registrationDoc?.url && registrationDoc.mime_type.startsWith("image/") && registrationDoc.mime_type !== "image/heic" && (
+              <a href={registrationDoc.url} target="_blank" rel="noopener noreferrer" className="mb-3 block overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={registrationDoc.url} alt={`Identificação da embarcação ${v.name}`} className="max-h-56 w-full object-cover" />
+              </a>
+            )}
             <dl className="space-y-2 text-sm">
               <div className="flex justify-between gap-4">
                 <dt className="text-slate-500">Matrícula</dt>
                 <dd className="text-right font-medium">{v.registration || "—"}</dd>
               </div>
               <div className="flex justify-between gap-4">
-                <dt className="text-slate-500">Documento</dt>
+                <dt className="text-slate-500">Documento / fotografia</dt>
                 <dd className="text-right">
                   {registrationDoc ? (
                     registrationDoc.url ? (
                       <a href={registrationDoc.url} target="_blank" rel="noopener noreferrer" className="font-medium underline">
-                        Ver documento ({registrationDoc.mime_type === "application/pdf" ? "PDF" : "imagem"})
+                        Abrir ({registrationDoc.mime_type === "application/pdf" ? "PDF" : "imagem"})
                       </a>
                     ) : (
                       "Carregado"
@@ -110,7 +116,9 @@ export default async function EmbarcacaoPage({ params }: PageProps<"/gestao/emba
               </div>
               {registrationDoc && <p className="text-xs text-slate-500">Carregado a {fmtDate(registrationDoc.created_at)}.</p>}
             </dl>
-            {!registrationDoc && can.plan(user.role) && <p className="mt-2 text-xs text-slate-500">Use «Editar embarcação» para carregar a fotografia ou o PDF do documento.</p>}
+            {!registrationDoc && can.plan(user.role) && (
+              <p className="mt-2 text-xs text-slate-500">Use «Editar embarcação» para carregar o documento de registo da matrícula ou uma fotografia da embarcação.</p>
+            )}
           </Card>
           <Card title="Fotografias e documentação">
             <Attachments entityType="vessel" entityId={id} workOrderId={null} items={files} canUpload={can.manage(user.role)} />
