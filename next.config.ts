@@ -28,6 +28,21 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "11mb",
     },
   },
+  /**
+   * Subdomínio da Gestão de Obras: gestao.<domínio>/x serve /gestao/x (mesma aplicação, mesma base de dados).
+   * Excepções: recursos do Next (_next), APIs (/api), callback de autenticação (/auth) e o próprio /gestao.
+   */
+  async rewrites() {
+    const host = [{ type: "host" as const, value: "gestao\\..*" }];
+    return {
+      beforeFiles: [
+        { source: "/", has: host, destination: "/gestao" },
+        { source: "/:path((?!gestao(?:/|$)|_next/|api/|auth/|icon\\.svg|favicon\\.ico).*)", has: host, destination: "/gestao/:path" },
+      ],
+      afterFiles: [],
+      fallback: [],
+    };
+  },
   async headers() {
     return [
       {

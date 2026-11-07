@@ -37,6 +37,7 @@ export type FinanceInput = {
 };
 
 export type FinanceSummary = {
+  vatRate: number;
   contractPrice: number | null;
   vatAmount: number | null;
   priceWithVat: number | null;
@@ -129,6 +130,7 @@ export function computeFinance(input: FinanceInput): FinanceSummary {
   const budgetVariancePct = budgetReference ? (budgetVariance ?? 0) / budgetReference : null;
 
   return {
+    vatRate: input.vatRate,
     contractPrice,
     vatAmount,
     priceWithVat: contractPrice === null || vatAmount === null ? null : round2(contractPrice + vatAmount),
