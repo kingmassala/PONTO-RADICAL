@@ -1,4 +1,5 @@
 import type { TaskView } from "@/components/ops/tasks";
+import { COMPANY_AREA_LABELS } from "./labels";
 import { isLate, type TaskRow } from "./queries";
 
 export function toTaskView(t: TaskRow, hours: Map<string, number>): TaskView {
@@ -8,6 +9,8 @@ export function toTaskView(t: TaskRow, hours: Map<string, number>): TaskView {
     title: t.title,
     description: t.description,
     work_order_id: t.work_order_id,
+    area: t.area,
+    areaLabel: t.area ? COMPANY_AREA_LABELS[t.area] : null,
     orderNumber: t.order?.number ?? "",
     vessel: t.order?.vessel ? `${t.order.vessel.code} · ${t.order.vessel.name}` : "",
     parent_id: t.parent_id,
@@ -40,3 +43,5 @@ export function nestTasks<T extends { id: string; parent_id: string | null }>(ta
   for (const t of tasks) if (!t.parent_id || !ids.has(t.parent_id)) visit(t);
   return out;
 }
+
+export { taskHref } from "./task-href";

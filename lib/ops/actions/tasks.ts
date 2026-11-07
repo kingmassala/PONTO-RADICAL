@@ -6,8 +6,9 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { requireOps } from "../auth";
 import { opsDbError, opsError, type OpsResult } from "../errors";
-import { PRIORITIES, TASK_STATUSES } from "../labels";
+import { COMPANY_AREAS, PRIORITIES, TASK_STATUSES } from "../labels";
 import { notifyTask, processOutbox } from "../notify";
+import { can } from "../roles";
 
 const isoOrNull = z
   .string()
@@ -17,7 +18,9 @@ const isoOrNull = z
 
 const taskSchema = z.object({
   id: z.string().uuid().optional(),
-  work_order_id: z.string().uuid(),
+  // Tarefa de uma obra (work_order_id) ou da gestão da empresa (area).
+  work_order_id: z.string().uuid().nullable().optional().transform((v) => v || null),
+  area: z.enum(COMPANY_AREAS).nullable().optional().transform((v) => v || null),
   parent_id: z.string().uuid().nullable().optional(),
   title: z.string().trim().min(2, "Indique a designação").max(200),
   description: z.string().trim().max(5000).optional().transform((v) => v || null),
@@ -47,7 +50,16 @@ function flushSoon() {
 export async function saveTask(input: unknown): Promise<OpsResult<{ id: string }>> {
   try {
     const user = await requireOps(["admin", "direcao", "gestor", "supervisor"]);
-    const { id, assignees, depends_on, ...values } = taskSchema.parse(input);
+    const { id, assignees, depends_on, ...parsed } = taskSchema.parse(input);
+    if (!parsed.work_order_id === !parsed.area) {
+      return { ok: false, error: "Escolha uma obra ou, para tarefas da empresa, uma área." };
+    }
+    if (!parsed.work_order_id && !can.plan(user.role)) {
+      return { ok: false, error: "Só a Administração, a Direcção e os Gestores criam tarefas da empresa." };
+    }
+    // O âmbito (obra ou empresa) não muda depois de criada.
+    const { work_order_id, area, ...rest } = parsed;
+    const values = id ? { ...rest, area } : { ...rest, work_order_id, area };
     if (values.start_at && values.due_at && values.due_at < values.start_at) {
       return { ok: false, error: "O prazo não pode ser anterior ao início." };
     }
@@ -152,8 +164,9 @@ export async function deleteTask(taskId: string): Promise<OpsResult> {
   try {
     await requireOps(["admin", "direcao", "gestor"]);
     const supabase = await createClient();
-    const { error } = await supabase.from("ops_tasks").delete().eq("id", z.string().uuid().parse(taskId));
+    const { data, error } = await supabase.from("ops_tasks").delete().eq("id", z.string().uuid().parse(taskId)).select("id");
     if (error) return { ok: false, error: opsDbError(error.message) };
+    if (!data?.length) return { ok: false, error: "Não tem permissão para eliminar esta tarefa." };
     refresh();
     return { ok: true, data: null };
   } catch (error) {

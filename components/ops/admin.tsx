@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Copy, KeyRound, Play, Send, UserPlus } from "lucide-react";
 import { createMember, resetMemberPassword, runAutomationNow, saveSettings, saveTemplate, sendTestMessage, updateMember, updateMyWhatsapp } from "@/lib/ops/actions/admin";
-import { NOTIFICATION_EVENTS, type NotificationEvent } from "@/lib/ops/labels";
+import { TEMPLATE_EVENT_LABELS } from "@/lib/ops/labels";
 import { OPS_ROLES, ROLE_DESCRIPTIONS, ROLE_LABELS, type OpsRole } from "@/lib/ops/roles";
 import { Badge, Button, Card, Choice, FormError, Input, Modal, Notice, Toggle } from "./ui";
 import { useOpsAction } from "./use-action";
@@ -248,7 +248,7 @@ function TemplateRow({ template }: { template: { event: string; template_name: s
   const { pending, error, run } = useOpsAction();
   return (
     <li className="grid items-end gap-2 py-3 sm:grid-cols-[1.4fr_1.4fr_0.6fr_auto_auto]">
-      <p className="text-sm font-medium">{NOTIFICATION_EVENTS[template.event as NotificationEvent] ?? template.event}</p>
+      <p className="text-sm font-medium">{TEMPLATE_EVENT_LABELS[template.event] ?? template.event}</p>
       <input value={v.template_name} onChange={(e) => { setSaved(false); setV({ ...v, template_name: e.target.value }); }} aria-label="Nome do modelo" className="rounded-lg border border-slate-300 px-2 py-1.5 font-mono text-sm" />
       <input value={v.language} onChange={(e) => { setSaved(false); setV({ ...v, language: e.target.value }); }} aria-label="Língua" className="rounded-lg border border-slate-300 px-2 py-1.5 font-mono text-sm" />
       <label className="flex items-center gap-2 text-sm">
@@ -274,7 +274,7 @@ export function WhatsappDiagnostics({
   enabled: boolean;
 }) {
   const [target, setTarget] = useState(members[0]?.id ?? "");
-  const [mode, setMode] = useState<"hello_world" | "template">("hello_world");
+  const [mode, setMode] = useState<"hello_world" | "template" | "empresa">("hello_world");
   const [result, setResult] = useState<string | null>(null);
   const [auto, setAuto] = useState<string | null>(null);
   const { pending, error, run } = useOpsAction();
@@ -320,7 +320,8 @@ export function WhatsappDiagnostics({
               onChange={setMode}
               options={[
                 { value: "hello_world", label: "hello_world (modelo de teste da Meta, en_US)" },
-                { value: "template", label: "Modelo da plataforma (requer aprovação)" },
+                { value: "template", label: "Modelo das obras (requer aprovação)" },
+                { value: "empresa", label: "Modelo das tarefas da empresa (requer aprovação)" },
               ]}
             />
             <Button variant="primary" loading={pending} onClick={() => run(() => sendTestMessage({ user_id: target, mode }), (d) => setResult(`Aceite pela Meta (HTTP ${d.httpStatus}). Identificador: ${d.messageId}`))}>

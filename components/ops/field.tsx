@@ -380,7 +380,7 @@ export type IncidentView = {
 
 export const URGENCY_TONE = { baixo: "slate", medio: "sky", alto: "amber", critico: "red" } as const;
 
-export function IncidentFormButton({ orders, tasks, defaultOrderId, openInitially }: { orders: { id: string; label: string }[]; tasks: { id: string; label: string; work_order_id: string }[]; defaultOrderId?: string; openInitially?: boolean }) {
+export function IncidentFormButton({ orders, tasks, defaultOrderId, openInitially }: { orders: { id: string; label: string }[]; tasks: { id: string; label: string; work_order_id: string | null }[]; defaultOrderId?: string; openInitially?: boolean }) {
   const empty = {
     work_order_id: defaultOrderId ?? (orders.length === 1 ? orders[0].id : ""),
     task_id: "",
@@ -551,7 +551,7 @@ export function ReminderPanel({
 }: {
   reminders: ReminderView[];
   people: { id: string; name: string; hint?: string }[];
-  tasks: { id: string; label: string; work_order_id: string }[];
+  tasks: { id: string; label: string; work_order_id: string | null }[];
   orderId?: string;
   orders?: { id: string; label: string }[];
   whatsappActive: boolean;

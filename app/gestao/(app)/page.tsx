@@ -12,6 +12,7 @@ import { fmtAoa, fmtPct } from "@/lib/ops/money";
 import { can } from "@/lib/ops/roles";
 import { addDaysIso, fmtDate, fmtDateTime, todayLuanda } from "@/lib/ops/time";
 import { nestTasks, toTaskView } from "@/lib/ops/views";
+import { taskHref } from "@/lib/ops/task-href";
 import { cx } from "@/lib/cx";
 import { BarChart, LineChart } from "@/components/ops/charts";
 import { Kpi } from "@/components/ops/finance";
@@ -53,6 +54,8 @@ export default async function DashboardPage({ searchParams }: PageProps<"/gestao
   const doneMonth = orders.filter((o) => ["concluida", "entregue"].includes(o.status) && (o.closed_at ?? "") >= monthStart);
   const openTasks = tasks.filter((t) => ["por_iniciar", "em_curso", "suspensa"].includes(t.status));
   const lateTasks = openTasks.filter((t) => isLate(t));
+  const companyOpen = openTasks.filter((t) => !t.work_order_id).length;
+  const companyLate = lateTasks.filter((t) => !t.work_order_id).length;
   const critical = incidents.filter((i) => i.urgency === "critico");
   const activeTechs = new Set([...(todayTime.data ?? []).map((t) => t.user_id), ...tasks.filter((t) => t.status === "em_curso").flatMap((t) => [t.responsible_id, ...t.assignees.map((a) => a.user_id)])].filter(Boolean));
   const upcoming = openTasks
@@ -129,8 +132,8 @@ export default async function DashboardPage({ searchParams }: PageProps<"/gestao
         <Kpi label="Obras atrasadas" value={String(lateOrders.length)} tone={lateOrders.length ? "red" : "default"} />
         <Kpi label="Ocorrências críticas abertas" value={String(critical.length)} tone={critical.length ? "red" : "default"} />
         <Kpi label="Tarefas em execução" value={String(tasks.filter((t) => t.status === "em_curso").length)} />
-        <Kpi label="Tarefas pendentes" value={String(tasks.filter((t) => t.status === "por_iniciar").length)} />
-        <Kpi label="Tarefas atrasadas" value={String(lateTasks.length)} tone={lateTasks.length ? "red" : "default"} />
+        <Kpi label="Tarefas pendentes" value={String(tasks.filter((t) => t.status === "por_iniciar").length)} sub={`${companyOpen} da empresa em aberto`} />
+        <Kpi label="Tarefas atrasadas" value={String(lateTasks.length)} sub={companyLate ? `${companyLate} da gestão da empresa` : undefined} tone={lateTasks.length ? "red" : "default"} />
         <Kpi label="Técnicos em actividade hoje" value={String(activeTechs.size)} sub={`de ${members.filter((m) => m.active && m.role === "tecnico").length} técnicos`} />
       </div>
 
@@ -184,11 +187,11 @@ export default async function DashboardPage({ searchParams }: PageProps<"/gestao
             <ul className="space-y-3 text-sm">
               {upcoming.map((t) => (
                 <li key={t.id}>
-                  <Link href={h(`/obras/${t.work_order_id}?tab=tarefas`)} className="hover:underline">
+                  <Link href={h(taskHref(t))} className="hover:underline">
                     {t.title}
                   </Link>
                   <p className="text-xs text-slate-500">
-                    {t.order?.number} · {t.responsible?.full_name ?? "sem responsável"} · {fmtDateTime(t.due_at)}
+                    {t.order?.number ?? `Empresa · ${t.code}`} · {t.responsible?.full_name ?? "sem responsável"} · {fmtDateTime(t.due_at)}
                   </p>
                 </li>
               ))}

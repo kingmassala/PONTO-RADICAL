@@ -17,6 +17,19 @@ import { fmtDate, fmtTime } from "./time";
  *   {{9}}
  *   Consulte a plataforma para confirmar ou actualizar o estado da tarefa.
  *
+ * Modelo «pr_tarefa_empresa» (UTILITY, pt_PT) — tarefas de gestão da empresa:
+ *   PONTO RADICAL | Gestão da Empresa
+ *   {{1}}
+ *   Referência: {{2}}
+ *   Tarefa: {{3}}
+ *   Área: {{4}}
+ *   Responsável: {{5}}
+ *   Data: {{6}}
+ *   Hora: {{7}}
+ *   Prioridade: {{8}}
+ *   {{9}}
+ *   Consulte a plataforma para confirmar ou actualizar o estado da tarefa.
+ *
  * Modelo «pr_resumo_obras» (UTILITY, pt_PT):
  *   PONTO RADICAL | Gestão de Obras
  *   {{1}}
@@ -69,6 +82,48 @@ export function taskMessage(input: TaskMessageInput) {
     `Obra: ${params[1]}`,
     `Embarcação: ${params[2]}`,
     `Tarefa: ${params[3]}`,
+    `Responsável: ${params[4]}`,
+    `Data: ${params[5]}`,
+    `Hora: ${params[6]}`,
+    `Prioridade: ${params[7]}`,
+    params[8] !== "—" ? params[8] : null,
+    "Consulte a plataforma para confirmar ou actualizar o estado da tarefa.",
+  ]
+    .filter(Boolean)
+    .join("\n");
+  return { params, preview };
+}
+
+export type CompanyTaskMessageInput = {
+  event: NotificationEvent;
+  code: string;
+  task: string;
+  area: string;
+  responsible: string;
+  when: string | null;
+  priority: Priority | null;
+  note?: string;
+};
+
+/** Parâmetros (por ordem) e pré-visualização do modelo pr_tarefa_empresa. */
+export function companyTaskMessage(input: CompanyTaskMessageInput) {
+  const params = [
+    EVENT_TITLES[input.event],
+    input.code || "—",
+    input.task || "—",
+    input.area || "—",
+    input.responsible || "—",
+    input.when ? fmtDate(input.when) : "—",
+    input.when ? fmtTime(input.when) : "—",
+    input.priority ? PRIORITY_LABELS[input.priority] : "—",
+    input.note?.trim() || "—",
+  ];
+  const preview = [
+    "PONTO RADICAL | Gestão da Empresa",
+    params[0],
+    `Referência: ${params[1]}`,
+    `Tarefa: ${params[2]}`,
+    `Área: ${params[3]}`,
     `Responsável: ${params[4]}`,
     `Data: ${params[5]}`,
     `Hora: ${params[6]}`,

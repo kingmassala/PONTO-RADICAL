@@ -184,3 +184,38 @@ export const NOTIFICATION_EVENTS = {
   resumo_semanal: "Resumo semanal",
 } as const;
 export type NotificationEvent = keyof typeof NOTIFICATION_EVENTS;
+
+/** Áreas das tarefas de gestão da empresa (sem obra associada). */
+export const COMPANY_AREAS = [
+  "administracao",
+  "financeiro",
+  "comercial",
+  "recursos_humanos",
+  "compras",
+  "logistica",
+  "instalacoes",
+  "legal",
+  "marketing",
+  "informatica",
+  "outro",
+] as const;
+export type CompanyArea = (typeof COMPANY_AREAS)[number];
+export const COMPANY_AREA_LABELS: Record<CompanyArea, string> = {
+  administracao: "Administração",
+  financeiro: "Finanças e contabilidade",
+  comercial: "Comercial e clientes",
+  recursos_humanos: "Recursos humanos",
+  compras: "Compras e fornecedores",
+  logistica: "Logística e armazém",
+  instalacoes: "Instalações e equipamentos",
+  legal: "Legal e licenças",
+  marketing: "Marketing e comunicação",
+  informatica: "Informática",
+  outro: "Outro",
+};
+
+/** Nomes das linhas da tabela de modelos WhatsApp (eventos + modelo das tarefas da empresa). */
+export const TEMPLATE_EVENT_LABELS: Record<string, string> = {
+  ...NOTIFICATION_EVENTS,
+  tarefa_empresa: "Tarefas da empresa (modelo usado em todos os avisos destas tarefas)",
+};

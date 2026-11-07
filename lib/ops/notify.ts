@@ -1,8 +1,8 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createAdminClient, isServiceRoleConfigured } from "@/lib/supabase/admin";
-import type { NotificationEvent, Priority } from "./labels";
-import { MAX_SEND_ATTEMPTS, retryDelayMinutes, summaryMessage, taskMessage } from "./messages";
+import { COMPANY_AREA_LABELS, type CompanyArea, type NotificationEvent, type Priority } from "./labels";
+import { MAX_SEND_ATTEMPTS, companyTaskMessage, retryDelayMinutes, summaryMessage, taskMessage } from "./messages";
 import type { OpsRole } from "./roles";
 import { addDaysIso, luandaToIso, todayLuanda } from "./time";
 import { sendTemplate, whatsappConfig } from "./whatsapp";
@@ -38,6 +38,8 @@ type QueueItem = {
   work_order_id?: string | null;
   task_id?: string | null;
   scheduled_for?: string;
+  /** Modelo a usar quando difere do evento (tarefas da empresa usam «tarefa_empresa»). */
+  templateKey?: string;
 };
 
 function admin(): Admin | null {
@@ -84,8 +86,9 @@ async function enqueue(db: Admin, items: QueueItem[]): Promise<number> {
   const templates = await getTemplates(db);
   const rows = items
     .map((i) => {
-      const t = templates.get(i.event);
-      if (!t?.enabled) return null;
+      const ev = templates.get(i.event);
+      const t = i.templateKey ? templates.get(i.templateKey) : ev;
+      if (!ev?.enabled || !t?.enabled) return null;
       return {
         dedupe_key: i.dedupe_key,
         event: i.event,
@@ -117,7 +120,9 @@ type TaskContext = {
   priority: Priority;
   status: string;
   responsible_id: string | null;
-  work_order_id: string;
+  work_order_id: string | null;
+  area: CompanyArea | null;
+  created_by: string | null;
   order: { number: string; manager_id: string | null; vessel: { name: string; code: string } | null } | null;
   responsible: { full_name: string } | null;
   assignees: { user_id: string }[];
@@ -128,24 +133,48 @@ async function loadTasks(db: Admin, ids: string[]): Promise<TaskContext[]> {
   const { data } = await db
     .from("ops_tasks")
     .select(
-      "id, title, code, start_at, due_at, priority, status, responsible_id, work_order_id, order:ops_work_orders(number, manager_id, vessel:ops_vessels(name, code)), responsible:ops_members!ops_tasks_responsible_id_fkey(full_name), assignees:ops_task_assignees(user_id)",
+      "id, title, code, start_at, due_at, priority, status, responsible_id, work_order_id, area, created_by, order:ops_work_orders(number, manager_id, vessel:ops_vessels(name, code)), responsible:ops_members!ops_tasks_responsible_id_fkey(full_name), assignees:ops_task_assignees(user_id)",
     )
     .in("id", ids);
   return (data ?? []) as unknown as TaskContext[];
 }
 
+/** Mensagem de uma tarefa: modelo das obras ou modelo da gestão da empresa. */
+function messageForTask(t: TaskContext, event: NotificationEvent, when: string | null, note?: string) {
+  if (!t.work_order_id) {
+    return {
+      templateKey: "tarefa_empresa",
+      ...companyTaskMessage({
+        event,
+        code: t.code,
+        task: t.title,
+        area: t.area ? COMPANY_AREA_LABELS[t.area] : "—",
+        responsible: t.responsible?.full_name ?? "—",
+        when,
+        priority: t.priority,
+        note,
+      }),
+    };
+  }
+  return {
+    templateKey: undefined,
+    ...taskMessage({
+      event,
+      orderNumber: t.order?.number ?? "—",
+      vessel: t.order?.vessel ? `${t.order.vessel.code} · ${t.order.vessel.name}` : "—",
+      task: `${t.code} · ${t.title}`,
+      responsible: t.responsible?.full_name ?? "—",
+      when,
+      priority: t.priority,
+      note,
+    }),
+  };
+}
+
 function taskItems(t: TaskContext, event: NotificationEvent, recipients: Recipient[], keySuffix: string, note?: string, when?: string | null): QueueItem[] {
-  const msg = taskMessage({
-    event,
-    orderNumber: t.order?.number ?? "—",
-    vessel: t.order?.vessel ? `${t.order.vessel.code} · ${t.order.vessel.name}` : "—",
-    task: `${t.code} · ${t.title}`,
-    responsible: t.responsible?.full_name ?? "—",
-    when: when === undefined ? t.start_at ?? t.due_at : when,
-    priority: t.priority,
-    note,
-  });
+  const msg = messageForTask(t, event, when === undefined ? t.start_at ?? t.due_at : when, note);
   return recipients.map((r) => ({
+    templateKey: msg.templateKey,
     dedupe_key: `${event}:${t.id}:${r.user_id}:${keySuffix}`,
     event,
     recipient: r,
@@ -375,10 +404,10 @@ export async function runScheduler(now = new Date()): Promise<SchedulerReport> {
     add("prazo_proximo", await enqueue(db, taskItems(t, "prazo_proximo", r, t.due_at ?? "", undefined, t.due_at)));
   }
 
-  // 3) Tarefas atrasadas: um aviso por dia ao responsável e ao gestor da obra.
+  // 3) Tarefas atrasadas: um aviso por dia ao responsável e ao gestor da obra (ou a quem criou a tarefa da empresa).
   const { data: late } = await db.from("ops_tasks").select("id").filter("status", "in", open).lt("due_at", nowIso).limit(200);
   for (const t of await loadTasks(db, (late ?? []).map((r) => r.id))) {
-    const r = await recipientsByIds(db, [t.responsible_id, t.order?.manager_id, ...t.assignees.map((a) => a.user_id)]);
+    const r = await recipientsByIds(db, [t.responsible_id, t.work_order_id ? t.order?.manager_id : t.created_by, ...t.assignees.map((a) => a.user_id)]);
     add("tarefa_atrasada", await enqueue(db, taskItems(t, "tarefa_atrasada", r, today, "Prazo ultrapassado.", t.due_at)));
   }
 
@@ -398,16 +427,23 @@ export async function runScheduler(now = new Date()): Promise<SchedulerReport> {
       const { data } = await db.from("ops_work_orders").select("number, manager_id, vessel:ops_vessels(name, code)").eq("id", rem.work_order_id).single();
       order = data as unknown as TaskContext["order"];
     }
-    const msg = taskMessage({
-      event: "lembrete",
-      orderNumber: order?.number ?? "—",
-      vessel: order?.vessel ? `${order.vessel.code} · ${order.vessel.name}` : "—",
-      task: task ? `${task.code} · ${task.title}` : rem.title,
-      responsible: task?.responsible?.full_name ?? "—",
-      when: rem.send_at,
-      priority: task?.priority ?? null,
-      note: rem.message ? `${rem.title}: ${rem.message}` : rem.title,
-    });
+    const note = rem.message ? `${rem.title}: ${rem.message}` : rem.title;
+    const msg =
+      task && !task.work_order_id
+        ? messageForTask(task, "lembrete", rem.send_at, note)
+        : {
+            templateKey: undefined,
+            ...taskMessage({
+              event: "lembrete",
+              orderNumber: order?.number ?? "—",
+              vessel: order?.vessel ? `${order.vessel.code} · ${order.vessel.name}` : "—",
+              task: task ? `${task.code} · ${task.title}` : rem.title,
+              responsible: task?.responsible?.full_name ?? "—",
+              when: rem.send_at,
+              priority: task?.priority ?? null,
+              note,
+            }),
+          };
     add(
       "lembrete",
       await enqueue(
@@ -415,6 +451,7 @@ export async function runScheduler(now = new Date()): Promise<SchedulerReport> {
         recipients.map((r) => ({
           dedupe_key: `lembrete:${rem.id}:${rem.send_at}:${r.user_id}`,
           event: "lembrete" as const,
+          templateKey: msg.templateKey,
           recipient: r,
           params: msg.params,
           preview: msg.preview,
@@ -463,12 +500,13 @@ export async function runScheduler(now = new Date()): Promise<SchedulerReport> {
   // 6) Resumo semanal para Administração, Direcção e Gestores.
   if (settings.weekly_summary_enabled && dow === settings.weekly_summary_dow && time >= settings.weekly_summary_time.slice(0, 5)) {
     const week = isoWeek(today);
-    const [{ count: active }, { count: lateTasks }, { count: critical }] = await Promise.all([
+    const [{ count: active }, { count: lateTasks }, { count: critical }, { count: companyOpen }] = await Promise.all([
       db.from("ops_work_orders").select("id", { count: "exact", head: true }).in("status", ["aprovada", "planeada", "em_execucao", "suspensa"]),
       db.from("ops_tasks").select("id", { count: "exact", head: true }).filter("status", "in", open).lt("due_at", nowIso),
       db.from("ops_incidents").select("id", { count: "exact", head: true }).eq("urgency", "critico").in("status", ["aberta", "em_analise"]),
+      db.from("ops_tasks").select("id", { count: "exact", head: true }).filter("status", "in", open).is("work_order_id", null),
     ]);
-    const summary = `Obras activas: ${active ?? 0}. Tarefas atrasadas: ${lateTasks ?? 0}. Ocorrências críticas abertas: ${critical ?? 0}.`;
+    const summary = `Obras activas: ${active ?? 0}. Tarefas atrasadas: ${lateTasks ?? 0}. Ocorrências críticas abertas: ${critical ?? 0}. Tarefas da empresa em aberto: ${companyOpen ?? 0}.`;
     for (const m of await recipientsByRoles(db, ["admin", "direcao", "gestor"])) {
       const msg = summaryMessage({ event: "resumo_semanal", name: m.full_name, summary, date: today });
       add("resumo_semanal", await enqueue(db, [{ dedupe_key: `resumo_semanal:${m.user_id}:${week}`, event: "resumo_semanal", recipient: m, ...msg }]));

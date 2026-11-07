@@ -164,7 +164,7 @@ export function ExpenseFormButton({
 }: {
   orders?: { id: string; label: string }[];
   orderId?: string;
-  tasks: { id: string; label: string; work_order_id: string }[];
+  tasks: { id: string; label: string; work_order_id: string | null }[];
   suppliers: { id: string; name: string }[];
   vatDefault: number;
   expense?: ExpenseView;
@@ -268,7 +268,7 @@ export function ExpenseTable({
   receipts,
 }: {
   expenses: ExpenseView[];
-  tasks: { id: string; label: string; work_order_id: string }[];
+  tasks: { id: string; label: string; work_order_id: string | null }[];
   suppliers: { id: string; name: string }[];
   vatDefault: number;
   showOrder?: boolean;

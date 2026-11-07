@@ -64,8 +64,10 @@ async function main() {
   for (const file of readdirSync(new URL("migrations/", root)).sort()) {
     await db.exec(readFileSync(new URL(`migrations/${file}`, root), "utf8"));
   }
-  // A migração tem de poder ser executada outra vez sem erros.
-  await db.exec(readFileSync(new URL("migrations/20261107000001_gestao_obras.sql", root), "utf8"));
+  // As migrações da gestão têm de poder ser executadas outra vez sem erros (pela mesma ordem).
+  for (const file of ["20261107000001_gestao_obras.sql", "20261108000001_tarefas_empresa.sql"]) {
+    await db.exec(readFileSync(new URL(`migrations/${file}`, root), "utf8"));
+  }
 
   const users = Object.entries(U).map(([k, id]) => `('${id}', '${k}@example.com')`).join(", ");
   await db.exec(`insert into auth.users (id, email) values ${users};
@@ -95,6 +97,7 @@ async function main() {
   let vesselId = "";
   let orderId = "";
   const taskIds: string[] = [];
+  let companyTaskId = "";
 
   await test("clientes e embarcações com código automático e sem duplicações", async () => {
     const [c] = await as<{ id: string; code: string }>(U.gestor,
@@ -312,6 +315,50 @@ async function main() {
   await test("telefone WhatsApp em formato internacional", async () => {
     await rejects(as(U.admin, "update public.ops_members set whatsapp_phone = '923000000' where user_id = $1", [U.tec1]), /check constraint/);
     await as(U.admin, "update public.ops_members set whatsapp_phone = '+244923000000', whatsapp_consent = true where user_id = $1", [U.tec1]);
+  });
+
+  await test("tarefas da empresa: numeração TE-AAAA-NNNN, área obrigatória e âmbito único", async () => {
+    const [t] = await as<{ id: string; code: string; created_by: string }>(U.direcao,
+      `insert into public.ops_tasks (area, title, responsible_id, priority, due_at, created_by)
+       values ('financeiro', 'Pagar a segurança social', $1, 'alta', now() + interval '2 days', $2) returning id, code, created_by`,
+      [U.financeiro, U.admin]);
+    assert.match(t.code, /^TE-\d{4}-0001$/);
+    assert.equal(t.created_by, U.direcao, "o autor é sempre quem cria");
+    companyTaskId = t.id;
+    await as(U.direcao, "insert into public.ops_task_assignees (task_id, user_id) values ($1, $2)", [t.id, U.financeiro]);
+    const [g] = await as<{ code: string }>(U.gestor,
+      "insert into public.ops_tasks (area, title) values ('compras', 'Encomendar tinta antivegetativa') returning code");
+    assert.match(g.code, /^TE-\d{4}-0002$/, "o gestor cria e vê a tarefa que criou");
+    await rejects(as(U.gestor, "insert into public.ops_tasks (title) values ('Sem âmbito')"), /ops_tasks_scope_check/);
+    await rejects(as(U.gestor, "insert into public.ops_tasks (work_order_id, area, title) values ($1, 'compras', 'Os dois')", [orderId]), /ops_tasks_scope_check/);
+    await rejects(as(U.gestor, "insert into public.ops_tasks (area, title) values ('xpto', 'Área inválida')"), /ops_tasks_area_check/);
+    await rejects(as(U.supervisor, "insert into public.ops_tasks (area, title) values ('outro', 'Supervisor')"), /row-level security/);
+    await rejects(as(U.direcao, "update public.ops_tasks set work_order_id = $1 where id = $2", [orderId, t.id]), /task_scope_change|ops_tasks_scope_check/);
+  });
+
+  await test("tarefas da empresa: só Direcção, Administração, autor e atribuídos as vêem", async () => {
+    const seen = async (who: string) => (await as(who, "select id from public.ops_tasks where id = $1", [companyTaskId])).length;
+    assert.equal(await seen(U.financeiro), 1, "responsável");
+    assert.equal(await seen(U.admin), 1);
+    assert.equal(await seen(U.direcao), 1);
+    assert.equal(await seen(U.gestor), 0, "gestor que não a criou");
+    assert.equal(await seen(U.supervisor), 0);
+    assert.equal(await seen(U.tec2), 0);
+    const orderTasks = await as(U.supervisor, "select id from public.ops_tasks where work_order_id = $1", [orderId]);
+    assert.ok(orderTasks.length >= 5, "as tarefas das obras continuam visíveis para a supervisão");
+  });
+
+  await test("tarefas da empresa: o responsável actualiza o estado; quem não a vê não lhe toca", async () => {
+    await as(U.financeiro, "select public.ops_tech_update_task($1, 'em_curso', 50, 'Guias pedidas')", [companyTaskId]);
+    const [row] = await as<{ status: string; progress: number }>(U.direcao, "select status, progress from public.ops_tasks where id = $1", [companyTaskId]);
+    assert.deepEqual(row, { status: "em_curso", progress: 50 });
+    await rejects(as(U.financeiro, "select public.ops_tech_update_task($1, 'cancelada', 0, null)", [companyTaskId]), /not_authorized/);
+    await rejects(as(U.supervisor, "select public.ops_tech_update_task($1, 'concluida', 100, null)", [companyTaskId]), /not_authorized/);
+    await rejects(as(U.supervisor, "select public.ops_validate_task($1)", [companyTaskId]), /not_authorized/);
+    const upd = await as(U.gestor, "update public.ops_tasks set title = 'Alterado' where id = $1 returning id", [companyTaskId]);
+    assert.equal(upd.length, 0, "gestor sem acesso não altera");
+    await as(U.financeiro, "insert into public.ops_time_entries (task_id, user_id, work_date, hours) values ($1, $2, current_date, 1.5)", [companyTaskId, U.financeiro]);
+    await rejects(as(U.tec2, "insert into public.ops_time_entries (task_id, user_id, work_date, hours) values ($1, $2, current_date, 1)", [companyTaskId, U.tec2]), /row-level security/);
   });
 
   await test("só a Administração gere utilizadores e papéis", async () => {

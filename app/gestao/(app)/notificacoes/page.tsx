@@ -69,7 +69,7 @@ export default async function NotificacoesPage({ searchParams }: PageProps<"/ges
         <ReminderPanel
           reminders={await loadReminders()}
           people={members.filter((m) => m.active).map((m) => ({ id: m.user_id, name: m.full_name }))}
-          tasks={(await getTasks({ openOnly: true })).map((t) => ({ id: t.id, label: `${t.order?.number} ${t.code} · ${t.title}`, work_order_id: t.work_order_id }))}
+          tasks={(await getTasks({ openOnly: true })).map((t) => ({ id: t.id, label: `${t.order?.number ?? "Empresa"} ${t.code} · ${t.title}`, work_order_id: t.work_order_id }))}
           orders={(await getOrders({ status: OPEN_ORDER_STATUSES })).map((o) => ({ id: o.id, label: `${o.number} · ${o.title}` }))}
           whatsappActive={whatsappActive}
         />

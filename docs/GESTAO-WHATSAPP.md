@@ -41,7 +41,7 @@ automaticamente.
 
 ## Modelos de mensagem (WhatsApp Manager › Message templates)
 
-Mensagens iniciadas pela empresa exigem modelos aprovados. Criar dois modelos, categoria **Utility**, língua
+Mensagens iniciadas pela empresa exigem modelos aprovados. Criar três modelos, categoria **Utility**, língua
 **Portuguese (POR)** → código `pt_PT`:
 
 **`pr_notificacao_obra`**
@@ -62,6 +62,25 @@ Consulte a plataforma para confirmar ou actualizar o estado da tarefa.
 
 Exemplo para a revisão da Meta: `NOVA TAREFA ATRIBUÍDA`, `OS-2026-0001`, `PR-001`, `Reparação e soldadura do
 casco`, `Técnico João`, `09/11/2026`, `08h00`, `Alta`, `—`.
+
+**`pr_tarefa_empresa`** (tarefas de gestão da empresa, sem obra nem embarcação)
+
+```
+PONTO RADICAL | Gestão da Empresa
+{{1}}
+Referência: {{2}}
+Tarefa: {{3}}
+Área: {{4}}
+Responsável: {{5}}
+Data: {{6}}
+Hora: {{7}}
+Prioridade: {{8}}
+{{9}}
+Consulte a plataforma para confirmar ou actualizar o estado da tarefa.
+```
+
+Exemplo: `NOVA TAREFA ATRIBUÍDA`, `TE-2026-0001`, `Pagar a segurança social`, `Finanças e contabilidade`,
+`Ana Paula`, `10/11/2026`, `09h30`, `Alta`, `—`.
 
 **`pr_resumo_obras`**
 
@@ -96,6 +115,9 @@ do consentimento ficam registados.
 
 ## Funcionamento
 
+- Tarefas da empresa: os mesmos avisos das tarefas das obras (atribuição, início, prazo, atraso, alteração de
+  horário, cancelamento, lembretes), enviados ao responsável e às pessoas atribuídas com o modelo
+  `pr_tarefa_empresa`. Atrasos avisam também quem criou a tarefa.
 - Eventos imediatos: nova tarefa atribuída, alteração de horário, tarefa cancelada, ocorrência crítica, pedido de
   aprovação (orçamento → Direcção; despesa do gestor → Financeiro/Direcção).
 - Agendador (a cada 5 minutos, no servidor): tarefa próxima do início, prazo próximo do fim, tarefa atrasada (uma

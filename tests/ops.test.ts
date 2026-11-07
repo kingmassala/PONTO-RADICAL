@@ -7,7 +7,8 @@
 import assert from "node:assert/strict";
 import { createHmac } from "node:crypto";
 import { computeFinance, quoteTotals, withVat } from "../lib/ops/finance";
-import { retryDelayMinutes, summaryMessage, taskMessage } from "../lib/ops/messages";
+import { companyTaskMessage, retryDelayMinutes, summaryMessage, taskMessage } from "../lib/ops/messages";
+import { taskHref } from "../lib/ops/task-href";
 import { toCsv } from "../lib/ops/csv";
 import { isGestaoHost, joinBase } from "../lib/ops/base";
 import { luandaToIso, fmtDate, fmtTime } from "../lib/ops/time";
@@ -115,6 +116,15 @@ test("mensagem de tarefa segue o modelo pr_notificacao_obra (9 parâmetros, hora
   assert.ok(m.preview.endsWith("Consulte a plataforma para confirmar ou actualizar o estado da tarefa."));
   const s = summaryMessage({ event: "resumo_semanal", name: "Ana Paula", summary: "Obras activas: 3.", date: "2026-11-09" });
   assert.deepEqual(s.params, ["RESUMO SEMANAL", "Ana", "Obras activas: 3.", "09/11/2026"]);
+});
+
+test("tarefa da empresa usa o modelo pr_tarefa_empresa (9 parâmetros, sem obra nem embarcação)", () => {
+  const m = companyTaskMessage({ event: "tarefa_atribuida", code: "TE-2026-0001", task: "Pagar a segurança social", area: "Finanças e contabilidade", responsible: "Ana Paula", when: luandaToIso("2026-11-10", "09:30"), priority: "alta" });
+  assert.deepEqual(m.params, ["NOVA TAREFA ATRIBUÍDA", "TE-2026-0001", "Pagar a segurança social", "Finanças e contabilidade", "Ana Paula", "10/11/2026", "09h30", "Alta", "—"]);
+  assert.ok(m.preview.startsWith("PONTO RADICAL | Gestão da Empresa\nNOVA TAREFA ATRIBUÍDA\nReferência: TE-2026-0001"));
+  assert.ok(!m.preview.includes("Embarcação"));
+  assert.equal(taskHref({ work_order_id: null }), "/tarefas?tipo=empresa");
+  assert.equal(taskHref({ work_order_id: "abc" }), "/obras/abc?tab=tarefas");
 });
 
 test("parâmetros WhatsApp sem quebras de linha nem espaços excessivos (regra da Meta)", () => {

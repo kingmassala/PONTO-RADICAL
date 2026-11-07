@@ -16,14 +16,15 @@ export const instant = false;
 
 export default async function TarefasPage({ searchParams }: PageProps<"/gestao/tarefas">) {
   const user = await requireOpsPage();
-  const sp = (await searchParams) as { vista?: string; minhas?: string; estado?: string; tecnico?: string };
+  const sp = (await searchParams) as { vista?: string; minhas?: string; estado?: string; tecnico?: string; tipo?: string };
+  const tipo = sp.tipo === "empresa" || sp.tipo === "obras" ? sp.tipo : undefined;
   const base = await getOpsBase();
   const h = (p: string) => joinBase(base, p);
   // Os técnicos vêem sempre só as suas tarefas (RLS); para os restantes, «minhas» é um filtro.
   const mine = sp.minhas === "1" || user.role === "tecnico";
   const open = sp.estado !== "todas";
   const [rows, members, orders] = await Promise.all([
-    getTasks({ userId: mine ? user.id : sp.tecnico || undefined, openOnly: open && sp.vista !== "kanban" }),
+    getTasks({ userId: mine ? user.id : sp.tecnico || undefined, openOnly: open && sp.vista !== "kanban", scope: tipo === "empresa" ? "empresa" : tipo === "obras" ? "obra" : undefined }),
     getMembers(),
     can.manage(user.role) ? getOrders({ status: OPEN_ORDER_STATUSES }) : Promise.resolve([]),
   ]);
@@ -43,12 +44,32 @@ export default async function TarefasPage({ searchParams }: PageProps<"/gestao/t
     <>
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{mine ? "As minhas tarefas" : "Tarefas"}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{tipo === "empresa" ? (mine ? "As minhas tarefas da empresa" : "Tarefas da empresa") : mine ? "As minhas tarefas" : "Tarefas"}</h1>
           <p className="mt-1 text-sm text-slate-500">
             {tasks.length} tarefa(s){late ? <span className="font-semibold text-red-600"> · {late} atrasada(s)</span> : null}
           </p>
         </div>
-        {can.manage(user.role) && <TaskFormButton orders={orders.map((o) => ({ id: o.id, label: `${o.number} · ${o.title}` }))} people={people} siblings={siblings} />}
+        {can.manage(user.role) && (
+          <TaskFormButton
+            orders={orders.map((o) => ({ id: o.id, label: `${o.number} · ${o.title}` }))}
+            companyAllowed={can.plan(user.role)}
+            defaultScope={tipo === "empresa" ? "empresa" : "obra"}
+            label={tipo === "empresa" && can.plan(user.role) ? "Nova tarefa da empresa" : undefined}
+            people={people}
+            siblings={siblings}
+          />
+        )}
+      </div>
+      <div className="mb-3 flex flex-wrap items-center gap-2" aria-label="Tipo de tarefa">
+        {[
+          [undefined, "Todas"],
+          ["obras", "Obras e embarcações"],
+          ["empresa", "Gestão da empresa"],
+        ].map(([k, l]) => (
+          <Link key={l} href={q({ tipo: k })} aria-current={tipo === k ? "page" : undefined} className={cx("rounded-lg px-3 py-1.5 text-sm font-medium", tipo === k ? "bg-black text-white" : "bg-white ring-1 ring-slate-200")}>
+            {l}
+          </Link>
+        ))}
       </div>
       <div className="mb-4 flex flex-wrap items-center gap-2">
         {[
@@ -75,6 +96,7 @@ export default async function TarefasPage({ searchParams }: PageProps<"/gestao/t
         {can.manage(user.role) && !mine && (
           <form action={h("/tarefas")} className="ml-auto">
             {sp.vista && <input type="hidden" name="vista" value={sp.vista} />}
+            {tipo && <input type="hidden" name="tipo" value={tipo} />}
             <select name="tecnico" defaultValue={sp.tecnico ?? ""} className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm" aria-label="Filtrar por técnico">
               <option value="">Todos os técnicos</option>
               {people.map((p) => (

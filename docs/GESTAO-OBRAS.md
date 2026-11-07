@@ -71,6 +71,7 @@ Aplicar só a migração nova (não reaplica as do website):
 
 ```bash
 npm run db:migrate -- --only=20261107000001_gestao_obras.sql
+npm run db:migrate -- --only=20261108000001_tarefas_empresa.sql
 ```
 
 Em alternativa, colar o ficheiro no SQL Editor do Supabase. A migração pode ser executada mais de uma vez.
@@ -132,6 +133,12 @@ menu ⋮). A aplicação abre em ecrã inteiro. Por segurança não guarda dados
 - **Tarefas**: tarefas e subtarefas, dependências, responsáveis, técnicos atribuídos, horas previstas e registadas,
   progresso. Atrasadas assinaladas a vermelho. O técnico actualiza o estado e o progresso e regista horas; a
   supervisão valida.
+- **Tarefas da empresa** (menu «Tarefas da empresa» ou filtro «Gestão da empresa»): tarefas internas sem obra,
+  por área (administração, finanças, comercial, recursos humanos, compras, logística, instalações, legal,
+  marketing, informática, outro), numeradas `TE-AAAA-NNNN`. Criadas pela Administração, Direcção e Gestores; vêem-nas
+  só a Administração, a Direcção, quem as criou, o responsável e as pessoas atribuídas (qualquer perfil, incluindo
+  Financeiro). O responsável recebe-as por WhatsApp (modelo `pr_tarefa_empresa`) e actualiza o estado, o progresso
+  e as horas.
 - **Relatórios diários**: submetidos no telemóvel com fotografias; a supervisão valida ou pede correcção. Filtros
   por período, técnico e obra; exportação para Excel (CSV) e PDF (impressão do browser).
 - **Ocorrências**: categoria, urgência, impacto, medidas, responsável, fotografias. As críticas notificam por WhatsApp

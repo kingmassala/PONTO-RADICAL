@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { computeFinance, type FinanceSummary } from "./finance";
-import type { OrderStatus, Priority, TaskStatus } from "./labels";
+import type { CompanyArea, OrderStatus, Priority, TaskStatus } from "./labels";
 import type { OpsRole } from "./roles";
 
 export type Member = { user_id: string; full_name: string; role: OpsRole; job_title: string | null; active: boolean };
@@ -91,7 +91,9 @@ export type TaskRow = {
   code: string;
   title: string;
   description: string | null;
-  work_order_id: string;
+  work_order_id: string | null;
+  area: CompanyArea | null;
+  created_by: string | null;
   parent_id: string | null;
   responsible_id: string | null;
   priority: Priority;
@@ -110,12 +112,14 @@ export type TaskRow = {
 };
 
 export const TASK_SELECT =
-  "id, code, title, description, work_order_id, parent_id, responsible_id, priority, status, progress, start_at, due_at, planned_hours, notes, sort_order, validated_at, order:ops_work_orders(number, title, vessel:ops_vessels(name, code)), responsible:ops_members!ops_tasks_responsible_id_fkey(full_name), assignees:ops_task_assignees(user_id), dependencies:ops_task_dependencies!ops_task_dependencies_task_id_fkey(depends_on)";
+  "id, code, title, description, work_order_id, area, created_by, parent_id, responsible_id, priority, status, progress, start_at, due_at, planned_hours, notes, sort_order, validated_at, order:ops_work_orders(number, title, vessel:ops_vessels(name, code)), responsible:ops_members!ops_tasks_responsible_id_fkey(full_name), assignees:ops_task_assignees(user_id), dependencies:ops_task_dependencies!ops_task_dependencies_task_id_fkey(depends_on)";
 
-export async function getTasks(filter: { orderId?: string; userId?: string; openOnly?: boolean; from?: string; to?: string } = {}): Promise<TaskRow[]> {
+export async function getTasks(filter: { orderId?: string; scope?: "obra" | "empresa"; userId?: string; openOnly?: boolean; from?: string; to?: string } = {}): Promise<TaskRow[]> {
   const supabase = await createClient();
   let q = supabase.from("ops_tasks").select(TASK_SELECT).order("sort_order").order("created_at").limit(1000);
   if (filter.orderId) q = q.eq("work_order_id", filter.orderId);
+  if (filter.scope === "obra") q = q.not("work_order_id", "is", null);
+  if (filter.scope === "empresa") q = q.is("work_order_id", null);
   if (filter.openOnly) q = q.in("status", ["por_iniciar", "em_curso", "suspensa"]);
   if (filter.from) q = q.gte("due_at", filter.from);
   if (filter.to) q = q.lte("start_at", filter.to);

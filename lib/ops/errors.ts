@@ -5,7 +5,10 @@ export type OpsResult<T = null> = { ok: true; data: T } | { ok: false; error: st
 const DB_MESSAGES: [RegExp, string][] = [
   [/not_authorized|row-level security|permission denied/, "O seu perfil não tem permissão para esta operação."],
   [/vessel_client_mismatch/, "A embarcação escolhida não pertence a este cliente."],
-  [/parent_other_order/, "A tarefa principal tem de pertencer à mesma obra."],
+  [/parent_other_order/, "A tarefa principal tem de pertencer à mesma obra (ou ser também da empresa)."],
+  [/task_scope_change/, "Não é possível mudar uma tarefa entre obra e gestão da empresa. Crie uma tarefa nova."],
+  [/ops_tasks_scope_check/, "Escolha uma obra ou uma área da empresa."],
+  [/ops_tasks_area_check/, "Área da empresa inválida."],
   [/task_not_completed/, "Só é possível validar tarefas concluídas."],
   [/task_not_found/, "A tarefa já não existe ou não lhe está atribuída."],
   [/quote_locked/, "Este orçamento já foi submetido e não pode ser alterado. Crie uma nova versão."],

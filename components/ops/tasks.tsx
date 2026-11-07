@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { AlertTriangle, CheckCircle2, Clock, Pencil, Plus, ShieldCheck, Trash2 } from "lucide-react";
 import { deleteTask, logTime, saveTask, updateTaskProgress, validateTask } from "@/lib/ops/actions/tasks";
-import { PRIORITIES, PRIORITY_LABELS, TASK_STATUSES, TASK_STATUS_LABELS, type Priority, type TaskStatus } from "@/lib/ops/labels";
+import { COMPANY_AREAS, COMPANY_AREA_LABELS, PRIORITIES, PRIORITY_LABELS, TASK_STATUSES, TASK_STATUS_LABELS, type CompanyArea, type Priority, type TaskStatus } from "@/lib/ops/labels";
+import { taskHref } from "@/lib/ops/task-href";
 import { can } from "@/lib/ops/roles";
 import { fmtDate, fmtDateTime, isoToLuandaInput, todayLuanda } from "@/lib/ops/time";
 import { cx } from "@/lib/cx";
@@ -17,7 +18,10 @@ export type TaskView = {
   code: string;
   title: string;
   description: string | null;
-  work_order_id: string;
+  /** null = tarefa de gestão da empresa. */
+  work_order_id: string | null;
+  area: CompanyArea | null;
+  areaLabel: string | null;
   orderNumber: string;
   vessel: string;
   parent_id: string | null;
@@ -48,9 +52,13 @@ export const PRIORITY_TONE: Record<Priority, "slate" | "sky" | "amber" | "red"> 
 
 /* ------------------------------ Formulário ------------------------------ */
 
+type Sibling = { id: string; code: string; title: string; work_order_id: string | null };
+
 type FormValues = {
   id?: string;
+  scope: "obra" | "empresa";
   work_order_id: string;
+  area: CompanyArea | "";
   parent_id: string | null;
   title: string;
   description: string;
@@ -67,6 +75,8 @@ type FormValues = {
 export function TaskFormButton({
   orderId,
   orders,
+  companyAllowed = false,
+  defaultScope = "obra",
   people,
   siblings,
   task,
@@ -75,8 +85,11 @@ export function TaskFormButton({
 }: {
   orderId?: string;
   orders?: { id: string; label: string }[];
+  /** Pode criar tarefas de gestão da empresa (Administração, Direcção, Gestores). */
+  companyAllowed?: boolean;
+  defaultScope?: "obra" | "empresa";
   people: { id: string; name: string; hint?: string }[];
-  siblings: { id: string; code: string; title: string; work_order_id: string }[];
+  siblings: Sibling[];
   task?: TaskView;
   label?: string;
   variant?: "primary" | "secondary" | "ghost";
@@ -84,7 +97,9 @@ export function TaskFormButton({
   const initial: FormValues = task
     ? {
         id: task.id,
-        work_order_id: task.work_order_id,
+        scope: task.work_order_id ? "obra" : "empresa",
+        work_order_id: task.work_order_id ?? "",
+        area: task.area ?? "",
         parent_id: task.parent_id,
         title: task.title,
         description: task.description ?? "",
@@ -98,7 +113,9 @@ export function TaskFormButton({
         status: task.status,
       }
     : {
+        scope: orderId || !companyAllowed ? "obra" : defaultScope,
         work_order_id: orderId ?? "",
+        area: "",
         parent_id: null,
         title: "",
         description: "",
@@ -117,7 +134,9 @@ export function TaskFormButton({
   const set = (patch: Partial<FormValues>) => setV((c) => ({ ...c, ...patch }));
   // datetime-local está em hora de Luanda (UTC+1).
   const toIso = (local: string) => (local ? new Date(`${local}:00+01:00`).toISOString() : null);
-  const others = siblings.filter((s) => s.work_order_id === v.work_order_id && s.id !== v.id);
+  const company = v.scope === "empresa";
+  const others = siblings.filter((s) => (company ? s.work_order_id === null : s.work_order_id === v.work_order_id) && s.id !== v.id);
+  const canChooseScope = !task && !orderId && companyAllowed;
 
   return (
     <>
@@ -133,6 +152,8 @@ export function TaskFormButton({
               () =>
                 saveTask({
                   ...v,
+                  work_order_id: company ? null : v.work_order_id,
+                  area: company ? v.area || null : null,
                   responsible_id: v.responsible_id || null,
                   parent_id: v.parent_id || null,
                   start_at: toIso(v.start_at),
@@ -143,10 +164,25 @@ export function TaskFormButton({
             );
           }}
         >
-          {orders && !orderId && (
-            <Choice label="Obra" required value={v.work_order_id} placeholder="— Escolher obra —" onChange={(x) => set({ work_order_id: x, parent_id: null, depends_on: [] })} options={orders.map((o) => ({ value: o.id, label: o.label }))} />
+          {canChooseScope && (
+            <Choice
+              label="Tipo de tarefa"
+              value={v.scope}
+              onChange={(x) => set({ scope: x, parent_id: null, depends_on: [] })}
+              options={[
+                { value: "obra", label: "Obra / embarcação" },
+                { value: "empresa", label: "Gestão da empresa" },
+              ]}
+            />
           )}
-          <Input label="Designação" required value={v.title} onChange={(x) => set({ title: x })} placeholder="Ex.: Soldadura das chapas do costado" />
+          {company ? (
+            <Choice label="Área da empresa" required value={v.area} placeholder="— Escolher área —" onChange={(x) => set({ area: x })} options={COMPANY_AREAS.map((a) => ({ value: a, label: COMPANY_AREA_LABELS[a] }))} />
+          ) : (
+            orders &&
+            !orderId &&
+            !task && <Choice label="Obra" required value={v.work_order_id} placeholder="— Escolher obra —" onChange={(x) => set({ work_order_id: x, parent_id: null, depends_on: [] })} options={orders.map((o) => ({ value: o.id, label: o.label }))} />
+          )}
+          <Input label="Designação" required value={v.title} onChange={(x) => set({ title: x })} placeholder={company ? "Ex.: Renovar o seguro das instalações" : "Ex.: Soldadura das chapas do costado"} />
           <Area label="Descrição" value={v.description} onChange={(x) => set({ description: x })} />
           <div className="grid gap-4 sm:grid-cols-3">
             <Choice label="Responsável" value={v.responsible_id ?? ""} placeholder="— Sem responsável —" onChange={(x) => set({ responsible_id: x || null })} options={people.map((p) => ({ value: p.id, label: p.name }))} />
@@ -156,14 +192,14 @@ export function TaskFormButton({
             <Input label="Prazo" type="datetime-local" value={v.due_at} onChange={(x) => set({ due_at: x })} />
             {task && <Choice label="Estado" value={v.status} onChange={(x) => set({ status: x })} options={TASK_STATUSES.map((s) => ({ value: s, label: TASK_STATUS_LABELS[s] }))} />}
           </div>
-          <PeoplePicker label="Técnicos atribuídos" people={people} value={v.assignees} onChange={(ids) => set({ assignees: ids })} />
+          <PeoplePicker label={company ? "Pessoas atribuídas" : "Técnicos atribuídos"} people={people} value={v.assignees} onChange={(ids) => set({ assignees: ids })} />
           {others.length > 0 && (
             <div className="grid gap-4 sm:grid-cols-2">
               <Choice label="Subtarefa de" value={v.parent_id ?? ""} placeholder="— Tarefa principal —" onChange={(x) => set({ parent_id: x || null })} options={others.filter((o) => !o.id.startsWith("_")).map((o) => ({ value: o.id, label: `${o.code} · ${o.title}` }))} />
               <PeoplePicker label="Depende de (tem de terminar antes)" people={others.map((o) => ({ id: o.id, name: `${o.code} · ${o.title}` }))} value={v.depends_on} onChange={(ids) => set({ depends_on: ids })} />
             </div>
           )}
-          <p className="text-xs text-slate-500">Horas em hora de Angola. Os técnicos atribuídos recebem aviso por WhatsApp (se tiverem dado consentimento).</p>
+          <p className="text-xs text-slate-500">Horas em hora de Angola. O responsável e as pessoas atribuídas recebem aviso por WhatsApp (se tiverem dado consentimento).</p>
           <FormError error={error} />
           <div className="flex justify-end gap-2">
             <Button onClick={() => setOpen(false)}>Cancelar</Button>
@@ -312,7 +348,7 @@ export function DeleteTaskButton({ id, code }: { id: string; code: string }) {
 function TaskMeta({ t }: { t: TaskView }) {
   return (
     <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
-      <span>{t.orderNumber}</span>
+      {t.work_order_id ? <span>{t.orderNumber}</span> : <Badge tone="slate">Empresa · {t.areaLabel}</Badge>}
       {t.vessel && <span>{t.vessel}</span>}
       {t.responsible && <span>{t.responsible}</span>}
       {t.due_at && <span className={t.late ? "font-semibold text-red-600" : ""}>Prazo {fmtDateTime(t.due_at)}</span>}
@@ -323,7 +359,7 @@ function TaskMeta({ t }: { t: TaskView }) {
   );
 }
 
-export function TaskList({ tasks, people, siblings, showOrder = true }: { tasks: TaskView[]; people: { id: string; name: string }[]; siblings: { id: string; code: string; title: string; work_order_id: string }[]; showOrder?: boolean }) {
+export function TaskList({ tasks, people, siblings, showOrder = true }: { tasks: TaskView[]; people: { id: string; name: string }[]; siblings: Sibling[]; showOrder?: boolean }) {
   const { role, href } = useOps();
   if (!tasks.length) return <EmptyState title="Sem tarefas">Ainda não existem tarefas nesta vista.</EmptyState>;
   const byId = new Map(tasks.map((t) => [t.id, t]));
@@ -348,7 +384,7 @@ export function TaskList({ tasks, people, siblings, showOrder = true }: { tasks:
                   {t.status === "validada" && <CheckCircle2 className="size-4 text-emerald-600" aria-label="Validada" />}
                 </div>
                 {showOrder ? (
-                  <Link href={href(`/obras/${t.work_order_id}?tab=tarefas`)} className="block hover:underline">
+                  <Link href={href(taskHref(t))} className="block hover:underline">
                     <TaskMeta t={t} />
                   </Link>
                 ) : (
@@ -412,13 +448,13 @@ export function KanbanBoard({ tasks }: { tasks: TaskView[] }) {
                   className={cx("rounded-lg border bg-white p-3 shadow-sm", t.late ? "border-red-300" : "border-slate-200", canMove(t) && "cursor-grab")}
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <Link href={href(`/obras/${t.work_order_id}?tab=tarefas`)} className="text-sm font-medium hover:underline">
+                    <Link href={href(taskHref(t))} className="text-sm font-medium hover:underline">
                       {t.title}
                     </Link>
                     <Badge tone={PRIORITY_TONE[t.priority]}>{PRIORITY_LABELS[t.priority]}</Badge>
                   </div>
                   <p className="mt-1 text-xs text-slate-500">
-                    {t.orderNumber} · {t.code}
+                    {t.work_order_id ? t.orderNumber : t.areaLabel} · {t.code}
                     {t.responsible ? ` · ${t.responsible}` : ""}
                   </p>
                   {t.due_at && <p className={cx("mt-1 text-xs", t.late ? "font-semibold text-red-600" : "text-slate-500")}>Prazo {fmtDate(t.due_at)}</p>}
@@ -527,7 +563,7 @@ export function GanttChart({ tasks, now }: { tasks: TaskView[]; now: number }) {
             const width = Math.max(1.2, pct(Math.max(s, e)) - left);
             return (
               <li key={t.id} className="flex items-center border-b border-slate-100 text-xs">
-                <Link href={href(`/obras/${t.work_order_id}?tab=tarefas`)} className="w-56 shrink-0 truncate px-3 py-2 hover:underline" title={t.title}>
+                <Link href={href(taskHref(t))} className="w-56 shrink-0 truncate px-3 py-2 hover:underline" title={t.title}>
                   <span className="font-mono text-slate-400">{t.orderNumber} {t.code}</span> {t.title}
                 </Link>
                 <div className="relative h-9 flex-1">

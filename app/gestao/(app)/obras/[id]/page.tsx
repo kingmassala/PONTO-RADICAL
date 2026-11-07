@@ -243,7 +243,7 @@ function Row({ label, value, icon }: { label: string; value: React.ReactNode; ic
   );
 }
 
-async function CostsTab({ orderId, taskOptions, vatDefault }: { orderId: string; taskOptions: { id: string; label: string; work_order_id: string }[]; vatDefault: number }) {
+async function CostsTab({ orderId, taskOptions, vatDefault }: { orderId: string; taskOptions: { id: string; label: string; work_order_id: string | null }[]; vatDefault: number }) {
   const supabase = await createClient();
   const [summary, expenses, quotes, suppliers] = await Promise.all([
     getFinance([orderId]),

@@ -3,25 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import {
-  AlertTriangle,
-  Anchor,
-  BarChart3,
-  Bell,
-  Building2,
-  CalendarDays,
-  ClipboardList,
-  FileText,
-  HardHat,
-  KanbanSquare,
-  LogOut,
-  Menu as MenuIcon,
-  Settings,
-  Ship,
-  UserCircle2,
-  Wallet,
-  X,
-} from "lucide-react";
+import { AlertTriangle, Anchor, BarChart3, Bell, Briefcase, Building2, CalendarDays, ClipboardList, FileText, HardHat, KanbanSquare, LogOut, Menu as MenuIcon, Settings, Ship, UserCircle2, Wallet, X } from "lucide-react";
 import { signOutOps } from "@/lib/ops/actions/auth";
 import { ROLE_LABELS, type OpsRole } from "@/lib/ops/roles";
 import { cx } from "@/lib/cx";
@@ -33,6 +15,7 @@ const NAV: Item[] = [
   { href: "/", label: "Dashboard", icon: BarChart3 },
   { href: "/obras", label: "Obras", icon: ClipboardList },
   { href: "/tarefas", label: "Tarefas", icon: KanbanSquare },
+  { href: "/tarefas?tipo=empresa", label: "Tarefas da empresa", icon: Briefcase },
   { href: "/calendario", label: "Calendário", icon: CalendarDays },
   { href: "/relatorios", label: "Relatórios diários", icon: FileText },
   { href: "/ocorrencias", label: "Ocorrências", icon: AlertTriangle, badge: "incidents" },

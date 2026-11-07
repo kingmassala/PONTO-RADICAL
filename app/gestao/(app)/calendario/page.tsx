@@ -6,6 +6,7 @@ import { getOpsBase } from "@/lib/ops/server-base";
 import { joinBase } from "@/lib/ops/base";
 import { luandaToIso, todayLuanda } from "@/lib/ops/time";
 import { MonthCalendar } from "@/components/ops/tasks";
+import { taskHref } from "@/lib/ops/task-href";
 
 export const metadata: Metadata = { title: "Calendário" };
 export const instant = false;
@@ -30,8 +31,8 @@ export default async function CalendarioPage({ searchParams }: PageProps<"/gesta
       .filter((t) => (t.due_at && t.due_at >= from && t.due_at < to) || (t.start_at && t.start_at >= from && t.start_at < to))
       .map((t) => ({
         date: day((t.due_at && t.due_at < to ? t.due_at : t.start_at)!),
-        label: `${t.order?.number?.slice(-4) ?? ""} ${t.code} ${t.title}`,
-        href: `/obras/${t.work_order_id}?tab=tarefas`,
+        label: `${t.order?.number?.slice(-4) ?? ""} ${t.code} ${t.title}`.trim(),
+        href: taskHref(t),
         tone: (isLate(t) ? "late" : ["concluida", "validada"].includes(t.status) ? "done" : "task") as "late" | "task" | "done",
       })),
     ...orders

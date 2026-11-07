@@ -9,7 +9,7 @@ import { requireOps } from "../auth";
 import { opsDbError, opsError, type OpsResult } from "../errors";
 import { OPS_ROLES } from "../roles";
 import { processOutbox, runScheduler, type ProcessReport, type SchedulerReport } from "../notify";
-import { taskMessage } from "../messages";
+import { companyTaskMessage, taskMessage } from "../messages";
 import { sendTemplate } from "../whatsapp";
 import { opsPath, requestOrigin } from "../server-base";
 
@@ -263,7 +263,7 @@ export async function sendTestMessage(input: unknown): Promise<OpsResult<{ messa
     const v = z
       .object({
         user_id: z.string().uuid(),
-        mode: z.enum(["hello_world", "template"]),
+        mode: z.enum(["hello_world", "template", "empresa"]),
       })
       .parse(input);
     const db = createAdminClient();
@@ -284,6 +284,22 @@ export async function sendTestMessage(input: unknown): Promise<OpsResult<{ messa
         orderNumber: "TESTE",
         vessel: "—",
         task: "Mensagem de teste da plataforma",
+        responsible: me.fullName,
+        when: new Date().toISOString(),
+        priority: "media",
+        note: "Mensagem de teste. Pode ignorar.",
+      });
+      params = msg.params;
+      preview = msg.preview;
+    } else if (v.mode === "empresa") {
+      const { data: t } = await db.from("ops_whatsapp_templates").select("template_name, language").eq("event", "tarefa_empresa").single();
+      template = t?.template_name ?? "pr_tarefa_empresa";
+      language = t?.language ?? "pt_PT";
+      const msg = companyTaskMessage({
+        event: "tarefa_atribuida",
+        code: "TESTE",
+        task: "Mensagem de teste da plataforma",
+        area: "Administração",
         responsible: me.fullName,
         when: new Date().toISOString(),
         priority: "media",
