@@ -2,10 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { FileText, Plus } from "lucide-react";
 import { saveClient, saveVessel } from "@/lib/ops/actions/registry";
+import { uploadAttachment } from "@/lib/ops/actions/files";
+import { fmtDate } from "@/lib/ops/time";
+import { shrinkImage } from "./shrink-image";
 import { saveOrder } from "@/lib/ops/actions/orders";
-import { INTERVENTION_LABELS, INTERVENTION_TYPES, PRIORITIES, PRIORITY_LABELS, VESSEL_TYPE_LABELS, VESSEL_TYPES, type InterventionType, type Priority, type VesselType } from "@/lib/ops/labels";
+import { INTERVENTION_LABELS, INTERVENTION_TYPES, PRIORITIES, PRIORITY_LABELS, REGISTRATION_DOC_CAPTION, VESSEL_TYPE_LABELS, VESSEL_TYPES, type InterventionType, type Priority, type VesselType } from "@/lib/ops/labels";
 import { useOps } from "./context";
 import { Area, Button, Choice, FormError, Input, Modal } from "./ui";
 import { useOpsAction } from "./use-action";
@@ -93,11 +96,14 @@ export function VesselFormButton({
   initial,
   defaultClientId,
   label = "Nova embarcação",
+  registrationDoc,
 }: {
   clients: { id: string; name: string }[];
   initial?: VesselValues;
   defaultClientId?: string;
   label?: string;
+  /** Documento de registo da matrícula já carregado (edição). */
+  registrationDoc?: { url: string | null; created_at: string } | null;
 }) {
   const empty: VesselValues = {
     client_id: defaultClientId ?? "",
@@ -114,8 +120,22 @@ export function VesselFormButton({
   };
   const [open, setOpen] = useState(false);
   const [v, setV] = useState<VesselValues>(initial ?? empty);
+  const [doc, setDoc] = useState<File | null>(null);
   const { pending, error, run } = useOpsAction();
   const set = (patch: Partial<VesselValues>) => setV((c) => ({ ...c, ...patch }));
+
+  async function save() {
+    const saved = await saveVessel({ ...v, length_m: v.length_m === "" ? null : v.length_m });
+    if (!saved.ok || !doc) return saved;
+    const fd = new FormData();
+    fd.set("file", await shrinkImage(doc));
+    fd.set("entity_type", "vessel");
+    fd.set("entity_id", saved.data.id);
+    fd.set("caption", REGISTRATION_DOC_CAPTION);
+    const up = await uploadAttachment(fd);
+    if (!up.ok) return { ok: false as const, error: `A embarcação foi guardada, mas o documento de registo não foi carregado: ${up.error}` };
+    return saved;
+  }
   return (
     <>
       <Button variant={initial ? "secondary" : "primary"} onClick={() => setOpen(true)}>
@@ -126,8 +146,9 @@ export function VesselFormButton({
           className="space-y-4"
           onSubmit={(e) => {
             e.preventDefault();
-            run(() => saveVessel({ ...v, length_m: v.length_m === "" ? null : v.length_m }), () => {
+            run(save, () => {
               setOpen(false);
+              setDoc(null);
               if (!initial) setV(empty);
             });
           }}
@@ -149,6 +170,32 @@ export function VesselFormButton({
             <Input label="Tipo de casco" value={v.hull_type} placeholder="Alumínio, fibra, aço…" onChange={(x) => set({ hull_type: x })} />
             <Input label="Comprimento (m)" type="number" step="0.01" min="0" value={v.length_m} onChange={(x) => set({ length_m: x })} />
             <Input label="Localização" value={v.location} onChange={(x) => set({ location: x })} />
+          </div>
+          <div className="rounded-lg border border-dashed border-slate-300 p-3">
+            <label className="block text-sm font-medium text-slate-700" htmlFor="vessel-registration-doc">
+              Documento de registo da matrícula
+            </label>
+            <p className="mt-0.5 text-xs text-slate-500">Fotografia ou PDF do certificado/livrete de registo (até 10 MB). No telemóvel pode tirar a fotografia na hora.</p>
+            {registrationDoc && (
+              <p className="mt-2 flex items-center gap-1.5 text-sm">
+                <FileText className="size-4 text-slate-500" aria-hidden />
+                {registrationDoc.url ? (
+                  <a href={registrationDoc.url} target="_blank" rel="noopener noreferrer" className="underline">
+                    Documento actual
+                  </a>
+                ) : (
+                  "Documento actual"
+                )}
+                <span className="text-xs text-slate-500">carregado a {fmtDate(registrationDoc.created_at)} · escolha outro ficheiro para o substituir</span>
+              </p>
+            )}
+            <input
+              id="vessel-registration-doc"
+              type="file"
+              accept="image/*,application/pdf"
+              onChange={(e) => setDoc(e.target.files?.[0] ?? null)}
+              className="mt-2 block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-black file:px-3 file:py-2 file:text-sm file:font-medium file:text-white"
+            />
           </div>
           <Input label="Motorização" value={v.propulsion} placeholder="Ex.: 2× Suzuki DF300" onChange={(x) => set({ propulsion: x })} />
           <Area label="Observações" value={v.notes} onChange={(x) => set({ notes: x })} />

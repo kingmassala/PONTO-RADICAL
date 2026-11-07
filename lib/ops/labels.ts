@@ -227,3 +227,6 @@ export const TEMPLATE_EVENT_LABELS: Record<string, string> = {
   ...NOTIFICATION_EVENTS,
   tarefa_empresa: "Tarefas da empresa (modelo usado em todos os avisos destas tarefas)",
 };
+
+/** Legenda que identifica o documento de registo da matrícula entre os anexos da embarcação. */
+export const REGISTRATION_DOC_CAPTION = "Documento de registo da matrícula";

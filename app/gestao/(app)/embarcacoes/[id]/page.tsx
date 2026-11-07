@@ -7,7 +7,7 @@ import { getClients, getFinance, getOrders } from "@/lib/ops/queries";
 import { listAttachments } from "@/lib/ops/attachments";
 import { getOpsBase } from "@/lib/ops/server-base";
 import { joinBase } from "@/lib/ops/base";
-import { INTERVENTION_LABELS, VESSEL_TYPE_LABELS, type InterventionType, type VesselType } from "@/lib/ops/labels";
+import { INTERVENTION_LABELS, REGISTRATION_DOC_CAPTION, VESSEL_TYPE_LABELS, type InterventionType, type VesselType } from "@/lib/ops/labels";
 import { fmtAoa } from "@/lib/ops/money";
 import { can } from "@/lib/ops/roles";
 import { fmtDate } from "@/lib/ops/time";
@@ -32,6 +32,8 @@ export default async function EmbarcacaoPage({ params }: PageProps<"/gestao/emba
   const [orders, clients, files] = await Promise.all([getOrders({ vesselId: id }), getClients(), listAttachments({ entity_type: "vessel", entity_id: id })]);
   const finance = can.finance(user.role) ? await getFinance(orders.map((o) => o.id)) : null;
   const client = v.client as { id: string; name: string } | null;
+  // Documento de registo mais recente (os anteriores ficam no histórico de ficheiros).
+  const registrationDoc = files.find((f) => f.caption === REGISTRATION_DOC_CAPTION) ?? null;
   const fields: [string, string | null][] = [
     ["Tipo", VESSEL_TYPE_LABELS[v.vessel_type as VesselType]],
     ["Matrícula", v.registration],
@@ -67,7 +69,7 @@ export default async function EmbarcacaoPage({ params }: PageProps<"/gestao/emba
         </div>
         {can.plan(user.role) && (
           <div className="flex gap-2">
-            <VesselFormButton clients={clients.map((c) => ({ id: c.id, name: c.name }))} initial={{ ...v, length_m: v.length_m ?? "" }} label="Editar embarcação" />
+            <VesselFormButton clients={clients.map((c) => ({ id: c.id, name: c.name }))} initial={{ ...v, length_m: v.length_m ?? "" }} label="Editar embarcação" registrationDoc={registrationDoc} />
             <ArchiveButton kind="vessel" id={id} archived={v.archived} />
           </div>
         )}
@@ -83,6 +85,32 @@ export default async function EmbarcacaoPage({ params }: PageProps<"/gestao/emba
                 </div>
               ))}
             </dl>
+          </Card>
+          <Card title="Registo da matrícula">
+            <dl className="space-y-2 text-sm">
+              <div className="flex justify-between gap-4">
+                <dt className="text-slate-500">Matrícula</dt>
+                <dd className="text-right font-medium">{v.registration || "—"}</dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-slate-500">Documento</dt>
+                <dd className="text-right">
+                  {registrationDoc ? (
+                    registrationDoc.url ? (
+                      <a href={registrationDoc.url} target="_blank" rel="noopener noreferrer" className="font-medium underline">
+                        Ver documento ({registrationDoc.mime_type === "application/pdf" ? "PDF" : "imagem"})
+                      </a>
+                    ) : (
+                      "Carregado"
+                    )
+                  ) : (
+                    <span className="text-amber-700">Por carregar</span>
+                  )}
+                </dd>
+              </div>
+              {registrationDoc && <p className="text-xs text-slate-500">Carregado a {fmtDate(registrationDoc.created_at)}.</p>}
+            </dl>
+            {!registrationDoc && can.plan(user.role) && <p className="mt-2 text-xs text-slate-500">Use «Editar embarcação» para carregar a fotografia ou o PDF do documento.</p>}
           </Card>
           <Card title="Fotografias e documentação">
             <Attachments entityType="vessel" entityId={id} workOrderId={null} items={files} canUpload={can.manage(user.role)} />
