@@ -78,14 +78,20 @@ export function OpsShell({
   );
 
   const brand = (
-    <div className="flex h-16 items-center gap-3 border-b border-white/10 px-5">
+    <Link
+      href={href("/")}
+      onClick={() => setOpen(false)}
+      aria-label="Ponto Radical · Gestão de Obras — ir para o Dashboard"
+      title="Ir para o Dashboard"
+      className="flex h-16 items-center gap-3 border-b border-white/10 px-5 transition hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/60"
+    >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/brand/ponto-radical-mark-white.svg" alt="" className="size-9" />
       <div className="leading-tight">
         <p className="text-sm font-semibold tracking-wide text-white">PONTO RADICAL</p>
         <p className="text-[11px] uppercase tracking-[0.18em] text-neutral-400">Gestão de Obras</p>
       </div>
-    </div>
+    </Link>
   );
 
   const footer = (

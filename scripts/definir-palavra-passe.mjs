@@ -102,11 +102,12 @@ if (second !== first) {
   process.exit(1);
 }
 
-const { error } = await db.auth.admin.updateUserById(user.id, { password: first });
+const { error } = await db.auth.admin.updateUserById(user.id, { password: first, email_confirm: true });
 if (error) {
   console.error(`Não foi possível definir a palavra-passe: ${error.message}`);
   process.exit(1);
 }
+// O email fica confirmado (sem isso o Supabase recusa o login com «Email not confirmed»).
 // Se a conta estava marcada para trocar a palavra-passe no primeiro acesso à gestão, deixa de estar.
 await db.from("ops_members").update({ must_change_password: false }).eq("user_id", user.id);
 console.log(`✓ Palavra-passe de ${email} definida. Serve para o painel do website (/admin) e para a Gestão de Obras.`);
