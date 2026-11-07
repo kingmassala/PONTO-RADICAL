@@ -528,6 +528,8 @@ export function VideoSection({ section, doc, locale }: Props<"video">) {
 
 /* ---------------------------------- Soluções ---------------------------------- */
 
+const LG_SPAN: Record<number, string> = { 1: "", 2: "lg:col-span-2", 3: "lg:col-span-3", 4: "lg:col-span-4" };
+
 export function FeaturesSection({ section }: Props<"features">) {
   const bg = BACKGROUNDS[section.background];
   const dark = bg.tone === "dark";
@@ -551,44 +553,73 @@ export function FeaturesSection({ section }: Props<"features">) {
           {section.items.map((item, i) => {
             const Icon = ICONS[item.icon] ?? Compass;
             const featured = i === 0;
+            const n = section.items.length;
+            const lgCols = section.columns;
             // O cartão em destaque ocupa duas linhas só quando isso não deixa buracos na grelha.
-            const span = featured && section.columns >= 3 && (section.items.length + 1) % section.columns === 0;
+            const span = featured && lgCols >= 3 && (n + 1) % lgCols === 0;
+            // O último cartão estica-se para preencher a linha (sem buracos no fim da grelha).
+            const last = i === n - 1 && n > 1;
+            const lgFree = (n + (span ? 1 : 0)) % lgCols;
+            const mdWide = last && n % 2 === 1;
+            const lgWide = last && lgFree !== 0;
+            const lgSpan = lgWide ? LG_SPAN[lgCols - lgFree + 1] : mdWide ? "lg:col-span-1" : "";
+            const wide = lgWide;
             return (
-              <li key={i} className={`pr-3d-rise group ${span ? "lg:row-span-2" : ""}`}>
+              <li
+                key={i}
+                style={{ ["--i" as string]: i }}
+                className={`pr-3d-rise pr-feat group ${span ? "lg:row-span-2" : ""} ${mdWide ? "md:col-span-2" : ""} ${lgSpan}`}
+              >
                 <Tilt
-                  className={`flex h-full min-h-72 flex-col overflow-hidden rounded-[2rem] p-8 sm:p-10 ${
+                  className={`relative flex h-full min-h-72 flex-col overflow-hidden rounded-[2rem] p-8 transition-[box-shadow,translate] duration-500 group-hover:-translate-y-1 sm:p-10 ${
+                    wide ? "lg:flex-row lg:items-center lg:gap-12" : ""
+                  } ${
                     featured
-                      ? "bg-accent text-on-accent"
+                      ? "pr-feat-featured bg-accent text-on-accent"
                       : dark
                         ? "bg-white/[0.06] text-white"
-                        : "bg-white text-ink shadow-[0_30px_60px_-40px_rgba(5,11,16,0.35)]"
+                        : "bg-white text-ink shadow-[0_30px_60px_-40px_rgba(5,11,16,0.35)] group-hover:shadow-[0_40px_70px_-35px_rgba(5,11,16,0.45)]"
                   }`}
                 >
-                  <div className="flex items-start justify-between">
-                    <span
-                      className={`flex size-16 items-center justify-center rounded-2xl transition-transform duration-500 group-hover:rotate-[-12deg] group-hover:scale-110 ${
-                        featured ? "bg-on-accent text-accent" : "bg-accent text-on-accent"
-                      }`}
-                    >
-                      <Icon aria-hidden className="size-8" strokeWidth={1.6} />
-                    </span>
-                    <span className={`pr-heading text-5xl ${featured ? "text-on-accent/30" : dark ? "text-white/15" : "text-ink/10"}`}>
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
+                  <div className={`relative flex flex-1 flex-col ${wide ? "lg:self-stretch" : ""}`}>
+                    <div className="flex items-start justify-between">
+                      <span
+                        className={`pr-feat-icon flex size-16 items-center justify-center rounded-2xl transition-transform duration-500 group-hover:rotate-[-12deg] group-hover:scale-110 ${
+                          featured ? "bg-on-accent text-accent" : "bg-accent text-on-accent"
+                        }`}
+                      >
+                        <Icon aria-hidden className="size-8" strokeWidth={1.6} />
+                      </span>
+                      <span
+                        className={`pr-heading text-5xl transition-all duration-500 group-hover:-translate-y-1 ${
+                          featured ? "text-on-accent/30 group-hover:text-on-accent/60" : dark ? "text-white/15 group-hover:text-white/40" : "text-ink/10 group-hover:text-accent/40"
+                        } ${wide ? "lg:hidden" : ""}`}
+                      >
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                    </div>
+                    <h3 className={`pr-heading mt-auto pt-16 ${featured ? "text-3xl sm:text-4xl" : "pr-h3"} ${wide ? "lg:pt-10" : ""}`}>{item.title}</h3>
+                    {item.text && (
+                      <p className={`mt-4 max-w-2xl leading-relaxed ${featured ? "text-lg text-on-accent/90" : dark ? "text-white/65" : "text-ink/65"}`}>{item.text}</p>
+                    )}
                   </div>
-                  <h3 className={`pr-heading mt-auto pt-16 ${featured ? "text-3xl sm:text-4xl" : "pr-h3"}`}>{item.title}</h3>
-                  {item.text && (
-                    <p className={`mt-4 leading-relaxed ${featured ? "text-lg text-on-accent/90" : dark ? "text-white/65" : "text-ink/65"}`}>{item.text}</p>
-                  )}
                   {item.logo.url && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={item.logo.url}
-                      alt={item.logo.alt || item.title}
-                      loading="lazy"
-                      className={`mt-6 h-14 w-auto max-w-[220px] object-contain object-left ${featured || dark ? "pr-logo-white" : ""}`}
-                    />
+                    <div className={`relative mt-8 ${wide ? "lg:mt-0 lg:flex lg:w-[38%] lg:shrink-0 lg:items-center lg:justify-center" : ""}`}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={item.logo.url}
+                        alt={item.logo.alt || item.title}
+                        loading="lazy"
+                        className={`pr-feat-logo h-auto w-auto object-contain object-left transition-transform duration-700 ease-[cubic-bezier(0.2,0.75,0.15,1)] group-hover:scale-105 ${
+                          wide ? "max-h-24 max-w-[240px] lg:max-h-44 lg:max-w-full" : "max-h-24 max-w-[220px]"
+                        } ${featured || dark ? "pr-logo-white" : ""}`}
+                      />
+                    </div>
                   )}
+                  <span
+                    aria-hidden
+                    className="absolute inset-x-8 bottom-0 h-1 origin-left scale-x-0 rounded-full bg-accent transition-transform duration-700 ease-[cubic-bezier(0.2,0.75,0.15,1)] group-hover:scale-x-100"
+                  />
                 </Tilt>
               </li>
             );
