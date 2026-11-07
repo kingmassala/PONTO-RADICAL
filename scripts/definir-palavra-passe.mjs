@@ -1,4 +1,4 @@
-// Define a palavra-passe de uma conta existente (website /admin e Gestão de Obras usam a mesma conta).
+// Define a palavra-passe de uma conta existente do painel (/admin).
 // A palavra-passe é pedida numa janela do macOS com texto escondido (ou no terminal, sem eco),
 // nunca é mostrada, guardada em ficheiros nem passada na linha de comandos.
 //
@@ -108,6 +108,4 @@ if (error) {
   process.exit(1);
 }
 // O email fica confirmado (sem isso o Supabase recusa o login com «Email not confirmed»).
-// Se a conta estava marcada para trocar a palavra-passe no primeiro acesso à gestão, deixa de estar.
-await db.from("ops_members").update({ must_change_password: false }).eq("user_id", user.id);
-console.log(`✓ Palavra-passe de ${email} definida. Serve para o painel do website (/admin) e para a Gestão de Obras.`);
+console.log(`✓ Palavra-passe de ${email} definida para o painel (/admin).`);

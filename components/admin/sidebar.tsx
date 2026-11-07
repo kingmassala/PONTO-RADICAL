@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
   BadgeCheck,
+  ClipboardCheck,
+  PackageCheck,
   CalendarCheck,
   Languages,
   ExternalLink,
@@ -33,6 +35,8 @@ import { cx } from "./ui";
 
 const NAV = [
   { href: "/admin", label: "Visão Geral", icon: LayoutDashboard, exact: true },
+  { href: "/admin/tarefas", label: "Tarefas", icon: ClipboardCheck, badge: "tasks" as const },
+  { href: "/admin/saidas", label: "Saídas de material", icon: PackageCheck, badge: "deliveries" as const },
   { href: "/admin/conteudos", label: "Conteúdos", icon: FileText },
   { href: "/admin/seccoes", label: "Secções", icon: LayoutList },
   { href: "/admin/marcas", label: "Marcas", icon: BadgeCheck },
@@ -56,10 +60,14 @@ export function Sidebar({
   user,
   unreadMessages,
   newBookings = 0,
+  lateTasks = 0,
+  unsignedDeliveries = 0,
 }: {
   user: { email: string; fullName: string | null; role: "admin" | "editor" };
   unreadMessages: number;
   newBookings?: number;
+  lateTasks?: number;
+  unsignedDeliveries?: number;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -84,6 +92,16 @@ export function Sidebar({
             <span className="flex-1">{item.label}</span>
             {item.badge === "messages" && unreadMessages > 0 && (
               <span className="rounded-full bg-white px-1.5 text-xs font-semibold text-black">{unreadMessages}</span>
+            )}
+            {item.badge === "tasks" && lateTasks > 0 && (
+              <span className="rounded-full bg-red-500 px-1.5 text-xs font-semibold text-white" aria-label={`${lateTasks} tarefas em atraso ou a vencer`}>
+                {lateTasks}
+              </span>
+            )}
+            {item.badge === "deliveries" && unsignedDeliveries > 0 && (
+              <span className="rounded-full bg-amber-400 px-1.5 text-xs font-semibold text-black" aria-label={`${unsignedDeliveries} guias por assinar`}>
+                {unsignedDeliveries}
+              </span>
             )}
             {item.badge === "bookings" && newBookings > 0 && (
               <span className="rounded-full bg-white px-1.5 text-xs font-semibold text-black" aria-label={`${newBookings} pedidos novos`}>

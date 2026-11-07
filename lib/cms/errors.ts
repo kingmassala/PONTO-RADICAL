@@ -25,6 +25,17 @@ const LABELS: Record<string, string> = {
   label: "Texto",
   name: "Nome",
   email: "Email",
+  description: "Descrição",
+  responsibleName: "Responsável",
+  responsiblePhone: "Telemóvel",
+  dueLocal: "Prazo",
+  header: "Guia",
+  items: "Materiais",
+  quantity: "Quantidade",
+  unit: "Unidade",
+  delivery_date: "Data",
+  delivered_by: "Entreguei",
+  recipient: "Destinatário",
 };
 
 export function formatZodError(error: z.ZodError): string[] {
@@ -45,6 +56,11 @@ export function friendlyDbError(message: string | undefined): string {
   if (m.includes("last_admin")) return "Tem de existir pelo menos um administrador.";
   if (m.includes("version_not_found")) return "A versão indicada já não existe.";
   if (m.includes("draft_missing")) return "O rascunho não existe. Execute o seed inicial.";
+  if (m.includes("delivery_locked")) return "Esta guia já foi assinada ou anulada e não pode ser alterada.";
+  if (m.includes("delivery_no_items")) return "Acrescente pelo menos um material à guia.";
+  if (m.includes("delivery_bad_status")) return "Uma guia nova começa sempre como «emitida».";
+  if (m.includes("pr_deliveries_cancel_reason")) return "Indique o motivo da anulação.";
+  if (m.includes("responsible_phone")) return "Telemóvel do responsável inválido (use o formato +244 923 456 789).";
   return m ? `Erro: ${m}` : "Ocorreu um erro inesperado.";
 }
 

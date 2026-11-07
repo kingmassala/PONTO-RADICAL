@@ -22,9 +22,8 @@ Storage, RLS) · Vercel.
 - [docs/INSTALACAO.md](docs/INSTALACAO.md) — configuração do Supabase, administrador inicial, publicação na Vercel,
   ligação da Quicksell.
 - [docs/GUIA-CMS.md](docs/GUIA-CMS.md) — guia de utilização do painel.
-- [docs/GESTAO-OBRAS.md](docs/GESTAO-OBRAS.md) — plataforma de **Gestão de Obras Navais** (`gestao.<domínio>` ou
-  `/gestao`): perfis, instalação, subdomínio, automatização, utilização e testes de aceitação.
-- [docs/GESTAO-WHATSAPP.md](docs/GESTAO-WHATSAPP.md) — configuração da WhatsApp Cloud API (Meta), modelos e webhook.
+- [docs/TAREFAS-E-SAIDAS.md](docs/TAREFAS-E-SAIDAS.md) — tarefas com alertas (painel e WhatsApp) e saídas de
+  material para a Promarine com guia de entrega assinada.
 
 ## Funcionalidades
 
@@ -35,10 +34,8 @@ Storage, RLS) · Vercel.
 - Marcas com logótipos e selo de **revendedor autorizado**; faixa animada e botões para a **Loja Online**
   (Quicksell, com alternativa por WhatsApp/contactos enquanto não houver link).
 - Experiências reserváveis com pedidos de reserva e agenda no painel; formulário de contacto; histórico de versões.
-- **Gestão de Obras Navais** (área privada, subdomínio `gestao.`): clientes, embarcações, ordens de serviço
-  `OS-AAAA-NNNN`, tarefas (lista, Kanban, calendário, cronograma), custos e orçamentos em AOA, relatórios diários,
-  ocorrências, notificações WhatsApp (Cloud API) com agendador no servidor, dashboard executivo e PWA. Seis perfis
-  com permissões impostas por RLS.
+- **Tarefas** com responsável, prazo e alertas (painel e WhatsApp) e **saídas de material** para a Promarine, com
+  guia numerada para imprimir e assinar («Entreguei — Ponto Radical» / «Recebi — Promarine»).
 
 ## Arranque rápido
 

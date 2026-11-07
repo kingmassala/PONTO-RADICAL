@@ -21,7 +21,8 @@ export default async function OverviewPage({ searchParams }: PageProps<"/admin">
   ]);
   const supabase = await createClient();
   const today = todayIso();
-  const [media, unread, versions, newBookings, upcoming] = await Promise.all([
+  const soon = isoFromNow(24);
+  const [media, unread, versions, newBookings, upcoming, alertTasks, unsigned] = await Promise.all([
     supabase.from("media").select("id", { count: "exact", head: true }),
     supabase.from("contact_messages").select("id", { count: "exact", head: true }).eq("status", "novo"),
     supabase.from("site_versions").select("id, note, published_at, published_by_email").order("id", { ascending: false }).limit(5),
@@ -34,7 +35,16 @@ export default async function OverviewPage({ searchParams }: PageProps<"/admin">
       .order("requested_date")
       .order("time_slot")
       .limit(6),
+    supabase
+      .from("pr_tasks")
+      .select("id, code, title, responsible_name, due_at")
+      .in("status", ["pendente", "em_curso"])
+      .lte("due_at", soon)
+      .order("due_at")
+      .limit(8),
+    supabase.from("pr_material_deliveries").select("id", { count: "exact", head: true }).eq("status", "emitida"),
   ]);
+  const nowIso = isoFromNow(0);
   const doc = draft.doc;
   const issues = checkDocument(doc);
 
@@ -65,6 +75,41 @@ export default async function OverviewPage({ searchParams }: PageProps<"/admin">
         <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
           Essa área está reservada a administradores.
         </div>
+      )}
+
+      {((alertTasks.data ?? []).length > 0 || (unsigned.count ?? 0) > 0) && (
+        <section className="rounded-xl border border-red-200 bg-white shadow-sm">
+          <header className="flex items-center justify-between border-b border-red-100 px-6 py-4">
+            <h2 className="flex items-center gap-2 text-sm font-semibold text-red-800">
+              <AlertTriangle className="size-4" /> Alertas
+            </h2>
+            <Link href="/admin/tarefas" className="text-xs text-sky-700 hover:underline">
+              Ver tarefas
+            </Link>
+          </header>
+          <ul className="divide-y divide-slate-100 text-sm">
+            {(alertTasks.data ?? []).map((t) => (
+              <li key={t.id}>
+                <Link href={`/admin/tarefas?t=${t.code}`} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-6 py-3 hover:bg-slate-50">
+                  <span className={`w-28 text-xs font-semibold ${t.due_at && t.due_at < nowIso ? "text-red-700" : "text-amber-700"}`}>
+                    {t.due_at && t.due_at < nowIso ? "Em atraso" : "Vence em 24 h"}
+                  </span>
+                  <span className="font-mono text-xs text-slate-500">{t.code}</span>
+                  <span className="min-w-0 flex-1 truncate text-slate-800">{t.title}</span>
+                  <span className="text-slate-500">{t.responsible_name}</span>
+                </Link>
+              </li>
+            ))}
+            {(unsigned.count ?? 0) > 0 && (
+              <li>
+                <Link href="/admin/saidas" className="flex items-center gap-4 px-6 py-3 hover:bg-slate-50">
+                  <span className="w-28 text-xs font-semibold text-amber-700">Por assinar</span>
+                  <span className="flex-1 text-slate-800">{unsigned.count} guia(s) de saída de material à espera das assinaturas</span>
+                </Link>
+              </li>
+            )}
+          </ul>
+        </section>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -191,4 +236,9 @@ export default async function OverviewPage({ searchParams }: PageProps<"/admin">
       </section>
     </div>
   );
+}
+
+/** Instante (ISO) daqui a N horas; chamado só durante o pedido, depois da verificação de sessão. */
+function isoFromNow(hours: number) {
+  return new Date(Date.now() + hours * 3_600_000).toISOString();
 }

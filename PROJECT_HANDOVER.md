@@ -13,12 +13,12 @@ Claude sem reconstruir nada. Instruções permanentes: [CLAUDE.md](CLAUDE.md) ·
 | Código | https://github.com/kingmassala/PONTO-RADICAL (ramo `main`) | Actualizado |
 | Alojamento | Vercel `kingmassala-s-projects/ponto-radical` (deploy automático a cada push para `main`) | Ligado |
 | Base de dados, contas e ficheiros | Supabase, projecto `gchtuvikrcvwxuxzmnty` (Frankfurt, eu-central-1), bucket `media` | Ligado |
-| Gestão de Obras + portal do cliente | https://ponto-radical.vercel.app/gestao (futuro `gestao.pontoradical.com`); clientes em `/gestao/cliente` — ver [docs/GESTAO-OBRAS.md](docs/GESTAO-OBRAS.md) | Online (WhatsApp, cron e subdomínio por configurar) |
+| Tarefas e saídas de material | https://ponto-radical.vercel.app/admin/tarefas e `/admin/saidas` — ver [docs/TAREFAS-E-SAIDAS.md](docs/TAREFAS-E-SAIDAS.md) | Online (alertas WhatsApp por configurar) |
+| Gestão de Obras Navais | Separada para o projecto **Promarine** (`~/Documents/promarine`); `/gestao` redirecciona para lá | Fora deste projecto |
 | Backups | iCloud Drive › `Backups Ponto Radical/2026-11-07` (base de dados + ficheiros) e `PONTO-RADICAL-BACKUP` (pasta completa cifrada, com `.env.local`) | Verificado |
 
 Administradores do painel (papel `admin`): `dariomassala@gmail.com` (Dario Massala) e `geral@pontoradical.com`.
-As mesmas duas contas são **Administrador** da Gestão de Obras (`ops_members`). Palavras-passe: só o titular as
-conhece; para definir uma pelo terminal, `npm run conta:palavra-passe -- email` (janela com texto escondido).
+Palavras-passe: só o titular as conhece; para definir uma pelo terminal, `npm run conta:palavra-passe -- email` (janela com texto escondido).
 
 Conteúdo: versão publicada n.º **8** («Assinatura com Lifestyle»); rascunho na revisão **10**, igual ao publicado.
 
@@ -82,23 +82,16 @@ Loja Online (link Quicksell, faixa animada, botões) · **Traduções** (ES/FR/E
 (inclui imagem de partilha) · Publicações e Histórico (restaurar versões) · Mensagens · Utilizadores (só admin) ·
 Definições. Pré-visualização com escolha de língua e «Ver entrada». Guia: [docs/GUIA-CMS.md](docs/GUIA-CMS.md).
 
-## 5-A. Gestão de Obras Navais (`/gestao`)
+## 5-A. Tarefas e saídas de material (`/admin/tarefas`, `/admin/saidas`)
 
-Plataforma privada na mesma aplicação (tabelas `ops_*`, código em `app/gestao`, `components/ops`, `lib/ops`).
-Migrações aplicadas na produção: `20261107000001_gestao_obras`, `20261108000001_tarefas_empresa`,
-`20261109000001_portal_cliente`, `20261110000001_despesas_gerais`.
-
-- Perfis: Administrador, Direcção, Gestor de Obras, Supervisor, Técnico, Financeiro (permissões por RLS).
-- Clientes, embarcações (com identificação: documento de registo ou fotografia), obras `OS-AAAA-NNNN`, tarefas e
-  subtarefas (lista, Kanban, calendário, cronograma), **tarefas da empresa** `TE-AAAA-NNNN` por área.
-- Custos em AOA: despesas por obra e **despesas gerais da empresa**, orçamentos, aprovação, margem/markup, Excel.
-- Relatórios diários, ocorrências, fotografias (partilháveis com o cliente), auditoria, dashboard, PWA.
-- **Portal do cliente** (`/gestao/cliente`): contas criadas na ficha do cliente; vê embarcações, obras, progresso,
-  trabalhos e só as fotografias partilhadas.
-- WhatsApp Cloud API (fila, modelos `pr_notificacao_obra`, `pr_tarefa_empresa`, `pr_resumo_obras`, webhook) —
-  **implementado mas não activo**: faltam as credenciais Meta e a aprovação dos modelos (docs/GESTAO-WHATSAPP.md).
-- Imagem de partilha: `public/brand/og-gestao.png`.
-- Testes: `npm test` (34 + 24 + 14 + 30).
+- **Tarefas** `TR-AAAA-NNNN`: responsável (nome + WhatsApp), prazo, lembrete, prioridade e área; alertas no painel
+  (Visão Geral e menu) e por WhatsApp (atribuição, lembrete, atraso) — WhatsApp **implementado mas não activo**
+  (faltam as credenciais Meta e o modelo `pr_alerta_tarefa`); entretanto há o botão «Enviar pelo WhatsApp» (wa.me).
+- **Saídas de material para a Promarine**: guia `GS-AAAA-NNNN` para imprimir/PDF com «Entreguei — Ponto Radical» e
+  «Recebi — Promarine»; marcar como assinada, corrigir antes de assinar, anular com motivo; total por material.
+- Migrações `20261111000001_remover_gestao_obras` (remove as tabelas `ops_*`) e `20261111000002_tarefas_saidas_material`.
+- A **Gestão de Obras Navais** (antes em `/gestao`) passou para o projecto próprio da **Promarine** em 07/11/2026.
+- Testes: `npm test` (34 + 24 + 16).
 
 ## 6. Decisões tomadas
 
@@ -112,10 +105,9 @@ Migrações aplicadas na produção: `20261107000001_gestao_obras`, `20261108000
 
 ## 7. Pendências
 
-- **Gestão de Obras**: definir `CRON_SECRET` na Vercel e executar `supabase/manual/gestao-cron.sql` (avisos a cada
-  5 minutos); configurar a conta Meta do WhatsApp (credenciais, webhook, 3 modelos aprovados) e fazer um envio de
-  teste real; ligar `gestao.pontoradical.com` (DNS + Redirect URL no Supabase); SMTP próprio no Supabase para
-  convites e recuperação de palavra-passe por email. Passos em docs/GESTAO-OBRAS.md e docs/GESTAO-WHATSAPP.md.
+- **Alertas de tarefas por WhatsApp**: definir `CRON_SECRET` na Vercel, configurar a conta Meta (credenciais e
+  modelo `pr_alerta_tarefa` aprovado) e fazer um envio de teste real (docs/TAREFAS-E-SAIDAS.md). SMTP próprio no
+  Supabase para convites e recuperação de palavra-passe por email.
 
 - **Link da Quicksell**: colar em Loja Online e activar quando existir.
 - **Contactos reais**: telefone, WhatsApp, email e morada ainda são de exemplo («a confirmar»). Com o WhatsApp
