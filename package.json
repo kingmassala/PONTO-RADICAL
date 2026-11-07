@@ -19,7 +19,8 @@
     "backup:verify": "node scripts/verify-backup.mjs",
     "test:ops-db": "tsx tests/ops-db.test.ts",
     "test:ops": "node --conditions=react-server --import tsx tests/ops.test.ts",
-    "gestao:admin": "node --env-file=.env.local scripts/gestao-admin.mjs"
+    "gestao:admin": "node --env-file=.env.local scripts/gestao-admin.mjs",
+    "conta:palavra-passe": "node --env-file=.env.local scripts/definir-palavra-passe.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
