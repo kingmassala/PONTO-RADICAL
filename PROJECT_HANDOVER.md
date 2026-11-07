@@ -13,6 +13,7 @@ Claude sem reconstruir nada. Instruções permanentes: [CLAUDE.md](CLAUDE.md) ·
 | Código | https://github.com/kingmassala/PONTO-RADICAL (ramo `main`) | Actualizado |
 | Alojamento | Vercel `kingmassala-s-projects/ponto-radical` (deploy automático a cada push para `main`) | Ligado |
 | Base de dados, contas e ficheiros | Supabase, projecto `gchtuvikrcvwxuxzmnty` (Frankfurt, eu-central-1), bucket `media` | Ligado |
+| Gestão de Obras | https://ponto-radical.vercel.app/gestao (futuro `gestao.pontoradical.com`) — ver [docs/GESTAO-OBRAS.md](docs/GESTAO-OBRAS.md) | Em desenvolvimento (ramo `feat/gestao-obras`) |
 | Backups | iCloud Drive › `Backups Ponto Radical/2026-10-17` (privado, fora do GitHub) | Verificado |
 
 Administradores do painel (papel `admin`): `dariomassala@gmail.com` (Dario Massala) e `geral@pontoradical.com`.
@@ -90,6 +91,10 @@ Definições. Pré-visualização com escolha de língua e «Ver entrada». Guia
 - Backups guardados no iCloud Drive (escolha do cliente), sem cópia das chaves (`.env.local`).
 
 ## 7. Pendências
+
+- **Gestão de Obras** (ramo `feat/gestao-obras`): aplicar a migração na produção, dar o primeiro administrador,
+  publicar, definir `CRON_SECRET` e o pg_cron, ligar o subdomínio (DNS) e configurar a conta Meta do WhatsApp
+  (credenciais, webhook e modelos aprovados) — passos em docs/GESTAO-OBRAS.md e docs/GESTAO-WHATSAPP.md.
 
 - **Link da Quicksell**: colar em Loja Online e activar quando existir.
 - **Contactos reais**: telefone, WhatsApp, email e morada ainda são de exemplo («a confirmar»). Com o WhatsApp

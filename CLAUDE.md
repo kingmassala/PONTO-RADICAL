@@ -22,7 +22,9 @@ pré-acordo: «actividade», «electrónica», «óptimo»…); o website tem ta
 npm run dev          # http://localhost:3000 (usa .env.local → base de dados de produção)
 npm run lint
 npm run typecheck    # next typegen && tsc --noEmit
-npm test             # 34 testes do CMS + 24 da base de dados (PGlite, sem rede)
+npm test             # CMS (34) + base de dados (24) + gestão: lógica (13) e base de dados (21), PGlite sem rede
+npm run db:migrate -- --only=<ficheiro.sql>   # aplica só uma migração (sem seed)
+npm run gestao:admin -- <email> "Nome"       # dá o perfil Administrador da gestão a uma conta existente
 npm run build
 npm run backup -- --out="/pasta"          # backup só de leitura (base de dados + Storage)
 npm run backup:verify -- --dir="/pasta"   # prova que o backup se repõe numa base vazia
@@ -68,6 +70,14 @@ desenvolvimento antes de `npm run build`** (partilham `.next/` e o dev fica com 
 - Assinatura da marca: `lib/brand.ts` (`Boating · Water Sports · Camping · Fishing · Lifestyle & Co`).
 - Modo preto e branco: `appearance.monochrome` → classe `.pr-mono`; o destaque inverte em `.pr-tone-dark` /
   `.pr-tone-light` e o texto sobre o destaque usa `text-on-accent` (nunca `text-white` em fundos `bg-accent`).
+
+- **Gestão de Obras** (`app/gestao/*`, `components/ops/*`, `lib/ops/*`, tabelas `ops_*`, migração
+  `20261107000001_gestao_obras.sql`; ver docs/GESTAO-OBRAS.md). Servida em `gestao.<domínio>` por rewrites no
+  `next.config.ts` (host `gestao.*`) e em `/gestao` no domínio principal; os links usam `useOps().href()` /
+  `opsPath()` para funcionar nos dois. Permissões: RLS na base de dados **e** `requireOps(roles)` em cada acção.
+  WhatsApp só pela Cloud API oficial (`lib/ops/whatsapp.ts`), fila `ops_notifications` processada por
+  `/api/gestao/cron` (Bearer `CRON_SECRET`). **Nunca** declares o WhatsApp operacional sem um envio real
+  confirmado pela Meta.
 
 ## Armadilhas já resolvidas (não voltes a introduzir)
 

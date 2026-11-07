@@ -11,10 +11,11 @@ if (!url) {
 }
 
 const dir = new URL("../supabase/", import.meta.url);
-const files = [
-  ...readdirSync(new URL("migrations/", dir)).sort().map((f) => `migrations/${f}`),
-  "seed.sql",
-];
+// --only=<ficheiro.sql> aplica apenas essa migração (sem o seed), útil para novas migrações em produção.
+const only = process.argv.find((a) => a.startsWith("--only="))?.slice(7);
+const files = only
+  ? [`migrations/${only}`]
+  : [...readdirSync(new URL("migrations/", dir)).sort().map((f) => `migrations/${f}`), "seed.sql"];
 
 const client = new pg.Client({ connectionString: url, ssl: { rejectUnauthorized: false } });
 await client.connect();
