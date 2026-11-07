@@ -71,6 +71,8 @@ cp .env.example .env.local
 | `SUPABASE_DB_URL` | Supabase › Connect › Session pooler (substituir `[YOUR-PASSWORD]` pela palavra-passe da base de dados; se não a souber: Database › Settings › Reset password) — só para scripts locais, **não** vai para a Vercel |
 | `NEXT_PUBLIC_SITE_URL` | `https://ponto-radical.vercel.app` (ou o domínio final) |
 | `CONTACT_IP_SALT` | Opcional; copiar da Vercel para manter o mesmo valor |
+| `CRON_SECRET` | Gestão de Obras: segredo do agendador (copiar da Vercel quando estiver definido) |
+| `WHATSAPP_*` | Gestão de Obras: credenciais da Meta (ver docs/GESTAO-WHATSAPP.md); opcionais em local |
 
 Atalho: com a CLI da Vercel (`npx vercel login`, `npx vercel link` escolhendo o projecto **existente**
 `ponto-radical` — nunca criar um novo) pode descarregar as variáveis de produção:
@@ -137,6 +139,9 @@ npm run build
   computador). Palavra-passe esquecida: «Esqueci-me da palavra-passe» no ecrã de login.
 - Novo administrador: Painel › Utilizadores › Convidar, ou `npm run admin:create -- email@dominio "Nome"`
   (pede a palavra-passe sem a mostrar).
+- Gestão de Obras: https://ponto-radical.vercel.app/gestao com as contas da equipa; primeiro administrador:
+  `npm run gestao:admin -- email "Nome"`; definir uma palavra-passe pelo terminal:
+  `npm run conta:palavra-passe -- email`.
 - Supabase: https://supabase.com/dashboard/project/gchtuvikrcvwxuxzmnty (tabelas, Storage, Auth, logs).
 
 ## 8. Backups
