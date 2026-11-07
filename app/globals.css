@@ -796,6 +796,18 @@ html:not([data-pr-locale]):has(.pr-gate) :is(.pr-cursor-dot, .pr-cursor-ring) {
     animation-delay: calc(0.35s + var(--i, 0) * 0.08s);
   }
 }
+/* Marcas (versão compacta): etiquetas a entrar em cascata e painel da marca escolhida. */
+@media (prefers-reduced-motion: no-preference) {
+  .fx-motion .pr-brand-chips > li {
+    animation: pr-fade-up 0.7s cubic-bezier(0.2, 0.75, 0.15, 1) backwards;
+    animation-delay: calc(var(--i, 0) * 0.03s);
+    animation-timeline: view();
+    animation-range: entry 0% entry 60%;
+  }
+  .pr-brand-panel {
+    animation: pr-fade-up 0.6s cubic-bezier(0.2, 0.75, 0.15, 1) both;
+  }
+}
 @keyframes pr-coin-spin {
   from {
     transform: rotateY(0deg);

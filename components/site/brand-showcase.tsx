@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
-import { ArrowUpRight, Plus } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import type { Brand } from "@/lib/cms/schema";
 import { useMessages } from "./i18n";
 
@@ -96,87 +96,90 @@ export function BrandShowcase({ brands, layout, tone }: { brands: Brand[]; layou
     }deg)`;
   };
 
+  const active = open ?? 0;
+  const current = brands[Math.min(active, brands.length - 1)];
+
+  // Versão compacta: as marcas em etiquetas (várias por linha) e um único painel com a marca escolhida.
   return (
-    <div ref={listRef} className="relative mt-10 sm:mt-20" onPointerMove={onMove} onPointerLeave={() => setHovered(null)}>
+    <div ref={listRef} className="relative mt-10 sm:mt-16" onPointerMove={onMove} onPointerLeave={() => setHovered(null)}>
       <div
         ref={floatRef}
         aria-hidden
-        className={`pointer-events-none absolute left-0 top-0 z-20 hidden aspect-[4/5] w-72 overflow-hidden rounded-[1.5rem] shadow-2xl transition-[opacity,scale] duration-300 lg:block xl:w-80 ${
-          hovered !== null && hovered !== open ? "scale-100 opacity-100" : "scale-75 opacity-0"
+        className={`pointer-events-none absolute left-0 top-0 z-20 hidden aspect-[4/5] w-56 overflow-hidden rounded-[1.25rem] shadow-2xl transition-[opacity,scale] duration-300 lg:block xl:w-64 ${
+          hovered !== null && hovered !== active ? "scale-100 opacity-100" : "scale-75 opacity-0"
         }`}
       >
         {brands.map((brand, i) => (
           <div key={brand.id} className={`absolute inset-0 transition-opacity duration-300 ${hovered === i ? "opacity-100" : "opacity-0"}`}>
-            <BrandImage brand={brand} sizes="320px" />
+            <BrandImage brand={brand} sizes="256px" />
           </div>
         ))}
       </div>
 
-      <ul className={`border-t ${dark ? "border-white/15" : "border-ink/15"}`}>
+      <ul role="tablist" aria-orientation="horizontal" className="pr-brand-chips flex flex-wrap gap-2 sm:gap-3">
         {brands.map((brand, i) => {
-          const expanded = open === i;
+          const selected = active === i;
           return (
-            <li key={brand.id} className={`border-b ${dark ? "border-white/15" : "border-ink/15"}`}>
-              <h3>
-                <button
-                  type="button"
-                  aria-expanded={expanded}
-                  aria-controls={`brand-panel-${brand.id}`}
-                  data-cursor={expanded ? t.close : t.open}
-                  onClick={() => setOpen(expanded ? null : i)}
-                  onPointerEnter={() => setHovered(i)}
-                  className="group flex w-full items-center gap-5 py-7 text-left sm:gap-8 sm:py-9"
-                >
-                  <span className={`w-8 shrink-0 text-sm tabular-nums ${dark ? "text-white/40" : "text-ink/40"}`}>{String(i + 1).padStart(2, "0")}</span>
-                  <span
-                    className={`pr-heading flex-1 text-[clamp(2rem,6.5vw,6.5rem)] leading-none transition-all duration-500 ${
-                      expanded ? "text-accent" : hovered === i ? "translate-x-3 text-accent" : dark ? "text-white" : "text-ink"
-                    }`}
-                  >
-                    {brand.name}
-                  </span>
-                  <span className={`hidden max-w-[18ch] text-right text-sm md:block ${dark ? "text-white/55" : "text-ink/55"}`}>{brand.specialisation}</span>
-                  <span
-                    className={`flex size-12 shrink-0 items-center justify-center rounded-full border transition-all duration-500 sm:size-14 ${
-                      expanded ? "rotate-45 border-accent bg-accent text-on-accent" : dark ? "border-white/25 group-hover:border-accent" : "border-ink/20 group-hover:border-accent"
-                    }`}
-                    aria-hidden
-                  >
-                    <Plus className="size-5" />
-                  </span>
-                </button>
-              </h3>
-              <div
-                id={`brand-panel-${brand.id}`}
-                role="region"
-                aria-label={brand.name}
-                className={`grid transition-[grid-template-rows] duration-700 ease-[cubic-bezier(0.2,0.75,0.15,1)] ${expanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+            <li key={brand.id} role="presentation" style={{ ["--i" as string]: i }}>
+              <button
+                type="button"
+                role="tab"
+                id={`brand-tab-${brand.id}`}
+                aria-selected={selected}
+                aria-controls="brand-panel"
+                data-cursor={t.open}
+                onClick={() => setOpen(i)}
+                onPointerEnter={() => setHovered(i)}
+                onFocus={() => setHovered(null)}
+                className={`group inline-flex items-baseline gap-2 rounded-full border px-4 py-2 transition-all duration-300 sm:px-5 sm:py-2.5 ${
+                  selected
+                    ? "border-accent bg-accent text-on-accent"
+                    : dark
+                      ? "border-white/20 text-white hover:-translate-y-0.5 hover:border-accent hover:text-accent"
+                      : "border-ink/15 bg-white text-ink hover:-translate-y-0.5 hover:border-accent hover:text-accent"
+                }`}
               >
-                <div className="overflow-hidden">
-                  <div className="grid gap-8 pb-12 pl-0 sm:pl-16 lg:grid-cols-12 lg:gap-12">
-                    <div className="relative aspect-[16/10] overflow-hidden rounded-[1.5rem] lg:col-span-7">
-                      <BrandImage brand={brand} sizes="(min-width: 1024px) 55vw, 100vw" />
-                      <div className="absolute bottom-4 left-4 rounded-full bg-dark/80 px-5 py-2.5 text-white backdrop-blur">
-                        <BrandLogo brand={brand} onDark className="h-7 text-base" />
-                      </div>
-                    </div>
-                    <div className="flex flex-col justify-center lg:col-span-5">
-                      {brand.specialisation && <p className="pr-eyebrow text-accent">{brand.specialisation}</p>}
-                      <div
-                        className={`pr-rich mt-5 text-xl leading-relaxed ${dark ? "text-white/80" : "text-ink/75"}`}
-                        dangerouslySetInnerHTML={{ __html: brand.description }}
-                      />
-                      <div>
-                        <ExternalLink brand={brand} dark={dark} />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                <span className={`text-[0.6rem] tabular-nums ${selected ? "text-on-accent/70" : dark ? "text-white/40" : "text-ink/40"}`}>
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span className="pr-heading text-[clamp(0.95rem,1.6vw,1.35rem)] leading-tight">{brand.name}</span>
+              </button>
             </li>
           );
         })}
       </ul>
+
+      {current && (
+        <div
+          id="brand-panel"
+          role="tabpanel"
+          aria-labelledby={`brand-tab-${current.id}`}
+          className={`mt-8 overflow-hidden rounded-[1.75rem] sm:mt-10 ${dark ? "bg-white/[0.05] ring-1 ring-white/10" : "bg-white ring-1 ring-ink/10"}`}
+        >
+          <div key={current.id} className="pr-brand-panel grid lg:grid-cols-12">
+            <div className="relative aspect-[16/9] overflow-hidden lg:col-span-7 lg:aspect-auto lg:min-h-[22rem]">
+              <BrandImage brand={current} sizes="(min-width: 1024px) 55vw, 100vw" className="object-cover transition-transform duration-[1.2s] hover:scale-105" />
+              <div className="absolute bottom-4 left-4 hidden rounded-full bg-dark/80 px-5 py-2.5 text-white backdrop-blur sm:block">
+                <BrandLogo brand={current} onDark className="h-7 text-base" />
+              </div>
+            </div>
+            <div className="flex flex-col justify-center p-6 sm:p-10 lg:col-span-5">
+              <p className={`text-sm tabular-nums ${dark ? "text-white/40" : "text-ink/40"}`}>
+                {String(active + 1).padStart(2, "0")} / {String(brands.length).padStart(2, "0")}
+              </p>
+              <h3 className={`pr-heading mt-2 text-[clamp(1.8rem,3.6vw,3rem)] leading-none ${dark ? "text-white" : "text-ink"}`}>{current.name}</h3>
+              {current.specialisation && <p className="pr-eyebrow mt-4 text-accent">{current.specialisation}</p>}
+              <div
+                className={`pr-rich mt-4 leading-relaxed ${dark ? "text-white/75" : "text-ink/70"}`}
+                dangerouslySetInnerHTML={{ __html: current.description }}
+              />
+              <div>
+                <ExternalLink brand={current} dark={dark} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

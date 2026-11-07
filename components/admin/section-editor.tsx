@@ -141,7 +141,7 @@ function TypeFields({ section, set, linkProps }: FieldsProps) {
             value={section.layout}
             onChange={(v) => set({ layout: v })}
             options={[
-              { value: "editorial", label: "Editorial (lista interactiva com imagem)" },
+              { value: "editorial", label: "Compacta (marcas em etiquetas + painel com imagem)" },
               { value: "grid", label: "Grelha de cartões" },
             ]}
           />
