@@ -348,20 +348,33 @@ export function BrandsSection({ section, doc, m, locale }: Props<"brands">) {
               <p className={`mt-3 max-w-md leading-relaxed ${dark ? "text-white/70" : "text-ink/70"}`}>{m.brands.authorizedText}</p>
             </div>
             <ul className="mt-10 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
-              {authorized.map((brand) => (
-                <li
-                  key={brand.id}
-                  className={`flex min-h-36 flex-col items-center justify-center gap-4 rounded-[1.5rem] p-5 text-center sm:p-6 ${dark ? "bg-white/[0.06]" : "bg-surface"}`}
-                >
-                  {brand.logo.url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={brand.logo.url} alt={brand.logo.alt || brand.name} loading="lazy" className={`h-12 w-auto max-w-full object-contain ${dark ? "pr-logo-white" : ""}`} />
-                  ) : (
-                    <span className="pr-heading text-3xl">{brand.name}</span>
-                  )}
-                  <span className={`inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.16em] ${dark ? "text-white/70" : "text-ink/60"}`}>
-                    <BadgeCheck className="size-4 shrink-0 text-accent" aria-hidden /> {brand.name}
-                  </span>
+              {authorized.map((brand, i) => (
+                <li key={brand.id} className="pr-auth-card" style={{ ["--i" as string]: i }}>
+                  <Tilt max={10} className="group h-full rounded-[1.5rem]">
+                    <div
+                      className={`pr-auth-inner relative flex h-full min-h-36 flex-col items-center justify-center gap-4 overflow-hidden rounded-[1.5rem] p-5 text-center ring-1 ring-transparent transition-[box-shadow,background-color] duration-500 group-hover:ring-accent/60 sm:p-6 ${
+                        dark ? "bg-white/[0.06] group-hover:bg-white/[0.1]" : "bg-surface group-hover:bg-white"
+                      }`}
+                    >
+                      {brand.logo.url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={brand.logo.url}
+                          alt={brand.logo.alt || brand.name}
+                          loading="lazy"
+                          className={`h-12 w-auto max-w-full object-contain transition-transform duration-500 ease-[cubic-bezier(0.2,0.75,0.15,1)] group-hover:-translate-y-1 group-hover:scale-110 ${dark ? "pr-logo-white" : ""}`}
+                        />
+                      ) : (
+                        <span className="pr-heading text-3xl transition-transform duration-500 group-hover:scale-110">{brand.name}</span>
+                      )}
+                      <span
+                        className={`flex max-w-full flex-col items-center justify-center gap-1.5 text-[0.65rem] font-bold uppercase leading-snug tracking-[0.1em] sm:flex-row sm:text-xs sm:tracking-[0.16em] ${dark ? "text-white/70" : "text-ink/60"}`}
+                      >
+                        <BadgeCheck className="pr-auth-check size-4 shrink-0 text-accent" aria-hidden />
+                        <span className="min-w-0">{brand.name}</span>
+                      </span>
+                    </div>
+                  </Tilt>
                 </li>
               ))}
             </ul>

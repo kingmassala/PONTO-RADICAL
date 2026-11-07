@@ -796,6 +796,69 @@ html:not([data-pr-locale]):has(.pr-gate) :is(.pr-cursor-dot, .pr-cursor-ring) {
     animation-delay: calc(0.35s + var(--i, 0) * 0.08s);
   }
 }
+/* Revendedor autorizado: blocos a entrar em 3D, brilho que atravessa cada bloco e selo a pulsar. */
+.pr-auth-inner::after {
+  content: "";
+  position: absolute;
+  inset: -40% auto -40% -60%;
+  width: 40%;
+  transform: rotate(18deg) translateX(-120%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+  pointer-events: none;
+}
+.pr-tone-light .pr-auth-inner::after,
+.pr-auth-inner.bg-surface::after {
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.06), transparent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .fx-motion .pr-auth-card {
+    animation: pr-auth-in 0.9s cubic-bezier(0.2, 0.75, 0.15, 1) backwards;
+    animation-delay: calc(var(--i, 0) * 0.07s);
+  }
+  @supports (animation-timeline: view()) {
+    .fx-motion .pr-auth-card {
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+    }
+  }
+  .pr-auth-inner::after {
+    animation: pr-auth-shine 6s ease-in-out infinite;
+    animation-delay: calc(1s + var(--i, 0) * 0.45s);
+  }
+  .pr-auth-check {
+    animation: pr-auth-pulse 2.8s ease-in-out infinite;
+    animation-delay: calc(var(--i, 0) * 0.35s);
+  }
+}
+@keyframes pr-auth-in {
+  from {
+    opacity: 0;
+    transform: perspective(900px) translateY(40px) rotateX(-28deg) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes pr-auth-shine {
+  0%,
+  70% {
+    transform: rotate(18deg) translateX(-120%);
+  }
+  100% {
+    transform: rotate(18deg) translateX(520%);
+  }
+}
+@keyframes pr-auth-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.25);
+  }
+}
+
 /* Marcas (versão compacta): etiquetas a entrar em cascata e painel da marca escolhida. */
 @media (prefers-reduced-motion: no-preference) {
   .fx-motion .pr-brand-chips > li {
