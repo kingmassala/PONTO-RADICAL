@@ -23,8 +23,8 @@ function LogoMark() {
 
 /**
  * Ecrã de entrada: o logótipo a girar em 3D sobre fundo branco e a escolha da língua.
- * Aparece em todos os carregamentos da página (incluindo ao actualizar); o script de
- * lib/i18n/gate-script.ts só o esconde logo a seguir a escolher outra língua.
+ * Aparece nas 3 primeiras visitas de cada navegador (contador em localStorage, ver
+ * lib/i18n/gate-script.ts) e nunca logo a seguir a escolher outra língua.
  *
  * Na pré-visualização do painel (`previewHrefs`) aparece sempre, a escolha não é
  * guardada e cada língua abre a pré-visualização nessa língua.
@@ -75,7 +75,7 @@ export function LanguageGate({
       role="dialog"
       aria-modal="true"
       aria-labelledby="pr-gate-title"
-      className={`pr-gate fixed inset-0 z-[90] flex flex-col items-center justify-center-safe overflow-y-auto bg-white px-6 py-12 text-black ${
+      className={`pr-gate fixed inset-0 z-[90] flex flex-col items-center justify-center-safe overflow-y-auto bg-white px-5 py-8 text-black ${
         state === "closing" ? "pr-gate-out" : ""
       }`}
     >
@@ -92,21 +92,21 @@ export function LanguageGate({
           <div className="pr-coin-shadow" />
         </div>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/brand/ponto-radical-wordmark.png" alt="" aria-hidden width={641} height={253} className="mt-6 h-auto w-[clamp(9rem,26vw,13rem)]" />
-        <p className="pr-logo-type mt-5 text-center text-[clamp(0.62rem,1.6vw,0.8rem)] text-black/70">{BRAND_TAGLINE}</p>
+        <img src="/brand/ponto-radical-wordmark.png" alt="" aria-hidden width={641} height={253} className="mt-3 h-auto w-[clamp(6rem,16vw,8rem)]" />
+        <p className="pr-logo-type mt-3 max-w-xs text-center text-[clamp(0.5rem,1.2vw,0.62rem)] leading-relaxed text-black/60 sm:max-w-none">{BRAND_TAGLINE}</p>
 
         <h1 id="pr-gate-title" className="sr-only">
           {siteName} — {getMessages(locale).intro.prompt}
         </h1>
-        <ul className="pr-gate-prompts mt-9 text-center" aria-hidden>
+        <ul className="pr-gate-prompts mt-6 text-center" aria-hidden>
           {order.map((l) => (
-            <li key={l} lang={LOCALE_INFO[l].htmlLang} className="pr-heading text-[clamp(1.4rem,4vw,2.2rem)] leading-tight first:text-black">
+            <li key={l} lang={LOCALE_INFO[l].htmlLang} className="pr-heading text-[clamp(1.05rem,2.6vw,1.4rem)] leading-tight first:text-black">
               {getMessages(l).intro.prompt}
             </li>
           ))}
         </ul>
 
-        <nav aria-label={getMessages(locale).header.language} className="mt-10 grid w-full max-w-2xl grid-cols-2 gap-3 sm:grid-cols-3">
+        <nav aria-label={getMessages(locale).header.language} className="mt-6 grid w-full max-w-md grid-cols-2 gap-2 sm:grid-cols-3">
           {order.map((l, i) => (
             <a
               key={l}
@@ -116,16 +116,16 @@ export function LanguageGate({
               lang={LOCALE_INFO[l].htmlLang}
               onClick={(e) => choose(e, l)}
               style={{ ["--i" as string]: i }}
-              className="pr-gate-option group flex flex-col items-center gap-1 rounded-2xl border border-black/15 px-4 py-4 transition-colors duration-300 hover:border-black hover:bg-black hover:text-white focus-visible:bg-black focus-visible:text-white focus-visible:outline-none"
+              className="pr-gate-option group flex flex-col items-center gap-0.5 rounded-xl border border-black/15 px-3 py-2.5 transition-colors duration-300 hover:border-black hover:bg-black hover:text-white focus-visible:bg-black focus-visible:text-white focus-visible:outline-none"
             >
-              <span className="text-xs font-bold tracking-[0.3em] text-black/45 transition-colors group-hover:text-white/60 group-focus-visible:text-white/60">
+              <span className="text-[0.6rem] font-bold tracking-[0.3em] text-black/45 transition-colors group-hover:text-white/60 group-focus-visible:text-white/60">
                 {LOCALE_INFO[l].short}
               </span>
-              <span className="text-base font-semibold">{LOCALE_INFO[l].label}</span>
+              <span className="text-sm font-semibold">{LOCALE_INFO[l].label}</span>
             </a>
           ))}
         </nav>
-        <p className="pr-logo-type mt-10 text-center text-[clamp(0.75rem,2vw,1rem)] text-black" style={{ fontWeight: 600 }}>
+        <p className="pr-logo-type mt-6 text-center text-[clamp(0.6rem,1.4vw,0.75rem)] text-black" style={{ fontWeight: 600 }}>
           We share the same passion
         </p>
       </div>

@@ -733,7 +733,7 @@ html:not([data-pr-locale]):has(.pr-gate) body {
 }
 /* Logótipo a girar em 3D (moeda com frente e verso). */
 .pr-coin-wrap {
-  --s: clamp(110px, min(32vw, 24vh), 200px);
+  --s: clamp(64px, min(20vw, 14vh), 108px);
   position: relative;
   width: var(--s);
   height: calc(var(--s) * 1.28);
@@ -766,11 +766,11 @@ html:not([data-pr-locale]):has(.pr-gate) body {
 }
 .pr-gate-prompts li + li {
   color: rgba(0, 0, 0, 0.4);
-  font-size: clamp(0.9rem, 2vw, 1.05rem);
+  font-size: clamp(0.72rem, 1.5vw, 0.82rem);
   font-family: var(--pr-font-body);
   font-weight: 500;
   letter-spacing: 0.02em;
-  margin-top: 0.35rem;
+  margin-top: 0.15rem;
 }
 /* Cursor normal no ecrã de entrada (o cursor personalizado do site fica escondido por baixo). */
 .pr-gate,

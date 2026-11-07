@@ -52,7 +52,7 @@ Conteúdo: versão publicada n.º **8** («Assinatura com Lifestyle»); rascunho
 
 ## 4. Estrutura do website
 
-1. **Ecrã de entrada** (sempre que a página abre ou é actualizada): logótipo a girar em 3D, assinatura, «Escolha a
+1. **Ecrã de entrada** (nas 3 primeiras visitas de cada navegador; versão compacta desde 07/11/2026): logótipo a girar em 3D, assinatura, «Escolha a
    sua língua» nas 4 línguas, botões PT/ES/FR/EN e «WE SHARE THE SAME PASSION» a negrito.
 2. **Abertura** (`#inicio`): título, assinatura, botões «Reservar experiência» e «Ver a loja e as marcas», emblema
    circular a girar, faixa «Marcas representadas» com logótipos.
@@ -100,7 +100,7 @@ Definições. Pré-visualização com escolha de língua e «Ver entrada». Guia
 - Loja online externa na **Quicksell**; enquanto não houver link, os botões da loja levam ao WhatsApp (se houver
   número) ou à secção de contactos (Loja Online › «Enquanto a loja não estiver activa»).
 - Línguas por endereço (`/es`, `/fr`, `/en`, `/ru`, `/zh`) para SEO, com traduções editáveis no painel.
-- Ecrã de entrada em todos os carregamentos (pedido do cliente), sem memorizar a língua.
+- Ecrã de entrada só nas 3 primeiras visitas de cada navegador (pedido do cliente, 07/11/2026); sem memorizar a língua.
 - Backups guardados no iCloud Drive (escolha do cliente), sem cópia das chaves (`.env.local`).
 
 ## 7. Pendências

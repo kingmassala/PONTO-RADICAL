@@ -61,8 +61,9 @@ desenvolvimento antes de `npm run build`** (partilham `.next/` e o dev fica com 
 - Traduções: textos fixos em `lib/i18n/messages.ts`; conteúdo do CMS em `doc.translations[língua][chave]`
   (chaves por id do elemento, ver `lib/i18n/content.ts`), editáveis em **Painel › Traduções**.
 - Ecrã de entrada (logótipo a girar + escolha de língua): `components/site/language-gate.tsx` +
-  `lib/i18n/gate-script.ts`. Aparece **em todos os carregamentos**; só é saltado logo a seguir a escolher outra
-  língua (marca de uso único em `sessionStorage`).
+  `lib/i18n/gate-script.ts`. Aparece nas **3 primeiras visitas de cada navegador** (contador
+  `pr-gate-vistas` em `localStorage`, `GATE_MAX_VIEWS` em `lib/i18n/config.ts`; pedido do cliente em 07/11/2026) e
+  nunca logo a seguir a escolher outra língua (marca de uso único em `sessionStorage`).
 - **Blog** (`lib/blog/`, `components/site/blog/`, Painel › Blog): cada artigo é uma linha em `blog_posts`
   (migração `20261017000001_blog_posts.sql`) com estado próprio (rascunho/publicado), **fora** do documento do CMS;
   publicar um artigo actualiza o website de imediato (`updateTag("blog-posts")`). Páginas em `/blog` e `/[lang]/blog`
