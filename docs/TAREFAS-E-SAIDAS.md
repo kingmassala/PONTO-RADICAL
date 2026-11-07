@@ -8,7 +8,7 @@ Duas áreas do painel da Ponto Radical, para toda a equipa com acesso ao painel 
 | **Saídas de material** | `/admin/saidas` | Material fornecido à **Promarine**, com guia de entrega assinada |
 
 A antiga Gestão de Obras Navais passou para a plataforma própria da Promarine (outro projecto, outra base de
-dados). `/gestao` neste site redirecciona para `https://promarine.vercel.app/gestao`.
+dados). `/gestao` neste site redirecciona para `https://promarine-angola.vercel.app/gestao`.
 
 ## Tarefas
 

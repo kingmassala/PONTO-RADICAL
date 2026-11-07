@@ -14,7 +14,7 @@ Claude sem reconstruir nada. Instruções permanentes: [CLAUDE.md](CLAUDE.md) ·
 | Alojamento | Vercel `kingmassala-s-projects/ponto-radical` (deploy automático a cada push para `main`) | Ligado |
 | Base de dados, contas e ficheiros | Supabase, projecto `gchtuvikrcvwxuxzmnty` (Frankfurt, eu-central-1), bucket `media` | Ligado |
 | Tarefas e saídas de material | https://ponto-radical.vercel.app/admin/tarefas e `/admin/saidas` — ver [docs/TAREFAS-E-SAIDAS.md](docs/TAREFAS-E-SAIDAS.md) | Online (alertas WhatsApp por configurar) |
-| Gestão de Obras Navais | Separada para o projecto **Promarine** (`~/Documents/promarine`); `/gestao` redirecciona para lá | Fora deste projecto |
+| Gestão de Obras Navais | Separada para o projecto **Promarine** (`~/Documents/promarine`, https://promarine-angola.vercel.app, GitHub `kingmassala/PROMARINE`, Supabase `pmntyeqteupbtxsytsoi`); `/gestao` redirecciona para lá | Fora deste projecto |
 | Backups | iCloud Drive › `Backups Ponto Radical/2026-11-07` (base de dados + ficheiros) e `PONTO-RADICAL-BACKUP` (pasta completa cifrada, com `.env.local`) | Verificado |
 
 Administradores do painel (papel `admin`): `dariomassala@gmail.com` (Dario Massala) e `geral@pontoradical.com`.

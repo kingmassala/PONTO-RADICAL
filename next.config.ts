@@ -31,8 +31,8 @@ const nextConfig: NextConfig = {
   /** A Gestão de Obras passou para a plataforma da Promarine (projecto próprio). */
   async redirects() {
     return [
-      { source: "/gestao", destination: "https://promarine.vercel.app/gestao", permanent: false },
-      { source: "/gestao/:path*", destination: "https://promarine.vercel.app/gestao/:path*", permanent: false },
+      { source: "/gestao", destination: "https://promarine-angola.vercel.app/gestao", permanent: false },
+      { source: "/gestao/:path*", destination: "https://promarine-angola.vercel.app/gestao/:path*", permanent: false },
     ];
   },
   async headers() {
