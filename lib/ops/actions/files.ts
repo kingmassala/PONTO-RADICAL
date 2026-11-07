@@ -80,3 +80,17 @@ export async function deleteAttachment(id: string): Promise<OpsResult> {
     return opsError(error);
   }
 }
+
+/** Partilha (ou deixa de partilhar) uma fotografia no portal do cliente. Regras na base de dados. */
+export async function shareAttachment(id: string, visible: boolean): Promise<OpsResult> {
+  try {
+    await requireOps(["admin", "direcao", "gestor", "supervisor"]);
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("ops_share_attachment", { p_attachment: z.string().uuid().parse(id), p_visible: z.boolean().parse(visible) });
+    if (error) return { ok: false, error: opsDbError(error.message) };
+    refresh();
+    return { ok: true, data: null };
+  } catch (error) {
+    return opsError(error);
+  }
+}

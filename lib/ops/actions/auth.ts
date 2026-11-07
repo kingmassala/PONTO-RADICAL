@@ -21,6 +21,10 @@ export async function signInOps(_prev: OpsAuthState, formData: FormData): Promis
   if (error) return { error: "Email ou palavra-passe incorrectos." };
 
   const { data: member } = await supabase.from("ops_members").select("active").eq("user_id", data.user.id).maybeSingle();
+  if (!member) {
+    const { data: client } = await supabase.rpc("ops_portal_me");
+    if (client) redirect(await opsPath("/cliente"));
+  }
   if (!member?.active) {
     await supabase.auth.signOut();
     return { error: member ? "Esta conta está desactivada. Contacte a administração." : "Esta conta não tem acesso à Gestão de Obras." };
@@ -61,5 +65,6 @@ export async function setOpsPassword(_prev: OpsAuthState, formData: FormData): P
   if (isServiceRoleConfigured()) {
     await createAdminClient().from("ops_members").update({ must_change_password: false }).eq("user_id", user.id);
   }
+  await supabase.rpc("ops_portal_password_changed");
   redirect(await opsPath("/"));
 }

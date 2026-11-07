@@ -220,9 +220,21 @@ export default async function ObraPage({ params, searchParams }: PageProps<"/ges
       )}
 
       {tab === "documentos" && (
-        <Card title="Fotografias e documentos da obra" description="Ficheiros privados: os links são temporários e só funcionam para quem tem acesso à obra.">
-          <Attachments entityType="work_order" entityId={id} workOrderId={id} items={await listAttachments({ entity_type: "work_order", entity_id: id })} />
-          <p className="text-xs text-slate-500">As fotografias dos relatórios e das ocorrências aparecem nos respectivos separadores.</p>
+        <Card
+          title="Fotografias e documentos da obra"
+          description="Ficheiros privados. Associe cada fotografia a uma tarefa e use «Partilhar» para a mostrar no portal do cliente (nada é partilhado sem esse passo)."
+        >
+          <Attachments
+            entityType="work_order"
+            entityId={id}
+            workOrderId={id}
+            tasks={taskOptions.map((t) => ({ id: t.id, label: t.label }))}
+            items={(await listAttachments({ entity_type: ["work_order", "task"], work_order_id: id })).map((a) => ({
+              ...a,
+              label: a.entity_type === "task" ? (taskOptions.find((t) => t.id === a.entity_id)?.label ?? "Tarefa") : null,
+            }))}
+          />
+          <p className="text-xs text-slate-500">As fotografias dos relatórios aparecem (e partilham-se) no separador Relatórios; as das ocorrências nunca são mostradas ao cliente.</p>
         </Card>
       )}
 

@@ -12,7 +12,7 @@ async function Login({ searchParams }: { searchParams: Promise<{ erro?: string }
 
 export default function EntrarPage({ searchParams }: PageProps<"/gestao/entrar">) {
   return (
-    <OpsAuthCard title="Iniciar sessão" subtitle="Acesso reservado aos colaboradores da Ponto Radical.">
+    <OpsAuthCard title="Iniciar sessão" subtitle="Acesso reservado aos colaboradores e clientes da Ponto Radical.">
       <Suspense>
         <Login searchParams={searchParams as Promise<{ erro?: string }>} />
       </Suspense>

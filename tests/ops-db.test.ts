@@ -44,6 +44,8 @@ const U = {
   financeiro: "00000000-0000-0000-0000-0000000000f1",
   inactive: "00000000-0000-0000-0000-0000000000f9",
   outsider: "00000000-0000-0000-0000-0000000000ff",
+  cliente1: "00000000-0000-0000-0000-0000000001c1",
+  cliente2: "00000000-0000-0000-0000-0000000001c2",
 };
 
 let passed = 0;
@@ -65,7 +67,7 @@ async function main() {
     await db.exec(readFileSync(new URL(`migrations/${file}`, root), "utf8"));
   }
   // As migrações da gestão têm de poder ser executadas outra vez sem erros (pela mesma ordem).
-  for (const file of ["20261107000001_gestao_obras.sql", "20261108000001_tarefas_empresa.sql"]) {
+  for (const file of ["20261107000001_gestao_obras.sql", "20261108000001_tarefas_empresa.sql", "20261109000001_portal_cliente.sql"]) {
     await db.exec(readFileSync(new URL(`migrations/${file}`, root), "utf8"));
   }
 
@@ -98,6 +100,7 @@ async function main() {
   let orderId = "";
   const taskIds: string[] = [];
   let companyTaskId = "";
+  let otherClientId = "";
 
   await test("clientes e embarcações com código automático e sem duplicações", async () => {
     const [c] = await as<{ id: string; code: string }>(U.gestor,
@@ -359,6 +362,80 @@ async function main() {
     assert.equal(upd.length, 0, "gestor sem acesso não altera");
     await as(U.financeiro, "insert into public.ops_time_entries (task_id, user_id, work_date, hours) values ($1, $2, current_date, 1.5)", [companyTaskId, U.financeiro]);
     await rejects(as(U.tec2, "insert into public.ops_time_entries (task_id, user_id, work_date, hours) values ($1, $2, current_date, 1)", [companyTaskId, U.tec2]), /row-level security/);
+  });
+
+  await test("portal do cliente: contas de cliente geridas pela gestão e separadas da equipa", async () => {
+    await as(U.gestor, "insert into public.ops_client_users (user_id, client_id, full_name, email) values ($1, $2, 'Armador Kianda', 'CLIENTE1@example.com')", [U.cliente1, clientId]);
+    const [other] = await as<{ id: string }>(U.gestor, "insert into public.ops_clients (name) values ('Outro Armador') returning id");
+    otherClientId = other.id;
+    await as(U.admin, "insert into public.ops_client_users (user_id, client_id, full_name, email) values ($1, $2, 'Outro Armador', 'cliente2@example.com')", [U.cliente2, other.id]);
+    const [row] = await as<{ email: string }>(U.cliente1, "select email from public.ops_client_users where user_id = $1", [U.cliente1]);
+    assert.equal(row.email, "cliente1@example.com");
+    await rejects(as(U.admin, "insert into public.ops_client_users (user_id, client_id, full_name, email) values ($1, $2, 'Técnico', 'x@example.com')", [U.tec1, clientId]), /client_user_is_member/);
+    await rejects(as(U.tec1, "insert into public.ops_client_users (user_id, client_id, full_name, email) values ($1, $2, 'X', 'x@example.com')", [U.outsider, clientId]), /row-level security/);
+    await rejects(as(U.supervisor, "update public.ops_client_users set active = false where user_id = $1 returning user_id", [U.cliente1]).then((r) => { if (r.length) throw new Error("alterou"); throw new Error("row-level security"); }), /row-level security/);
+  });
+
+  await test("portal do cliente: sem acesso directo às tabelas internas", async () => {
+    for (const t of ["ops_work_orders", "ops_tasks", "ops_attachments", "ops_expenses", "ops_quotes", "ops_work_order_finance", "ops_daily_reports", "ops_members", "ops_clients", "ops_vessels"]) {
+      assert.equal((await as(U.cliente1, `select * from public.${t}`)).length, 0, `${t} não pode ser lida pelo cliente`);
+    }
+    await rejects(as(U.cliente1, "insert into public.ops_attachments (entity_type, entity_id, work_order_id, path, mime_type, size_bytes, uploaded_by) values ('work_order', $1, $1, 'x/y.jpg', 'image/jpeg', 10, $2)", [orderId, U.cliente1]), /row-level security/);
+    await rejects(as(U.cliente1, "select public.ops_share_attachment(gen_random_uuid(), true)"), /not_authorized/);
+  });
+
+  await test("portal do cliente: vê só as suas embarcações e obras, com progresso e sem dados internos", async () => {
+    const [{ data }] = await as<{ data: { vessels: { id: string }[]; orders: { id: string; number: string; progress: number }[] } }>(U.cliente1, "select public.ops_portal_overview() as data");
+    assert.deepEqual(data.vessels.map((v) => v.id), [vesselId]);
+    assert.ok(data.orders.some((o) => o.id === orderId));
+    assert.ok(data.orders.every((o) => typeof o.progress === "number"));
+    const [{ data: other }] = await as<{ data: { vessels: unknown[]; orders: unknown[] } }>(U.cliente2, "select public.ops_portal_overview() as data");
+    assert.equal(other.vessels.length, 0);
+    assert.equal(other.orders.length, 0);
+    const [{ data: denied }] = await as<{ data: unknown }>(U.cliente2, "select public.ops_portal_order($1) as data", [orderId]);
+    assert.equal(denied, null, "não abre obras de outro cliente");
+    const [{ data: mine }] = await as<{ data: { order: Record<string, unknown>; tasks: Record<string, unknown>[] } }>(U.cliente1, "select public.ops_portal_order($1) as data", [orderId]);
+    assert.ok(mine.tasks.length >= 5);
+    assert.deepEqual(Object.keys(mine.tasks[0]).sort(), ["code", "completed_at", "due_at", "id", "parent_id", "progress", "start_at", "status", "title"]);
+    for (const k of ["manager_id", "priority", "location", "created_by"]) assert.ok(!(k in mine.order), `a obra não expõe ${k}`);
+    const [{ data: staff }] = await as<{ data: unknown }>(U.gestor, "select public.ops_portal_overview() as data");
+    assert.equal(staff, null, "contas da equipa não são clientes");
+  });
+
+  await test("portal do cliente: só vê as fotografias que a equipa partilhar", async () => {
+    const ins = (path: string, entity: string, entityId: string, mime = "image/jpeg") =>
+      as<{ id: string }>(U.gestor, "insert into public.ops_attachments (entity_type, entity_id, work_order_id, path, mime_type, size_bytes, uploaded_by, caption) values ($1, $2, $3, $4, $5, 1000, $6, 'Chapas novas') returning id", [entity, entityId, orderId, path, mime, U.gestor]);
+    const [photo] = await ins("task/a.jpg", "task", taskIds[2]);
+    const [pdf] = await ins("work_order/b.pdf", "work_order", orderId, "application/pdf");
+    const [receipt] = await ins("expense/c.jpg", "expense", orderId);
+    const photos = async (who = U.cliente1) => (await as<{ data: { photos: { id: string; task: string | null; path: string }[] } | null }>(who, "select public.ops_portal_order($1) as data", [orderId]))[0].data?.photos ?? [];
+    assert.equal((await photos()).length, 0, "nada é partilhado por omissão");
+    await rejects(as(U.tec1, "select public.ops_share_attachment($1, true)", [photo.id]), /not_authorized/);
+    await rejects(as(U.gestor, "select public.ops_share_attachment($1, true)", [pdf.id]), /attachment_not_shareable/);
+    await rejects(as(U.gestor, "select public.ops_share_attachment($1, true)", [receipt.id]), /attachment_not_shareable/);
+    await as(U.supervisor, "select public.ops_share_attachment($1, true)", [photo.id]);
+    const shared = await photos();
+    assert.equal(shared.length, 1);
+    assert.match(shared[0].task ?? "", /^T03 · /);
+    const [{ data: vesselPhotos }] = await as<{ data: unknown[] }>(U.cliente1, "select public.ops_portal_vessel_photos($1) as data", [vesselId]);
+    assert.equal(vesselPhotos.length, 1);
+    const [{ data: noVessel }] = await as<{ data: unknown }>(U.cliente2, "select public.ops_portal_vessel_photos($1) as data", [vesselId]);
+    assert.equal(noVessel, null);
+    await as(U.gestor, "select public.ops_share_attachment($1, false)", [photo.id]);
+    assert.equal((await photos()).length, 0, "deixa de aparecer quando se retira a partilha");
+    await as(U.gestor, "select public.ops_share_attachment($1, true)", [photo.id]);
+  });
+
+  await test("portal do cliente: conta desactivada ou cliente arquivado perde o acesso", async () => {
+    await as(U.admin, "update public.ops_client_users set active = false where user_id = $1", [U.cliente2]);
+    const [{ data }] = await as<{ data: unknown }>(U.cliente2, "select public.ops_portal_me() as data");
+    assert.equal(data, null);
+    await as(U.admin, "update public.ops_clients set archived = true where id = $1", [otherClientId]);
+    await as(U.admin, "update public.ops_client_users set active = true where user_id = $1", [U.cliente2]);
+    const [{ data: archived }] = await as<{ data: unknown }>(U.cliente2, "select public.ops_portal_overview() as data");
+    assert.equal(archived, null);
+    const [{ data: me }] = await as<{ data: { client: { name: string } } }>(U.cliente1, "select public.ops_portal_me() as data");
+    assert.equal(me.client.name, "Pescas do Atlântico, Lda");
   });
 
   await test("só a Administração gere utilizadores e papéis", async () => {

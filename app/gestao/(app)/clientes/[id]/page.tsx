@@ -13,6 +13,8 @@ import { ClientFormButton, VesselFormButton } from "@/components/ops/registry-fo
 import { ArchiveButton } from "@/components/ops/archive-button";
 import { OrderStatusBadge } from "@/components/ops/order-badges";
 import { Card, EmptyState } from "@/components/admin/ui";
+import { ClientAccessPanel, type ClientAccessView } from "@/components/ops/portal-admin";
+import { requestOrigin } from "@/lib/ops/server-base";
 
 export const metadata: Metadata = { title: "Cliente" };
 export const instant = false;
@@ -26,7 +28,15 @@ export default async function ClientePage({ params }: PageProps<"/gestao/cliente
   if (!c) notFound();
   const base = await getOpsBase();
   const h = (p: string) => joinBase(base, p);
-  const [vessels, orders, clients] = await Promise.all([getVessels(), getOrders({ clientId: id }), getClients()]);
+  const [vessels, orders, clients, accesses, origin] = await Promise.all([
+    getVessels(),
+    getOrders({ clientId: id }),
+    getClients(),
+    can.manage(user.role)
+      ? supabase.from("ops_client_users").select("user_id, full_name, email, active, must_change_password, last_seen_at").eq("client_id", id).order("created_at")
+      : Promise.resolve({ data: null }),
+    requestOrigin(),
+  ]);
   const own = vessels.filter((v) => v.client_id === id);
   return (
     <>
@@ -85,6 +95,18 @@ export default async function ClientePage({ params }: PageProps<"/gestao/cliente
               </ul>
             )}
           </Card>
+          {can.manage(user.role) && (
+            <Card title="Portal do cliente">
+              <ClientAccessPanel
+                clientId={id}
+                clientName={c.name}
+                defaultEmail={c.email}
+                accesses={(accesses.data ?? []) as ClientAccessView[]}
+                canEdit={can.plan(user.role)}
+                portalUrl={`${origin}${h("/entrar")}`}
+              />
+            </Card>
+          )}
           <Card title={`Histórico de serviços (${orders.length})`}>
             {orders.length === 0 ? (
               <EmptyState title="Sem obras" />

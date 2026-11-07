@@ -1,6 +1,5 @@
 "use server";
 
-import { randomInt } from "node:crypto";
 import { refresh } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
@@ -12,6 +11,7 @@ import { processOutbox, runScheduler, type ProcessReport, type SchedulerReport }
 import { companyTaskMessage, taskMessage } from "../messages";
 import { sendTemplate } from "../whatsapp";
 import { opsPath, requestOrigin } from "../server-base";
+import { temporaryPassword } from "../passwords";
 
 const phone = z
   .string()
@@ -20,12 +20,6 @@ const phone = z
   .transform((v) => (v ? v.replace(/[\s().-]/g, "") : null))
   .refine((v) => !v || /^\+[1-9][0-9]{7,14}$/.test(v), "Use o formato internacional, por ex. +244923000000");
 
-/** Palavra-passe temporária legível (sem caracteres ambíguos). */
-function temporaryPassword(): string {
-  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
-  const pick = () => alphabet[randomInt(alphabet.length)];
-  return Array.from({ length: 4 }, () => Array.from({ length: 4 }, pick).join("")).join("-");
-}
 
 const memberSchema = z.object({
   full_name: z.string().trim().min(2, "Indique o nome").max(120),

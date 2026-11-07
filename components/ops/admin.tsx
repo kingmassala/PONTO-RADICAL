@@ -20,12 +20,12 @@ export type MemberRow = {
   whatsapp_consent_at: string | null;
 };
 
-function TempPassword({ value, onClose }: { value: string; onClose: () => void }) {
+export function TempPassword({ value, onClose, who = "ao colaborador" }: { value: string; onClose: () => void; who?: string }) {
   const [copied, setCopied] = useState(false);
   return (
     <div className="space-y-4">
       <Notice tone="warning" title="Palavra-passe temporária — mostrada só agora">
-        Entregue-a pessoalmente ao colaborador. No primeiro acesso, ele terá de definir uma palavra-passe pessoal.
+        Entregue-a pessoalmente {who}. No primeiro acesso, é obrigatório definir uma palavra-passe pessoal.
       </Notice>
       <div className="flex items-center gap-2 rounded-lg bg-slate-100 px-4 py-3 font-mono text-lg tracking-wider">
         <span className="flex-1 select-all">{value}</span>

@@ -72,6 +72,7 @@ Aplicar só a migração nova (não reaplica as do website):
 ```bash
 npm run db:migrate -- --only=20261107000001_gestao_obras.sql
 npm run db:migrate -- --only=20261108000001_tarefas_empresa.sql
+npm run db:migrate -- --only=20261109000001_portal_cliente.sql
 ```
 
 Em alternativa, colar o ficheiro no SQL Editor do Supabase. A migração pode ser executada mais de uma vez.
@@ -139,6 +140,15 @@ menu ⋮). A aplicação abre em ecrã inteiro. Por segurança não guarda dados
   só a Administração, a Direcção, quem as criou, o responsável e as pessoas atribuídas (qualquer perfil, incluindo
   Financeiro). O responsável recebe-as por WhatsApp (modelo `pr_tarefa_empresa`) e actualiza o estado, o progresso
   e as horas.
+- **Fotografias**: em Obras › Fotografias e documentos, cada fotografia pode ser associada a uma tarefa e ter
+  legenda. Também se carregam fotografias nos relatórios diários e nas ocorrências (no telemóvel abre a câmara).
+- **Portal do cliente** (`/cliente`, entrada pela mesma página `/entrar`): em Clientes › ficha › «Portal do
+  cliente», a Administração, a Direcção e os Gestores dão acesso a pessoas do cliente (palavra-passe temporária ou
+  convite por email), repõem palavras-passe e desactivam acessos. O cliente vê as suas embarcações, o histórico e o
+  estado das obras, o progresso, os trabalhos realizados e as datas. **Só vê as fotografias que a equipa partilhar**
+  (botão «Partilhar» em cada fotografia de obra, tarefa, relatório ou embarcação; as das ocorrências e das despesas
+  nunca são partilháveis). Não vê custos, orçamentos, notas internas, horas nem nomes da equipa. As contas de cliente
+  não têm acesso às tabelas: lêem apenas através de funções da base de dados que devolvem campos seguros.
 - **Relatórios diários**: submetidos no telemóvel com fotografias; a supervisão valida ou pede correcção. Filtros
   por período, técnico e obra; exportação para Excel (CSV) e PDF (impressão do browser).
 - **Ocorrências**: categoria, urgência, impacto, medidas, responsável, fotografias. As críticas notificam por WhatsApp

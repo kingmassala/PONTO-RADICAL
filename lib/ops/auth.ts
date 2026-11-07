@@ -5,6 +5,7 @@ import { connection } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import type { OpsRole } from "./roles";
+import { getPortalUser } from "./portal";
 import { opsPath } from "./server-base";
 
 export type OpsUser = {
@@ -44,7 +45,11 @@ export const getOpsUser = cache(async (): Promise<OpsUser | null> => {
 /** Para páginas: exige sessão (e, opcionalmente, um dos perfis indicados). */
 export async function requireOpsPage(roles?: OpsRole[]): Promise<OpsUser> {
   const user = await getOpsUser();
-  if (!user) redirect(await opsPath("/entrar"));
+  if (!user) {
+    // Contas de cliente vão para o portal do cliente.
+    if (await getPortalUser()) redirect(await opsPath("/cliente"));
+    redirect(await opsPath("/entrar"));
+  }
   if (roles && !roles.includes(user.role)) redirect(await opsPath("/?erro=sem-permissao"));
   return user;
 }

@@ -1,9 +1,9 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { AlertTriangle, Bell, Camera, FileText, Loader2, Trash2, Wrench } from "lucide-react";
+import { AlertTriangle, Bell, Camera, Eye, EyeOff, FileText, Loader2, Trash2, Wrench } from "lucide-react";
 import { createCorrectiveTask, reportIncident, reviewDailyReport, saveDailyReport, updateIncident } from "@/lib/ops/actions/field";
-import { deleteAttachment, uploadAttachment } from "@/lib/ops/actions/files";
+import { deleteAttachment, shareAttachment, uploadAttachment } from "@/lib/ops/actions/files";
 import { cancelReminder, saveReminder } from "@/lib/ops/actions/tasks";
 import { setOrderStatus } from "@/lib/ops/actions/orders";
 import {
@@ -78,7 +78,22 @@ async function shrinkImage(file: File): Promise<File> {
   }
 }
 
-export type AttachmentView = { id: string; mime_type: string; caption: string | null; url: string | null; created_at: string; uploaded_by: string | null };
+export type AttachmentView = {
+  id: string;
+  mime_type: string;
+  caption: string | null;
+  url: string | null;
+  created_at: string;
+  uploaded_by: string | null;
+  entity_type?: string;
+  entity_id?: string;
+  client_visible?: boolean;
+  /** Tarefa associada (galeria da obra). */
+  label?: string | null;
+};
+
+/** Tipos de anexos que podem ser partilhados no portal do cliente (só fotografias). */
+const SHAREABLE = ["work_order", "task", "report", "vessel"];
 
 export function Attachments({
   entityType,
@@ -87,6 +102,8 @@ export function Attachments({
   items,
   canUpload = true,
   compact,
+  tasks,
+  allowShare = true,
 }: {
   entityType: string;
   entityId: string;
@@ -94,12 +111,19 @@ export function Attachments({
   items: AttachmentView[];
   canUpload?: boolean;
   compact?: boolean;
+  /** Permite associar o envio a uma tarefa da obra. */
+  tasks?: { id: string; label: string }[];
+  /** Mostra o botão «Partilhar com o cliente» às chefias. */
+  allowShare?: boolean;
 }) {
   const { userId, role } = useOps();
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [taskId, setTaskId] = useState("");
+  const [caption, setCaption] = useState("");
   const { run } = useOpsAction();
+  const canShare = allowShare && can.manage(role);
 
   async function upload(files: FileList | null) {
     if (!files?.length) return;
@@ -109,9 +133,10 @@ export function Attachments({
       const file = await shrinkImage(original);
       const fd = new FormData();
       fd.set("file", file);
-      fd.set("entity_type", entityType);
-      fd.set("entity_id", entityId);
+      fd.set("entity_type", taskId ? "task" : entityType);
+      fd.set("entity_id", taskId || entityId);
       if (workOrderId) fd.set("work_order_id", workOrderId);
+      if (caption.trim()) fd.set("caption", caption.trim());
       const r = await uploadAttachment(fd);
       if (!r.ok) {
         setErr(`${original.name}: ${r.error}`);
@@ -119,6 +144,7 @@ export function Attachments({
       }
     }
     setBusy(null);
+    setCaption("");
     if (input.current) input.current.value = "";
   }
 
@@ -138,7 +164,29 @@ export function Attachments({
                   </span>
                 )}
               </a>
-              <p className="truncate px-1.5 py-1 text-[10px] text-slate-500">{fmtDateTime(a.created_at)}</p>
+              <p className="truncate px-1.5 pt-1 text-[10px] text-slate-500" title={[a.caption, a.label].filter(Boolean).join(" · ") || undefined}>
+                {a.caption || a.label || fmtDateTime(a.created_at)}
+              </p>
+              <div className="flex items-center justify-between gap-1 px-1.5 pb-1">
+                <span className="truncate text-[10px] text-slate-400">{a.caption || a.label ? fmtDateTime(a.created_at) : ""}</span>
+                {canShare && a.mime_type.startsWith("image/") && SHAREABLE.includes(a.entity_type ?? entityType) ? (
+                  <button
+                    type="button"
+                    onClick={() => run(() => shareAttachment(a.id, !a.client_visible))}
+                    className={cx(
+                      "flex shrink-0 items-center gap-0.5 rounded px-1 py-0.5 text-[10px] font-medium",
+                      a.client_visible ? "bg-emerald-600 text-white" : "bg-white text-slate-600 ring-1 ring-slate-300",
+                    )}
+                    aria-pressed={Boolean(a.client_visible)}
+                    title={a.client_visible ? "Visível no portal do cliente. Clique para deixar de partilhar." : "Partilhar no portal do cliente"}
+                  >
+                    {a.client_visible ? <Eye className="size-3" aria-hidden /> : <EyeOff className="size-3" aria-hidden />}
+                    {a.client_visible ? "Cliente" : "Partilhar"}
+                  </button>
+                ) : (
+                  a.client_visible && <span className="text-[10px] font-medium text-emerald-700">Cliente</span>
+                )}
+              </div>
               {(a.uploaded_by === userId || role === "admin" || role === "gestor") && (
                 <button
                   type="button"
@@ -157,6 +205,19 @@ export function Attachments({
       {canUpload && (
         <div className="flex flex-wrap items-center gap-2">
           <input ref={input} type="file" accept="image/*,application/pdf" multiple className="hidden" onChange={(e) => upload(e.target.files)} />
+          {tasks && tasks.length > 0 && (
+            <select value={taskId} onChange={(e) => setTaskId(e.target.value)} className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm" aria-label="Associar a uma tarefa">
+              <option value="">Obra em geral</option>
+              {tasks.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          )}
+          {!compact && (
+            <input value={caption} onChange={(e) => setCaption(e.target.value)} maxLength={200} placeholder="Legenda (opcional)" aria-label="Legenda" className="w-48 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm" />
+          )}
           <Button size="sm" onClick={() => input.current?.click()} disabled={Boolean(busy)}>
             {busy ? <Loader2 className="size-3.5 animate-spin" /> : <Camera className="size-3.5" />}
             {busy ?? "Fotografia / documento"}
