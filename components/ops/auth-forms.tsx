@@ -1,14 +1,34 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
-import { Loader2 } from "lucide-react";
+import { useActionState, useState } from "react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { requestOpsReset, setOpsPassword, signInOps, type OpsAuthState } from "@/lib/ops/actions/auth";
 import { joinBase } from "@/lib/ops/base";
 import { Notice } from "@/components/admin/ui";
 
 const input = "mt-1.5 block w-full rounded-lg border border-slate-300 px-3 py-3 text-base outline-none focus:border-black focus:ring-2 focus:ring-black/10";
 const submit = "flex w-full items-center justify-center gap-2 rounded-lg bg-black px-4 py-3 text-sm font-semibold text-white hover:bg-neutral-800 disabled:opacity-60";
+
+/** Campo de palavra-passe com botão para mostrar/ocultar o que foi escrito. */
+function PasswordInput({ name, autoComplete, minLength }: { name: string; autoComplete: string; minLength?: number }) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <div className="relative">
+      <input name={name} type={visible ? "text" : "password"} required minLength={minLength} autoComplete={autoComplete} autoCapitalize="none" autoCorrect="off" spellCheck={false} className={`${input} pr-12`} />
+      <button
+        type="button"
+        onClick={() => setVisible((v) => !v)}
+        aria-label={visible ? "Ocultar palavra-passe" : "Mostrar palavra-passe"}
+        aria-pressed={visible}
+        title={visible ? "Ocultar palavra-passe" : "Mostrar palavra-passe"}
+        className="absolute inset-y-0 right-0 mt-1.5 flex w-12 items-center justify-center rounded-r-lg text-slate-500 hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20"
+      >
+        {visible ? <EyeOff className="size-5" aria-hidden /> : <Eye className="size-5" aria-hidden />}
+      </button>
+    </div>
+  );
+}
 
 export function OpsAuthCard({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
@@ -42,7 +62,7 @@ export function OpsLoginForm({ base, notice }: { base: string; notice?: string }
       </label>
       <label className="block text-sm font-medium">
         Palavra-passe
-        <input name="password" type="password" required autoComplete="current-password" className={input} />
+        <PasswordInput name="password" autoComplete="current-password" />
       </label>
       <button type="submit" disabled={pending} className={submit}>
         {pending && <Loader2 className="size-4 animate-spin" />} Entrar
@@ -86,11 +106,11 @@ export function OpsNewPasswordForm({ forced }: { forced?: boolean }) {
       {state.error && <Notice tone="error">{state.error}</Notice>}
       <label className="block text-sm font-medium">
         Nova palavra-passe
-        <input name="password" type="password" required minLength={10} autoComplete="new-password" className={input} />
+        <PasswordInput name="password" minLength={10} autoComplete="new-password" />
       </label>
       <label className="block text-sm font-medium">
         Confirmar palavra-passe
-        <input name="confirm" type="password" required minLength={10} autoComplete="new-password" className={input} />
+        <PasswordInput name="confirm" minLength={10} autoComplete="new-password" />
       </label>
       <p className="text-xs text-slate-500">Mínimo de 10 caracteres.</p>
       <button type="submit" disabled={pending} className={submit}>
