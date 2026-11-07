@@ -496,14 +496,14 @@ export function MonthCalendar({ month, events }: { month: string; events: { date
 }
 
 /** Cronograma (Gantt) com barras entre início e prazo; dependências indicadas no rótulo. */
-export function GanttChart({ tasks }: { tasks: TaskView[] }) {
+export function GanttChart({ tasks, now }: { tasks: TaskView[]; now: number }) {
   const { href } = useOps();
   const dated = tasks.filter((t) => t.start_at || t.due_at);
   if (!dated.length) return <EmptyState title="Sem datas">Defina início e prazo nas tarefas para ver o cronograma.</EmptyState>;
   const times = dated.flatMap((t) => [t.start_at, t.due_at].filter(Boolean).map((d) => new Date(d!).getTime()));
   const day = 86400000;
-  const min = Math.floor(Math.min(...times, Date.now()) / day) * day - day;
-  const max = Math.ceil(Math.max(...times, Date.now()) / day) * day + day;
+  const min = Math.floor(Math.min(...times, now) / day) * day - day;
+  const max = Math.ceil(Math.max(...times, now) / day) * day + day;
   const span = Math.max(day, max - min);
   const pct = (t: number) => ((t - min) / span) * 100;
   const totalDays = Math.round(span / day);
@@ -531,7 +531,7 @@ export function GanttChart({ tasks }: { tasks: TaskView[] }) {
                   <span className="font-mono text-slate-400">{t.orderNumber} {t.code}</span> {t.title}
                 </Link>
                 <div className="relative h-9 flex-1">
-                  <div className="absolute inset-y-0 w-px bg-red-400" style={{ left: `${pct(Date.now())}%` }} aria-hidden />
+                  <div className="absolute inset-y-0 w-px bg-red-400" style={{ left: `${pct(now)}%` }} aria-hidden />
                   <div
                     className={cx("absolute top-2 h-5 overflow-hidden rounded", t.late ? "bg-red-200" : t.status === "validada" || t.status === "concluida" ? "bg-emerald-200" : "bg-slate-300")}
                     style={{ left: `${left}%`, width: `${width}%` }}

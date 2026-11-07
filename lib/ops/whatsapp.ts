@@ -86,7 +86,7 @@ export async function sendTemplate(input: { to: string; template: string; langua
 
 /** A Meta rejeita parâmetros com quebras de linha, tabulações ou mais de 4 espaços seguidos. */
 export function sanitizeParam(text: string): string {
-  const clean = (text ?? "").replace(/[\r\n\t]+/g, " ").replace(/ {4,}/g, "   ").trim();
+  const clean = (text ?? "").replace(/\s+/g, " ").trim();
   return (clean || "—").slice(0, 900);
 }
 

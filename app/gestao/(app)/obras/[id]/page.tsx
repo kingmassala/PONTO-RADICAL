@@ -11,6 +11,7 @@ import { loadExpenses, loadIncidents, loadQuotes, loadReminders, loadReports } f
 import { listAttachments } from "@/lib/ops/attachments";
 import { describeActivity, type ActivityRow } from "@/lib/ops/activity";
 import { nestTasks, toTaskView } from "@/lib/ops/views";
+import { nowMs } from "@/lib/ops/time";
 import { INTERVENTION_LABELS, type InterventionType } from "@/lib/ops/labels";
 import { can } from "@/lib/ops/roles";
 import { fmtDate, fmtDateTime, todayLuanda } from "@/lib/ops/time";
@@ -191,7 +192,7 @@ export default async function ObraPage({ params, searchParams }: PageProps<"/ges
             </nav>
             {can.manage(user.role) && <TaskFormButton orderId={id} people={people} siblings={siblings} />}
           </div>
-          {sp.vista === "kanban" ? <KanbanBoard tasks={tasks} /> : sp.vista === "gantt" ? <GanttChart tasks={tasks} /> : <TaskList tasks={tasks} people={people} siblings={siblings} showOrder={false} />}
+          {sp.vista === "kanban" ? <KanbanBoard tasks={tasks} /> : sp.vista === "gantt" ? <GanttChart tasks={tasks} now={nowMs()} /> : <TaskList tasks={tasks} people={people} siblings={siblings} showOrder={false} />}
           <Card title="Consumo de materiais" description="Registe os materiais usados; o custo vem do catálogo.">
             <ConsumptionForm orderId={id} tasks={taskOptions} materials={((await supabase.from("ops_materials").select("id, name, unit").eq("active", true).order("name")).data ?? [])} />
           </Card>

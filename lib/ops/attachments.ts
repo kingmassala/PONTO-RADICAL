@@ -26,7 +26,7 @@ export async function listAttachments(filter: { entity_type?: string; entity_id?
   if (filter.work_order_id) q = q.eq("work_order_id", filter.work_order_id);
   const { data } = await q;
   const rows = data ?? [];
-  if (!rows.length || !isServiceRoleConfigured()) return rows.map(({ path: _path, ...r }) => ({ ...r, url: null }));
+  if (!rows.length || !isServiceRoleConfigured()) return rows.map((r) => ({ ...r, path: undefined, url: null }));
   const { data: signed } = await createAdminClient()
     .storage.from("ops")
     .createSignedUrls(rows.map((r) => r.path), 3600);

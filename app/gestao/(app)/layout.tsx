@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { can } from "@/lib/ops/roles";
 import { OpsProvider } from "@/components/ops/context";
 import { OpsShell } from "@/components/ops/shell";
+import { RegisterServiceWorker } from "@/components/ops/pwa";
 
 export default function OpsAppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -36,6 +37,7 @@ async function Shell({ children }: { children: React.ReactNode }) {
   ]);
   return (
     <OpsProvider value={{ base, role: user.role, userId: user.id, fullName: user.fullName }}>
+      <RegisterServiceWorker />
       <OpsShell counts={{ incidents: incidents.count ?? 0, approvals: (expenses.count ?? 0) + (quotes.count ?? 0) }}>{children}</OpsShell>
     </OpsProvider>
   );

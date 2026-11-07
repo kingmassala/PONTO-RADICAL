@@ -44,3 +44,8 @@ export function addDaysIso(date: string, days: number): string {
   d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().slice(0, 10);
 }
+
+/** Instante actual (ms). Usado pelas páginas do servidor, que são sempre geradas no pedido. */
+export function nowMs(): number {
+  return Date.now();
+}
