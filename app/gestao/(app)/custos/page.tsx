@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Download } from "lucide-react";
 import { requireOpsPage } from "@/lib/ops/auth";
+import { listAttachments } from "@/lib/ops/attachments";
+import { todayLuanda } from "@/lib/ops/time";
 import { createClient } from "@/lib/supabase/server";
 import { getFinance, getOrders, getSettings, getTasks } from "@/lib/ops/queries";
 import { loadExpenses } from "@/lib/ops/loaders";
@@ -12,6 +14,7 @@ import { fmtAoa, fmtPct } from "@/lib/ops/money";
 import { can } from "@/lib/ops/roles";
 import { cx } from "@/lib/cx";
 import { ExpenseFormButton, ExpenseTable, Kpi } from "@/components/ops/finance";
+import { Attachments } from "@/components/ops/field";
 import { MaterialFormButton, SupplierFormButton } from "@/components/ops/team";
 import { BarChart } from "@/components/ops/charts";
 import { Card } from "@/components/admin/ui";
@@ -25,7 +28,8 @@ export default async function CustosPage({ searchParams }: PageProps<"/gestao/cu
   const base = await getOpsBase();
   const h = (p: string) => joinBase(base, p);
   const supabase = await createClient();
-  const [orders, pending, settings, suppliers, materials, quotes, tasks] = await Promise.all([
+  const monthStart = `${todayLuanda().slice(0, 7)}-01`;
+  const [orders, pending, settings, suppliers, materials, quotes, tasks, generalMonth] = await Promise.all([
     getOrders(),
     loadExpenses({ approval: "pendente" }),
     getSettings(),
@@ -33,7 +37,13 @@ export default async function CustosPage({ searchParams }: PageProps<"/gestao/cu
     supabase.from("ops_materials").select("id, code, name, unit, unit_cost, active").order("name"),
     supabase.from("ops_quotes").select("id, version, work_order_id, submitted_at, order:ops_work_orders(number, title), items:ops_quote_items(total_price)").eq("status", "submetido"),
     getTasks(),
+    supabase.from("ops_expenses").select("total, category, approval, stage").is("work_order_id", null).gte("expense_date", monthStart),
   ]);
+  // Despesas gerais da empresa deste mês (realizadas/comprometidas, não rejeitadas).
+  const generalRows = (generalMonth.data ?? []).filter((e) => e.approval !== "rejeitada" && e.stage !== "prevista");
+  const generalTotal = generalRows.reduce((s, e) => s + Number(e.total), 0);
+  const generalByCategory: Record<string, number> = {};
+  for (const e of generalRows) generalByCategory[e.category] = (generalByCategory[e.category] ?? 0) + Number(e.total);
   const finance = await getFinance(orders.map((o) => o.id));
   const vatDefault = Number(settings?.default_vat_rate ?? 14);
   const openOrders = orders.filter((o) => OPEN_ORDER_STATUSES.includes(o.status));
@@ -46,6 +56,8 @@ export default async function CustosPage({ searchParams }: PageProps<"/gestao/cu
   for (const f of finance.values()) for (const [k, v] of Object.entries(f.byCategory)) byCategory[k] = (byCategory[k] ?? 0) + v;
   const view = sp.ver ?? "resumo";
   const all = view === "despesas" ? await loadExpenses() : [];
+  const general = view === "gerais" ? await loadExpenses({ scope: "gerais" }) : [];
+  const generalReceipts = view === "gerais" ? await listAttachments({ entity_type: "expense", entity_ids: general.map((e) => e.id) }) : [];
 
   return (
     <>
@@ -55,8 +67,14 @@ export default async function CustosPage({ searchParams }: PageProps<"/gestao/cu
           <p className="mt-1 text-sm text-slate-500">Valores em AOA. Margem = lucro ÷ preço; markup = lucro ÷ custo.</p>
         </div>
         <div className="flex gap-2">
-          <ExpenseFormButton orders={openOrders.map((o) => ({ id: o.id, label: `${o.number} · ${o.title}` }))} tasks={taskOptions} suppliers={suppliers.data ?? []} vatDefault={vatDefault} />
-          <a href={h("/exportar/despesas")} className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm">
+          <ExpenseFormButton
+            orders={openOrders.map((o) => ({ id: o.id, label: `${o.number} · ${o.title}` }))}
+            tasks={taskOptions}
+            suppliers={suppliers.data ?? []}
+            vatDefault={vatDefault}
+            defaultGeneral={view === "gerais"}
+          />
+          <a href={h(view === "gerais" ? "/exportar/despesas?ambito=gerais" : "/exportar/despesas")} className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm">
             <Download className="size-4" /> Excel
           </a>
         </div>
@@ -65,6 +83,7 @@ export default async function CustosPage({ searchParams }: PageProps<"/gestao/cu
         {[
           ["resumo", "Resumo e aprovações"],
           ["despesas", "Todas as despesas"],
+          ["gerais", "Despesas gerais"],
           ["catalogo", "Materiais e fornecedores"],
         ].map(([k, l]) => (
           <Link key={k} href={h(`/custos?ver=${k}`)} className={cx("rounded-full px-3 py-1.5 text-sm", view === k ? "bg-black text-white" : "bg-white ring-1 ring-slate-200")}>
@@ -75,8 +94,9 @@ export default async function CustosPage({ searchParams }: PageProps<"/gestao/cu
 
       {view === "resumo" && (
         <div className="space-y-6">
-          <div className="grid gap-3 sm:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             <Kpi label="Custos realizados (todas as obras)" value={fmtAoa(totals.actual)} />
+            <Kpi label="Despesas gerais (este mês)" value={fmtAoa(generalTotal)} sub="Fora das obras: almoço, limpeza, escritório…" />
             <Kpi label="Custos comprometidos" value={fmtAoa(totals.committed)} />
             <Kpi label="Preços contratuais" value={fmtAoa(totals.price)} />
             <Kpi label="Lucro bruto estimado" value={fmtAoa(totals.profit)} tone={totals.profit < 0 ? "red" : "default"} />
@@ -142,6 +162,32 @@ export default async function CustosPage({ searchParams }: PageProps<"/gestao/cu
               </div>
             </Card>
           </div>
+        </div>
+      )}
+
+      {view === "gerais" && (
+        <div className="space-y-6">
+          <div className="grid gap-3 sm:grid-cols-3">
+            <Kpi label="Despesas gerais este mês" value={fmtAoa(generalTotal)} />
+            <Kpi label="Registos este mês" value={String(generalRows.length)} />
+            <Kpi label="Pendentes de aprovação" value={String(general.filter((e) => e.approval === "pendente").length)} />
+          </div>
+          {Object.keys(generalByCategory).length > 0 && (
+            <Card title="Este mês por categoria">
+              <BarChart data={Object.entries(generalByCategory).sort((a, b) => b[1] - a[1]).map(([k, v]) => ({ label: EXPENSE_CATEGORY_LABELS[k as ExpenseCategory] ?? k, value: v }))} format="aoa" />
+            </Card>
+          )}
+          <Card title="Despesas gerais da empresa" description="Custos que não pertencem a nenhuma obra. Anexe a factura ou o recibo em cada linha.">
+            <ExpenseTable
+              expenses={general}
+              tasks={taskOptions}
+              suppliers={suppliers.data ?? []}
+              vatDefault={vatDefault}
+              receipts={Object.fromEntries(
+                general.map((e) => [e.id, <Attachments key={e.id} entityType="expense" entityId={e.id} workOrderId={null} items={generalReceipts.filter((r) => r.entity_id === e.id)} compact />]),
+              )}
+            />
+          </Card>
         </div>
       )}
 

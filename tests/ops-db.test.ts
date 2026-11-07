@@ -67,7 +67,7 @@ async function main() {
     await db.exec(readFileSync(new URL(`migrations/${file}`, root), "utf8"));
   }
   // As migrações da gestão têm de poder ser executadas outra vez sem erros (pela mesma ordem).
-  for (const file of ["20261107000001_gestao_obras.sql", "20261108000001_tarefas_empresa.sql", "20261109000001_portal_cliente.sql"]) {
+  for (const file of ["20261107000001_gestao_obras.sql", "20261108000001_tarefas_empresa.sql", "20261109000001_portal_cliente.sql", "20261110000001_despesas_gerais.sql"]) {
     await db.exec(readFileSync(new URL(`migrations/${file}`, root), "utf8"));
   }
 
@@ -362,6 +362,22 @@ async function main() {
     assert.equal(upd.length, 0, "gestor sem acesso não altera");
     await as(U.financeiro, "insert into public.ops_time_entries (task_id, user_id, work_date, hours) values ($1, $2, current_date, 1.5)", [companyTaskId, U.financeiro]);
     await rejects(as(U.tec2, "insert into public.ops_time_entries (task_id, user_id, work_date, hours) values ($1, $2, current_date, 1)", [companyTaskId, U.tec2]), /row-level security/);
+  });
+
+  await test("despesas gerais da empresa: sem obra, mesmas regras de aprovação e invisíveis para técnicos", async () => {
+    const [e] = await as<{ id: string; total: string; approval: string }>(U.gestor,
+      `insert into public.ops_expenses (expense_date, category, description, quantity, unit_price, approval)
+       values (current_date, 'alimentacao', 'Almoço da equipa', 6, 2500, 'aprovada') returning id, total, approval`);
+    assert.equal(Number(e.total), 15000);
+    assert.equal(e.approval, "pendente", "o gestor não aprova");
+    await as(U.financeiro, `insert into public.ops_expenses (expense_date, category, description, quantity, unit_price) values (current_date, 'limpeza_higiene', 'Detergente e lixívia', 1, 8000)`);
+    await rejects(as(U.gestor, "insert into public.ops_expenses (expense_date, category, description, quantity, unit_price, task_id) values (current_date, 'outros', 'Tarefa de obra', 1, 1, $1)", [taskIds[0]]), /expense_task_other_scope/);
+    await as(U.gestor, "insert into public.ops_expenses (expense_date, category, description, quantity, unit_price, task_id) values (current_date, 'escritorio', 'Papel', 1, 3000, $1)", [companyTaskId]);
+    await as(U.financeiro, "update public.ops_expenses set approval = 'aprovada' where id = $1", [e.id]);
+    await rejects(as(U.financeiro, "update public.ops_expenses set unit_price = 1 where id = $1", [e.id]), /expense_locked/);
+    assert.equal((await as(U.tec1, "select id from public.ops_expenses where work_order_id is null")).length, 0);
+    assert.equal((await as(U.supervisor, "select id from public.ops_expenses where work_order_id is null")).length, 0);
+    assert.equal((await as(U.direcao, "select id from public.ops_expenses where work_order_id is null")).length, 3);
   });
 
   await test("portal do cliente: contas de cliente geridas pela gestão e separadas da equipa", async () => {

@@ -73,6 +73,7 @@ Aplicar só a migração nova (não reaplica as do website):
 npm run db:migrate -- --only=20261107000001_gestao_obras.sql
 npm run db:migrate -- --only=20261108000001_tarefas_empresa.sql
 npm run db:migrate -- --only=20261109000001_portal_cliente.sql
+npm run db:migrate -- --only=20261110000001_despesas_gerais.sql
 ```
 
 Em alternativa, colar o ficheiro no SQL Editor do Supabase. A migração pode ser executada mais de uma vez.
@@ -153,6 +154,10 @@ menu ⋮). A aplicação abre em ecrã inteiro. Por segurança não guarda dados
   por período, técnico e obra; exportação para Excel (CSV) e PDF (impressão do browser).
 - **Ocorrências**: categoria, urgência, impacto, medidas, responsável, fotografias. As críticas notificam por WhatsApp
   a Administração, a Direcção, os Gestores e os Supervisores. Podem gerar uma tarefa correctiva.
+- **Despesas gerais da empresa** (Custos › «Despesas gerais», ou «Nova despesa» › Tipo «Geral da empresa»):
+  custos sem obra — almoço, limpeza e higiene, material de escritório, água/luz/comunicações, manutenção das
+  instalações, combustível… Mesmas regras de aprovação, comprovativo e bloqueio; não entram na rentabilidade das
+  obras. Total do mês no resumo de Custos; exportação para Excel.
 - **Custos e orçamentos**: despesas com comprovativo, aprovação, orçamentos por versões, catálogo de materiais,
   fornecedores, rentabilidade por obra; exportação para Excel.
 - **Técnicos e equipas**: carga de trabalho, horas do mês e (Financeiro/Administração) custo/hora.

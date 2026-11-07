@@ -135,7 +135,8 @@ export function Kpi({ label, value, sub, tone = "default" }: { label: string; va
 
 export type ExpenseView = {
   id: string;
-  work_order_id: string;
+  /** null = despesa geral da empresa. */
+  work_order_id: string | null;
   orderNumber?: string;
   task_id: string | null;
   taskLabel: string | null;
@@ -161,15 +162,19 @@ export function ExpenseFormButton({
   suppliers,
   vatDefault,
   expense,
+  defaultGeneral = false,
 }: {
   orders?: { id: string; label: string }[];
   orderId?: string;
+  /** Abre já como despesa geral da empresa. */
+  defaultGeneral?: boolean;
   tasks: { id: string; label: string; work_order_id: string | null }[];
   suppliers: { id: string; name: string }[];
   vatDefault: number;
   expense?: ExpenseView;
 }) {
   const empty = {
+    general: !orderId && defaultGeneral,
     work_order_id: orderId ?? "",
     task_id: "",
     expense_date: todayLuanda(),
@@ -185,7 +190,8 @@ export function ExpenseFormButton({
   const [v, setV] = useState(
     expense
       ? {
-          work_order_id: expense.work_order_id,
+          general: expense.work_order_id === null,
+          work_order_id: expense.work_order_id ?? "",
           task_id: expense.task_id ?? "",
           expense_date: expense.expense_date,
           category: expense.category,
@@ -216,7 +222,14 @@ export function ExpenseFormButton({
           onSubmit={(e) => {
             e.preventDefault();
             run(
-              () => saveExpense({ ...v, id: expense?.id, task_id: v.task_id || null, supplier_id: v.supplier_id || null }),
+              () =>
+                saveExpense({
+                  ...v,
+                  id: expense?.id,
+                  work_order_id: v.general ? null : v.work_order_id || "",
+                  task_id: v.task_id || null,
+                  supplier_id: v.supplier_id || null,
+                }),
               () => {
                 setOpen(false);
                 if (!expense) setV(empty);
@@ -225,10 +238,27 @@ export function ExpenseFormButton({
           }}
         >
           <div className="grid gap-4 sm:grid-cols-3">
-            {orders && !orderId && (
+            {!orderId && !expense && (
+              <Choice
+                label="Tipo de despesa"
+                value={v.general ? "geral" : "obra"}
+                onChange={(x) => set({ general: x === "geral", task_id: "", category: x === "geral" && v.category === "materiais" ? "alimentacao" : v.category })}
+                options={[
+                  { value: "obra", label: "De uma obra" },
+                  { value: "geral", label: "Geral da empresa (almoço, limpeza…)" },
+                ]}
+              />
+            )}
+            {orders && !orderId && !v.general && (
               <Choice label="Obra" required value={v.work_order_id} placeholder="— Escolher —" onChange={(x) => set({ work_order_id: x, task_id: "" })} options={orders.map((o) => ({ value: o.id, label: o.label }))} />
             )}
-            <Choice label="Tarefa (opcional)" value={v.task_id} placeholder="— Obra em geral —" onChange={(x) => set({ task_id: x })} options={tasks.filter((t) => t.work_order_id === v.work_order_id).map((t) => ({ value: t.id, label: t.label }))} />
+            <Choice
+              label="Tarefa (opcional)"
+              value={v.task_id}
+              placeholder={v.general ? "— Nenhuma —" : "— Obra em geral —"}
+              onChange={(x) => set({ task_id: x })}
+              options={tasks.filter((t) => (v.general ? t.work_order_id === null : t.work_order_id === v.work_order_id)).map((t) => ({ value: t.id, label: t.label }))}
+            />
             <Input label="Data" type="date" required value={v.expense_date} onChange={(x) => set({ expense_date: x })} />
             <Choice label="Categoria" value={v.category} onChange={(x) => set({ category: x })} options={EXPENSE_CATEGORIES.map((c) => ({ value: c, label: EXPENSE_CATEGORY_LABELS[c] }))} />
             <Choice label="Situação" value={v.stage} onChange={(x) => set({ stage: x })} options={EXPENSE_STAGES.map((s) => ({ value: s, label: EXPENSE_STAGE_LABELS[s] }))} />
@@ -301,7 +331,7 @@ export function ExpenseTable({
             {expenses.map((e) => (
               <tr key={e.id} className={cx(e.approval === "rejeitada" && "text-slate-400 line-through")}>
                 <td className="px-3 py-2 whitespace-nowrap">{fmtDate(e.expense_date)}</td>
-                {showOrder && <td className="px-3 py-2 font-mono text-xs">{e.orderNumber}</td>}
+                {showOrder && <td className="px-3 py-2 font-mono text-xs">{e.work_order_id ? e.orderNumber : <span className="font-sans text-slate-500">Geral</span>}</td>}
                 <td className="px-3 py-2">
                   {e.description}
                   <span className="block text-xs text-slate-500">
@@ -343,7 +373,7 @@ export function ExpenseTable({
                     )}
                     {e.approval !== "aprovada" && can.finance(role) && (
                       <>
-                        <ExpenseFormButton expense={e} tasks={tasks} suppliers={suppliers} vatDefault={vatDefault} orderId={e.work_order_id} />
+                        <ExpenseFormButton expense={e} tasks={tasks} suppliers={suppliers} vatDefault={vatDefault} orderId={e.work_order_id ?? undefined} />
                         <Button size="sm" variant="ghost" aria-label="Eliminar" onClick={() => run(() => deleteExpense(e.id))}>
                           <Trash2 className="size-3.5" />
                         </Button>

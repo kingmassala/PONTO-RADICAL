@@ -54,6 +54,10 @@ export const EXPENSE_CATEGORIES = [
   "subcontratacoes",
   "consumiveis",
   "imprevistos",
+  "limpeza_higiene",
+  "escritorio",
+  "agua_luz_comunicacoes",
+  "manutencao_instalacoes",
   "outros",
 ] as const;
 export type ExpenseCategory = (typeof EXPENSE_CATEGORIES)[number];
@@ -69,6 +73,10 @@ export const EXPENSE_CATEGORY_LABELS: Record<ExpenseCategory, string> = {
   subcontratacoes: "Subcontratações",
   consumiveis: "Consumíveis",
   imprevistos: "Imprevistos",
+  limpeza_higiene: "Limpeza e higiene",
+  escritorio: "Material de escritório",
+  agua_luz_comunicacoes: "Água, luz e comunicações",
+  manutencao_instalacoes: "Manutenção das instalações",
   outros: "Outros",
 };
 

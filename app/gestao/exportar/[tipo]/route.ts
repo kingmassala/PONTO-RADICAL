@@ -27,12 +27,13 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     name = `relatorios-${from}-a-${to}`;
   } else if (tipo === "despesas") {
     if (!can.finance(user.role)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
-    const rows = await loadExpenses({ orderId: sp.get("obra") || undefined });
+    const scope = sp.get("ambito");
+    const rows = await loadExpenses({ orderId: sp.get("obra") || undefined, scope: scope === "gerais" || scope === "obras" ? scope : undefined });
     csv = toCsv(
       ["Data", "Obra", "Tarefa", "Categoria", "Descrição", "Quantidade", "Preço unitário (AOA)", "Total sem IVA (AOA)", "IVA %", "Total com IVA (AOA)", "Situação", "Aprovação", "Fornecedor", "Responsável"],
       rows.map((e) => [
         fmtDate(e.expense_date),
-        e.orderNumber,
+        e.work_order_id ? e.orderNumber : "Geral da empresa",
         e.taskLabel,
         EXPENSE_CATEGORY_LABELS[e.category],
         e.description,

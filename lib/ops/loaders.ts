@@ -66,7 +66,7 @@ export async function loadIncidents(filter: { orderId?: string; open?: boolean }
     }) as IncidentView[];
 }
 
-export async function loadExpenses(filter: { orderId?: string; approval?: string } = {}): Promise<ExpenseView[]> {
+export async function loadExpenses(filter: { orderId?: string; approval?: string; scope?: "obras" | "gerais" } = {}): Promise<ExpenseView[]> {
   const supabase = await createClient();
   let q = supabase
     .from("ops_expenses")
@@ -77,6 +77,8 @@ export async function loadExpenses(filter: { orderId?: string; approval?: string
     .limit(500);
   if (filter.orderId) q = q.eq("work_order_id", filter.orderId);
   if (filter.approval) q = q.eq("approval", filter.approval);
+  if (filter.scope === "obras") q = q.not("work_order_id", "is", null);
+  if (filter.scope === "gerais") q = q.is("work_order_id", null);
   const { data } = await q;
   return (data ?? []).map((e) => ({
     ...e,

@@ -21,7 +21,8 @@ function flushSoon() {
 
 const expenseSchema = z.object({
   id: z.string().uuid().optional(),
-  work_order_id: z.string().uuid("Escolha a obra"),
+  // null = despesa geral da empresa (almoço, limpeza, escritório…), fora das obras.
+  work_order_id: z.string().uuid("Escolha a obra").nullable().optional().transform((v) => v || null),
   task_id: z.string().uuid().nullable().optional(),
   expense_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida"),
   category: z.enum(EXPENSE_CATEGORIES),

@@ -244,18 +244,20 @@ export async function notifyCriticalIncident(incidentId: string) {
 }
 
 /** Pedido de aprovação (orçamento → Direcção; despesa → Financeiro/Direcção). */
-export async function notifyApproval(kind: "orcamento" | "despesa", workOrderId: string, refId: string, description: string) {
+export async function notifyApproval(kind: "orcamento" | "despesa", workOrderId: string | null, refId: string, description: string) {
   const db = admin();
   if (!db) return 0;
   const settings = await getSettings(db);
   if (!settings.whatsapp_enabled) return 0;
-  const { data: order } = await db.from("ops_work_orders").select("number, vessel:ops_vessels(name, code)").eq("id", workOrderId).single();
+  const { data: order } = workOrderId
+    ? await db.from("ops_work_orders").select("number, vessel:ops_vessels(name, code)").eq("id", workOrderId).single()
+    : { data: null };
   const roles: OpsRole[] = kind === "orcamento" ? ["admin", "direcao"] : ["direcao", "financeiro"];
   const recipients = await recipientsByRoles(db, roles);
   const vessel = order?.vessel as unknown as { name: string; code: string } | null;
   const msg = taskMessage({
     event: "pedido_aprovacao",
-    orderNumber: order?.number ?? "—",
+    orderNumber: order?.number ?? (workOrderId ? "—" : "Despesa geral da empresa"),
     vessel: vessel ? `${vessel.code} · ${vessel.name}` : "—",
     task: description,
     responsible: "—",
