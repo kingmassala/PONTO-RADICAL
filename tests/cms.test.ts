@@ -43,6 +43,8 @@ const storeButton = { enabled: true, label: "Loja", type: "store", anchor: "", u
 
 test("Loja sem link: botões encaminham para os contactos (ou ocultos se assim configurado)", () => {
   const doc = clone();
+  // Sem WhatsApp, os botões levam à secção de contactos.
+  doc.contact.whatsapp = "";
   assert.equal(doc.store.enabled, false);
   assert.equal(doc.store.url, null);
   assert.equal(isStoreActive(doc), false);

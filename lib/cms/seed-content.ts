@@ -400,13 +400,13 @@ export const SEED_CONTENT: SiteDocument = {
   serviceCategories: DEFAULT_SERVICE_CATEGORIES,
   booking: DEFAULT_BOOKING_SETTINGS,
   contact: {
-    phone: "+244 900 000 000 (a confirmar)",
+    phone: "+244 976 660 016",
     phoneSecondary: "",
-    whatsapp: "",
-    email: "",
-    address: "Luanda, Angola (morada a confirmar)",
+    whatsapp: "+244 976 660 016",
+    email: "geral@pontoradical.com",
+    address: "Clube Náutico Militar, Luanda, Angola",
     hours: "Segunda a sexta, 8h00–17h00 · Sábado, 9h00–13h00",
-    mapUrl: "",
+    mapUrl: "https://maps.app.goo.gl/GXtCXnWoeUPToCbS8",
     social: { instagram: "", facebook: "", linkedin: "", youtube: "", tiktok: "" },
   },
   store: {

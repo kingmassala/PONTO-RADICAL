@@ -110,8 +110,8 @@ Definições. Pré-visualização com escolha de língua e «Ver entrada». Guia
   Supabase para convites e recuperação de palavra-passe por email.
 
 - **Link da Quicksell**: colar em Loja Online e activar quando existir.
-- **Contactos reais**: telefone, WhatsApp, email e morada ainda são de exemplo («a confirmar»). Com o WhatsApp
-  preenchido, os botões da loja passam a abrir o WhatsApp.
+- **Contactos** (actualizados a 11/11/2026): Clube Náutico Militar, Luanda (mapa: https://maps.app.goo.gl/GXtCXnWoeUPToCbS8);
+  telefone e WhatsApp +244 976 660 016; geral@pontoradical.com. Com o WhatsApp preenchido, os botões da loja abrem o WhatsApp.
 - **Serviços**: os 4 serviços são exemplos (preços, pontos de encontro e textos a confirmar).
 - **Marcas**: rever as descrições genéricas (Glydus, Pacer, Promarine, Seaflo, Osculati); faltam os sites de
   Glydus, Pacer e Promarine; as fotografias das marcas novas reutilizam fotos já existentes.
