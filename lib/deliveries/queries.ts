@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Delivery } from "./rules";
 
 export const DELIVERY_SELECT =
-  "id, number, delivery_date, recipient, reference, delivered_by, received_by, notes, status, signed_at, cancelled_reason, created_at, items:pr_material_delivery_items(id, position, description, reference, quantity, unit, notes)";
+  "id, number, delivery_date, recipient, recipient_details, reference, delivered_by, received_by, notes, status, signed_at, cancelled_reason, created_at, items:pr_material_delivery_items(id, position, description, reference, quantity, unit, notes)";
 
 function normalize(row: Record<string, unknown>): Delivery {
   const d = row as unknown as Delivery;

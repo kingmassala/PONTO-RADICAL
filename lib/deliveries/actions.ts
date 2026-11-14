@@ -44,7 +44,7 @@ export async function updateDelivery(id: string, input: unknown): Promise<Action
 export async function markDeliverySigned(id: string, receivedBy: unknown): Promise<ActionResult> {
   try {
     await requireStaff();
-    const name = z.string().trim().min(2, "Indique quem recebeu na Promarine.").max(120).parse(receivedBy);
+    const name = z.string().trim().min(2, "Indique quem recebeu do lado do cliente.").max(120).parse(receivedBy);
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("pr_material_deliveries")

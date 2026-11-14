@@ -68,12 +68,13 @@ async function DeliveryNote({ params }: { params: PageProps<"/admin/guia/[id]">[
           <div className="rounded-lg border border-slate-300 p-2.5">
             <p className="text-[0.72em] font-semibold uppercase tracking-[0.16em] text-slate-500">Destinatário (recebe)</p>
             <p className="mt-1 font-semibold">{d.recipient}</p>
+            {d.recipient_details && <p className="whitespace-pre-line text-slate-600">{d.recipient_details}</p>}
             {d.reference && <p className="text-slate-600">Referência: {d.reference}</p>}
           </div>
         </section>
 
         <p className="mt-5">
-          Declara-se que a <strong>Ponto Radical</strong> fornece à <strong>{d.recipient}</strong> os materiais abaixo indicados, nas quantidades
+          Declara-se que a <strong>Ponto Radical</strong> fornece a <strong>{d.recipient}</strong> os materiais abaixo indicados, nas quantidades
           referidas, que foram entregues e conferidos na data desta guia.
         </p>
 

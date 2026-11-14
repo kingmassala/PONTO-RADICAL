@@ -10,6 +10,8 @@ import {
   DELIVERY_STATUS_LABELS,
   formatDeliveryDate,
   formatQuantity,
+  knownRecipients,
+  sameRecipient,
   summarizeItems,
   UNITS,
   type Delivery,
@@ -20,7 +22,16 @@ import { Badge, Button, cx, Field, Modal, Notice, TextArea, TextInput } from "./
 const STATUS_TONE: Record<DeliveryStatus, "amber" | "green" | "slate"> = { emitida: "amber", assinada: "green", anulada: "slate" };
 
 type ItemForm = { description: string; reference: string; quantity: string; unit: string; notes: string };
-type HeaderForm = { delivery_date: string; recipient: string; reference: string; delivered_by: string; received_by: string; notes: string };
+type HeaderForm = {
+  delivery_date: string;
+  recipient: string;
+  recipient_details: string;
+  reference: string;
+  delivered_by: string;
+  received_by: string;
+  notes: string;
+};
+type Recipient = { name: string; details: string | null };
 
 const blankItem = (): ItemForm => ({ description: "", reference: "", quantity: "1", unit: "un", notes: "" });
 
@@ -43,6 +54,7 @@ export function DeliveriesBoard({
   const [from, setFrom] = useState(`${today.slice(0, 7)}-01`);
   const [to, setTo] = useState(today);
   const [status, setStatus] = useState<"todas" | DeliveryStatus>("todas");
+  const [client, setClient] = useState("todos");
 
   const materials = useMemo(() => {
     const names = new Set<string>();
@@ -50,9 +62,26 @@ export function DeliveriesBoard({
     return [...names].sort((a, b) => a.localeCompare(b, "pt"));
   }, [deliveries]);
 
-  const inRange = deliveries.filter((d) => d.delivery_date >= from && d.delivery_date <= to);
+  const recipients = useMemo(() => knownRecipients(deliveries), [deliveries]);
+  const ofClient = (d: Delivery) => client === "todos" || sameRecipient(d.recipient, client);
+  const inRange = deliveries.filter((d) => d.delivery_date >= from && d.delivery_date <= to && ofClient(d));
   const summary = summarizeItems(inRange);
-  const list = deliveries.filter((d) => status === "todas" || d.status === status);
+  const list = deliveries.filter((d) => (status === "todas" || d.status === status) && ofClient(d));
+  const clientFilter = recipients.length > 1 && (
+    <select
+      aria-label="Cliente"
+      value={client}
+      onChange={(e) => setClient(e.target.value)}
+      className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm"
+    >
+      <option value="todos">Todos os clientes</option>
+      {recipients.map((c) => (
+        <option key={c.name} value={c.name}>
+          {c.name}
+        </option>
+      ))}
+    </select>
+  );
   const pendingSign = deliveries.filter((d) => d.status === "emitida").length;
 
   return (
@@ -84,14 +113,15 @@ export function DeliveriesBoard({
       {pendingSign > 0 && tab === "guias" && (
         <div className="mb-6">
           <Notice tone="warning" title={`${pendingSign} guia(s) por assinar.`}>
-            Imprima a guia, recolha as assinaturas («Entreguei — Ponto Radical» e «Recebi — Promarine») e marque-a como assinada.
+            Imprima a guia, recolha as assinaturas («Entreguei — Ponto Radical» e «Recebi — cliente») e marque-a como assinada.
           </Notice>
         </div>
       )}
 
       {tab === "guias" ? (
         <>
-          <div className="mb-4 flex flex-wrap gap-2">
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            {clientFilter}
             {(["todas", "emitida", "assinada", "anulada"] as const).map((s) => (
               <button
                 key={s}
@@ -107,7 +137,7 @@ export function DeliveriesBoard({
           {list.length === 0 ? (
             <div className="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
               <p className="font-medium text-slate-900">Sem saídas de material</p>
-              <p className="mt-2 text-sm text-slate-500">Registe o material entregue à Promarine; a guia sai pronta a imprimir, com os campos de assinatura.</p>
+              <p className="mt-2 text-sm text-slate-500">Registe o material entregue à Promarine ou a outro cliente; a guia sai pronta a imprimir, com os campos de assinatura.</p>
             </div>
           ) : (
             <ul className="space-y-3">
@@ -120,6 +150,7 @@ export function DeliveriesBoard({
       ) : (
         <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
           <header className="flex flex-wrap items-end gap-3 border-b border-slate-100 px-4 py-3">
+            {clientFilter && <Field label="Cliente">{clientFilter}</Field>}
             <Field label="De" htmlFor="mat-from">
               <input id="mat-from" type="date" value={from} max={to} onChange={(e) => setFrom(e.target.value)} className={inputCls} />
             </Field>
@@ -172,6 +203,7 @@ export function DeliveriesBoard({
             defaultDeliveredBy={defaultDeliveredBy}
             today={today}
             materials={materials}
+            recipients={recipients}
             onDone={() => setEditing(null)}
           />
         )}
@@ -229,7 +261,7 @@ function DeliveryRow({ delivery: d, canDelete, onEdit }: { delivery: Delivery; c
                 size="sm"
                 disabled={pending}
                 onClick={() => {
-                  const name = prompt("Nome de quem recebeu na Promarine (como na assinatura):", d.received_by ?? "");
+                  const name = prompt(`Nome de quem recebeu em ${d.recipient} (como na assinatura):`, d.received_by ?? "");
                   if (name !== null) run(() => markDeliverySigned(d.id, name));
                 }}
               >
@@ -286,17 +318,20 @@ function DeliveryForm({
   defaultDeliveredBy,
   today,
   materials,
+  recipients,
   onDone,
 }: {
   delivery: Delivery | null;
   defaultDeliveredBy: string;
   today: string;
   materials: string[];
+  recipients: Recipient[];
   onDone: () => void;
 }) {
   const [header, setHeader] = useState<HeaderForm>(() => ({
     delivery_date: delivery?.delivery_date ?? today,
     recipient: delivery?.recipient ?? DEFAULT_RECIPIENT,
+    recipient_details: delivery?.recipient_details ?? recipients.find((c) => sameRecipient(c.name, DEFAULT_RECIPIENT))?.details ?? "",
     reference: delivery?.reference ?? "",
     delivered_by: delivery?.delivered_by ?? defaultDeliveredBy,
     received_by: delivery?.received_by ?? "",
@@ -311,6 +346,13 @@ function DeliveryForm({
   const [pending, start] = useTransition();
   const [error, setError] = useState<{ text: string; details?: string[] } | null>(null);
   const setH = <K extends keyof HeaderForm>(k: K, v: string) => setHeader((h) => ({ ...h, [k]: v }));
+  // Ao escolher um cliente já conhecido, preenche os dados usados na última guia (se ainda estiverem vazios).
+  const pickRecipient = (name: string) =>
+    setHeader((h) => {
+      const known = recipients.find((c) => sameRecipient(c.name, name));
+      return { ...h, recipient: name, recipient_details: h.recipient_details || known?.details || "" };
+    });
+  const recipientLabel = header.recipient.trim() || "cliente";
   const setItem = (i: number, k: keyof ItemForm, v: string) => setItems((list) => list.map((it, j) => (j === i ? { ...it, [k]: v } : it)));
 
   const submit = (e: React.FormEvent) => {
@@ -339,13 +381,36 @@ function DeliveryForm({
         <Field label="Data *" htmlFor="dl-date">
           <input id="dl-date" type="date" required value={header.delivery_date} onChange={(e) => setH("delivery_date", e.target.value)} className={inputCls} />
         </Field>
-        <TextInput label="Para (empresa)" required value={header.recipient} onChange={(v) => setH("recipient", v)} maxLength={120} />
+        <Field label="Cliente (destinatário) *" htmlFor="dl-recipient" hint="Promarine ou outro cliente; escreva um nome novo para um cliente novo.">
+          <input
+            id="dl-recipient"
+            list="dl-recipients"
+            required
+            value={header.recipient}
+            maxLength={120}
+            onChange={(e) => pickRecipient(e.target.value)}
+            className={inputCls}
+          />
+          <datalist id="dl-recipients">
+            {recipients.map((c) => (
+              <option key={c.name} value={c.name} />
+            ))}
+          </datalist>
+        </Field>
         <TextInput label="Referência / obra" value={header.reference} onChange={(v) => setH("reference", v)} maxLength={160} placeholder="Ex.: OS-2026-0012 · Lancha Kianda" />
       </div>
+      <TextArea
+        label="Dados do cliente (aparecem na guia)"
+        hint="Opcional: NIF, morada, telefone ou email do cliente."
+        value={header.recipient_details}
+        onChange={(v) => setH("recipient_details", v)}
+        maxLength={500}
+        rows={2}
+      />
       <div className="grid gap-4 sm:grid-cols-2">
         <TextInput label="Entreguei — Ponto Radical (nome)" required value={header.delivered_by} onChange={(v) => setH("delivered_by", v)} maxLength={120} />
         <TextInput
-          label="Recebi — Promarine (nome)"
+          label={`Recebi — ${recipientLabel} (nome)`}
           value={header.received_by}
           onChange={(v) => setH("received_by", v)}
           maxLength={120}

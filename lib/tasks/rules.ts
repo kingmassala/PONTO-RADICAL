@@ -37,7 +37,7 @@ export const TASK_AREA_LABELS: Record<TaskArea, string> = {
   loja: "Loja",
   armazem: "Armazém",
   compras: "Compras",
-  fornecimentos: "Fornecimentos à Promarine",
+  fornecimentos: "Fornecimentos a clientes",
   financeiro: "Financeiro",
   marketing: "Marketing e redes sociais",
   experiencias: "Experiências no mar",

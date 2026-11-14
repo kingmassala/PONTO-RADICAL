@@ -87,8 +87,8 @@ Definições. Pré-visualização com escolha de língua e «Ver entrada». Guia
 - **Tarefas** `TR-AAAA-NNNN`: responsável (nome + WhatsApp), prazo, lembrete, prioridade e área; alertas no painel
   (Visão Geral e menu) e por WhatsApp (atribuição, lembrete, atraso) — WhatsApp **implementado mas não activo**
   (faltam as credenciais Meta e o modelo `pr_alerta_tarefa`); entretanto há o botão «Enviar pelo WhatsApp» (wa.me).
-- **Saídas de material para a Promarine**: guia `GS-AAAA-NNNN` para imprimir/PDF com «Entreguei — Ponto Radical» e
-  «Recebi — Promarine»; marcar como assinada, corrigir antes de assinar, anular com motivo; total por material.
+- **Saídas de material para a Promarine e outros clientes**: guia `GS-AAAA-NNNN` para imprimir/PDF com «Entreguei —
+  Ponto Radical» e «Recebi — <cliente>» (dados do cliente opcionais: NIF, morada, contacto); marcar como assinada, corrigir antes de assinar, anular com motivo; total por material.
 - Migrações `20261111000001_remover_gestao_obras` (remove as tabelas `ops_*`) e `20261111000002_tarefas_saidas_material`.
 - A **Gestão de Obras Navais** (antes em `/gestao`) passou para o projecto próprio da **Promarine** em 07/11/2026.
 - Testes: `npm test` (34 + 24 + 16).

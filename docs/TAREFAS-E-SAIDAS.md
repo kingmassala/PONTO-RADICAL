@@ -5,7 +5,7 @@ Duas áreas do painel da Ponto Radical, para toda a equipa com acesso ao painel 
 | Área | Endereço | Para quê |
 |---|---|---|
 | **Tarefas** | `/admin/tarefas` | Registo, controlo e alertas das tarefas da equipa |
-| **Saídas de material** | `/admin/saidas` | Material fornecido à **Promarine**, com guia de entrega assinada |
+| **Saídas de material** | `/admin/saidas` | Material fornecido à **Promarine** ou a **outros clientes**, com guia de entrega assinada |
 
 A antiga Gestão de Obras Navais passou para a plataforma própria da Promarine (outro projecto, outra base de
 dados). `/gestao` neste site redirecciona para `https://promarine-angola.vercel.app/gestao`.
@@ -53,20 +53,23 @@ Promarine`, `Ana Silva`, `qui., 12/11/2026, 15:30`, `Alta`, `https://ponto-radic
 
 O WhatsApp só se considera a funcionar depois de um envio real confirmado pela Meta.
 
-## Saídas de material para a Promarine
+## Saídas de material (Promarine e outros clientes)
 
-1. **Saídas de material › Nova saída de material**: data, destinatário (Promarine), referência (obra/embarcação da
-   Promarine, opcional), quem entrega, quem recebe (opcional), materiais com quantidade e unidade, observações.
+1. **Saídas de material › Nova saída de material**: data, **cliente** (Promarine por omissão; escolher outro já usado
+   ou escrever um novo), **dados do cliente** opcionais (NIF, morada, contacto — preenchidos automaticamente com os
+   da última guia desse cliente), referência (obra/embarcação, opcional), quem entrega, quem recebe (opcional),
+   materiais com quantidade e unidade, observações.
 2. **Emitir guia**: cria a guia `GS-AAAA-NNNN` e abre o documento para **imprimir ou guardar em PDF**, com a
    declaração de fornecimento, a lista de materiais e as assinaturas **«Entreguei — Ponto Radical»** e
-   **«Recebi — Promarine»** (nome, assinatura e data).
+   **«Recebi — <cliente>»** (nome, assinatura e data).
 3. Depois de assinada em papel: **Marcar como assinada** (indica quem recebeu). A guia fica bloqueada.
 4. Erros: enquanto está por assinar pode ser **corrigida**; depois só pode ser **anulada** (com motivo — fica marcada
    «ANULADA» no documento). Apagar só por administradores e só guias nunca assinadas; os números não se reutilizam.
-5. **Controlo por material**: total fornecido por material e unidade num período (sem as guias anuladas).
+5. **Controlo por material**: total fornecido por material e unidade num período (sem as guias anuladas), para todos
+   os clientes ou filtrado por cliente. A lista de guias também se filtra por cliente.
 
 ## Base de dados
 
-Migração `20261111000002_tarefas_saidas_material.sql`: `pr_tasks`, `pr_task_alerts`, `pr_material_deliveries`,
+Migrações `20261111000002_tarefas_saidas_material.sql` e `20261114000001_guias_outros_clientes.sql` (dados do cliente): `pr_tasks`, `pr_task_alerts`, `pr_material_deliveries`,
 `pr_material_delivery_items`, `pr_counters`; funções `pr_create_delivery`, `pr_replace_delivery_items`. Acesso pela
 RLS (`is_staff()`; apagar `is_admin()`), auditoria em `audit_log`. Testes: `npm run test:admin-db`.

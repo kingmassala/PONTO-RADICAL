@@ -16,7 +16,7 @@ export default async function DeliveriesPage() {
     <>
       <PageHeader
         title="Saídas de material"
-        description="Controlo do material fornecido à Promarine. Cada saída gera uma guia numerada (GS-AAAA-NNNN) com o material, as quantidades e as assinaturas «Entreguei — Ponto Radical» e «Recebi — Promarine»."
+        description="Controlo do material fornecido à Promarine e a outros clientes. Cada saída gera uma guia numerada (GS-AAAA-NNNN) com o material, as quantidades e as assinaturas «Entreguei — Ponto Radical» e «Recebi — cliente»."
       />
       {error && (
         <div className="mb-6">

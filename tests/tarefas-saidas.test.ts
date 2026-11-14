@@ -8,7 +8,7 @@ import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import { PGlite } from "@electric-sql/pglite";
 import { dueState, isoToLuandaLocal, luandaLocalToIso, normalizePhone, taskAlertText, waMeHref } from "../lib/tasks/rules";
-import { deliveryInputSchema, summarizeItems } from "../lib/deliveries/rules";
+import { deliveryInputSchema, knownRecipients, summarizeItems } from "../lib/deliveries/rules";
 
 const root = new URL("../supabase/", import.meta.url);
 
@@ -104,6 +104,25 @@ async function main() {
       { status: "anulada", items: [{ description: "Tinta", quantity: 100, unit: "l", reference: null, notes: null }] },
     ]);
     assert.deepEqual(sum, [{ description: "Tinta", unit: "l", quantity: 5, deliveries: 2 }]);
+  });
+
+  await test("guia para outros clientes: lista de clientes conhecidos com os últimos dados, Promarine sempre incluída", () => {
+    const list = knownRecipients([
+      { recipient: "Marina Kianda", recipient_details: "NIF 5401234567" },
+      { recipient: "marina kianda ", recipient_details: "antigo" },
+      { recipient: "João Silva", recipient_details: null },
+    ]);
+    assert.deepEqual(list, [
+      { name: "Marina Kianda", details: "NIF 5401234567" },
+      { name: "João Silva", details: null },
+      { name: "Promarine", details: null },
+    ]);
+    const parsed = deliveryInputSchema.parse({
+      header: { delivery_date: "2026-11-14", recipient: "Marina Kianda", recipient_details: " NIF 5401234567 ", delivered_by: "Rui" },
+      items: [{ description: "Corda", quantity: 10, unit: "m" }],
+    });
+    assert.equal(parsed.header.recipient_details, "NIF 5401234567");
+    assert.throws(() => deliveryInputSchema.parse({ header: { delivery_date: "2026-11-14", recipient: "", delivered_by: "Rui" }, items: [{ description: "Corda", quantity: 1 }] }));
   });
 
   const db = new PGlite();
@@ -255,6 +274,17 @@ async function main() {
       JSON.stringify(items),
     ]);
     assert.equal(again.d.number, `GS-${YEAR}-0003`);
+  });
+
+  await test("guia para outro cliente: destinatário e dados do cliente gravados e bloqueados depois de assinada", async () => {
+    const h = { ...header, recipient: "Marina Kianda", recipient_details: "NIF 5401234567 · Ilha de Luanda" };
+    const [r] = await as<{ d: { id: string } }>(EDITOR, "select public.pr_create_delivery($1::jsonb, $2::jsonb) as d", [JSON.stringify(h), JSON.stringify(items)]);
+    const [row] = await as<{ recipient: string; recipient_details: string }>(EDITOR, `select recipient, recipient_details from public.pr_material_deliveries where id = '${r.d.id}'`);
+    assert.deepEqual(row, { recipient: "Marina Kianda", recipient_details: "NIF 5401234567 · Ilha de Luanda" });
+    await as(EDITOR, `update public.pr_material_deliveries set recipient_details = 'NIF 5401234567' where id = '${r.d.id}'`);
+    await as(EDITOR, `update public.pr_material_deliveries set status = 'assinada', received_by = 'Ana (Marina Kianda)' where id = '${r.d.id}'`);
+    await rejects(as(EDITOR, `update public.pr_material_deliveries set recipient_details = 'outro' where id = '${r.d.id}'`), /delivery_locked/);
+    await rejects(as(EDITOR, `update public.pr_material_deliveries set recipient = 'Outro' where id = '${r.d.id}'`), /delivery_locked/);
   });
 
   await test("auditoria regista criação de tarefas e guias e as mudanças de estado", async () => {

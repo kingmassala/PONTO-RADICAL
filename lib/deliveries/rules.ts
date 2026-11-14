@@ -1,4 +1,4 @@
-/** Saídas de material (guias de entrega à Promarine): constantes e validação partilhadas. */
+/** Saídas de material (guias de entrega à Promarine ou a outros clientes): constantes e validação partilhadas. */
 import { z } from "zod";
 
 export const DELIVERY_STATUSES = ["emitida", "assinada", "anulada"] as const;
@@ -11,6 +11,7 @@ export const DELIVERY_STATUS_LABELS: Record<DeliveryStatus, string> = {
 
 export const UNITS = ["un", "cx", "kg", "g", "l", "ml", "m", "m²", "rolo", "par", "kit", "lata", "saco"] as const;
 
+/** Destinatário sugerido numa guia nova (o cliente habitual); pode ser qualquer outro cliente. */
 export const DEFAULT_RECIPIENT = "Promarine";
 
 export type DeliveryItem = {
@@ -28,6 +29,7 @@ export type Delivery = {
   number: string;
   delivery_date: string;
   recipient: string;
+  recipient_details: string | null;
   reference: string | null;
   delivered_by: string;
   received_by: string | null;
@@ -51,7 +53,8 @@ export const deliveryItemSchema = z.object({
 
 export const deliveryHeaderSchema = z.object({
   delivery_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida."),
-  recipient: text(120).min(2).default(DEFAULT_RECIPIENT),
+  recipient: text(120).min(2, "Indique o cliente (destinatário).").default(DEFAULT_RECIPIENT),
+  recipient_details: text(500).default("").transform((v) => v || null),
   reference: text(160).default("").transform((v) => v || null),
   delivered_by: text(120).min(2, "Indique quem entrega (Ponto Radical)."),
   received_by: text(120).default("").transform((v) => v || null),
@@ -87,3 +90,16 @@ export function summarizeItems(deliveries: Pick<Delivery, "status" | "items">[])
   }
   return [...map.values()].sort((a, b) => a.description.localeCompare(b.description, "pt"));
 }
+
+/** Clientes já usados em guias (mais recentes primeiro), com os últimos dados registados de cada um. */
+export function knownRecipients(deliveries: Pick<Delivery, "recipient" | "recipient_details">[]) {
+  const map = new Map<string, { name: string; details: string | null }>();
+  for (const d of deliveries) {
+    const key = d.recipient.trim().toLowerCase();
+    if (!map.has(key)) map.set(key, { name: d.recipient.trim(), details: d.recipient_details });
+  }
+  if (!map.has(DEFAULT_RECIPIENT.toLowerCase())) map.set(DEFAULT_RECIPIENT.toLowerCase(), { name: DEFAULT_RECIPIENT, details: null });
+  return [...map.values()];
+}
+
+export const sameRecipient = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
