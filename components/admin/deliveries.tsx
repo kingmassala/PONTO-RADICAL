@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
-import { Ban, CheckCircle2, FileSignature, Pencil, Plus, Printer, Trash2, X } from "lucide-react";
+import { Ban, CheckCircle2, Download, FileSignature, Pencil, Plus, Printer, Trash2, X } from "lucide-react";
 import { cancelDelivery, createDelivery, deleteDelivery, markDeliverySigned, updateDelivery } from "@/lib/deliveries/actions";
 import {
   DEFAULT_RECIPIENT,
@@ -160,6 +160,24 @@ export function DeliveriesBoard({
             <p className="pb-2 text-sm text-slate-500">
               {inRange.filter((d) => d.status !== "anulada").length} guia(s) no período (sem as anuladas).
             </p>
+            <div className="flex flex-wrap gap-2 pb-1 sm:ml-auto">
+              {(
+                [
+                  ["resumo", "Resumo por material"],
+                  ["detalhe", "Detalhe por guia"],
+                ] as const
+              ).map(([tipo, label]) => (
+                <a
+                  key={tipo}
+                  href={`/admin/saidas/exportar?${new URLSearchParams({ tipo, de: from, ate: to, cliente: client }).toString()}`}
+                  download
+                  title="Ficheiro CSV — abre no Excel, Numbers ou Google Sheets"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50"
+                >
+                  <Download className="size-4" /> {label}
+                </a>
+              ))}
+            </div>
           </header>
           {summary.length === 0 ? (
             <p className="px-4 py-10 text-center text-sm text-slate-500">Sem materiais fornecidos neste período.</p>

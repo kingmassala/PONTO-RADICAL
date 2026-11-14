@@ -67,6 +67,10 @@ O WhatsApp só se considera a funcionar depois de um envio real confirmado pela 
    «ANULADA» no documento). Apagar só por administradores e só guias nunca assinadas; os números não se reutilizam.
 5. **Controlo por material**: total fornecido por material e unidade num período (sem as guias anuladas), para todos
    os clientes ou filtrado por cliente. A lista de guias também se filtra por cliente.
+6. **Download para análise** (no «Controlo por material»): ficheiros CSV para Excel/Numbers/Google Sheets, com o período e
+   o cliente escolhidos — «Resumo por material» (totais, clientes, primeira e última saída; sem anuladas) e «Detalhe
+   por guia» (uma linha por material de cada guia, com estado, cliente, referência e quem entregou/recebeu).
+   Rota: `/admin/saidas/exportar?tipo=resumo|detalhe&de=&ate=&cliente=`.
 
 ## Base de dados
 

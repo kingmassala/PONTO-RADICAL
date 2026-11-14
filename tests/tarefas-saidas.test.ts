@@ -8,7 +8,7 @@ import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import { PGlite } from "@electric-sql/pglite";
 import { dueState, isoToLuandaLocal, luandaLocalToIso, normalizePhone, taskAlertText, waMeHref } from "../lib/tasks/rules";
-import { deliveryInputSchema, knownRecipients, summarizeItems } from "../lib/deliveries/rules";
+import { controlDetailCsv, controlSummaryCsv, deliveryInputSchema, knownRecipients, summarizeItems, type Delivery } from "../lib/deliveries/rules";
 
 const root = new URL("../supabase/", import.meta.url);
 
@@ -123,6 +123,27 @@ async function main() {
     });
     assert.equal(parsed.header.recipient_details, "NIF 5401234567");
     assert.throws(() => deliveryInputSchema.parse({ header: { delivery_date: "2026-11-14", recipient: "", delivered_by: "Rui" }, items: [{ description: "Corda", quantity: 1 }] }));
+  });
+
+  await test("exportação do controlo de material: CSV para Excel (BOM, «;», vírgula decimal) com filtros de período e cliente", () => {
+    const base = { recipient_details: null, reference: null, delivered_by: "Rui", received_by: null, notes: null, signed_at: null, cancelled_reason: null, created_at: "" };
+    const ds: Delivery[] = [
+      { ...base, id: "1", number: "GS-2026-0001", delivery_date: "2026-11-02", recipient: "Promarine", status: "assinada", items: [{ description: "Tinta; azul", reference: null, quantity: 2.5, unit: "l", notes: null }] },
+      { ...base, id: "2", number: "GS-2026-0002", delivery_date: "2026-11-10", recipient: "Marina Kianda", status: "emitida", items: [{ description: "Tinta; azul", reference: "T1", quantity: 1, unit: "l", notes: null }] },
+      { ...base, id: "3", number: "GS-2026-0003", delivery_date: "2026-11-11", recipient: "Promarine", status: "anulada", items: [{ description: "Corda", reference: null, quantity: 9, unit: "m", notes: null }] },
+      { ...base, id: "4", number: "GS-2026-0004", delivery_date: "2026-10-01", recipient: "Promarine", status: "assinada", items: [{ description: "Lixa", reference: null, quantity: 5, unit: "un", notes: null }] },
+    ];
+    const resumo = controlSummaryCsv(ds, { from: "2026-11-01", to: "2026-11-30", client: "todos" });
+    assert.ok(resumo.startsWith("\uFEFFMaterial;Unidade;Quantidade fornecida;Linhas;Clientes;Primeira saída;Última saída\r\n"));
+    assert.ok(resumo.includes('"Tinta; azul";l;3,5;2;Promarine, Marina Kianda;2026-11-02;2026-11-10'), resumo);
+    assert.ok(!resumo.includes("Corda"), "anuladas não contam no resumo");
+    assert.ok(!resumo.includes("Lixa"), "fora do período");
+    const soPromarine = controlSummaryCsv(ds, { from: "", to: "", client: "promarine" });
+    assert.ok(soPromarine.includes("Lixa;un;5;1;Promarine") && soPromarine.includes('"Tinta; azul";l;2,5;1;Promarine'));
+    const detalhe = controlDetailCsv(ds, { from: "2026-11-01", to: "2026-11-30", client: "todos" });
+    const lines = detalhe.trim().split("\r\n");
+    assert.equal(lines.length, 4, "cabeçalho + 3 linhas (inclui a anulada, com o estado)");
+    assert.ok(lines[3].startsWith("GS-2026-0003;2026-11-11;Anulada;Promarine"));
   });
 
   const db = new PGlite();
