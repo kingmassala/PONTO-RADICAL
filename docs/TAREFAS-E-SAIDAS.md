@@ -70,7 +70,9 @@ O WhatsApp só se considera a funcionar depois de um envio real confirmado pela 
 6. **Download para análise** (no «Controlo por material»): ficheiros CSV para Excel/Numbers/Google Sheets, com o período e
    o cliente escolhidos — «Resumo por material» (totais, clientes, primeira e última saída; sem anuladas) e «Detalhe
    por guia» (uma linha por material de cada guia, com estado, cliente, referência e quem entregou/recebeu).
-   Rota: `/admin/saidas/exportar?tipo=resumo|detalhe&de=&ate=&cliente=`.
+   Cada um em **Excel** (CSV, rota `/admin/saidas/exportar?tipo=resumo|detalhe&de=&ate=&cliente=`) ou **PDF** com a marca
+   Ponto Radical (`/admin/relatorio-material?…&pdf=1`: abre o relatório e a janela de impressão — escolher «Guardar
+   como PDF»; resumo em A4 vertical, detalhe em A4 horizontal, letra de 8,5 pt como a guia).
 
 ## Base de dados
 

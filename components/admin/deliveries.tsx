@@ -166,17 +166,28 @@ export function DeliveriesBoard({
                   ["resumo", "Resumo por material"],
                   ["detalhe", "Detalhe por guia"],
                 ] as const
-              ).map(([tipo, label]) => (
-                <a
-                  key={tipo}
-                  href={`/admin/saidas/exportar?${new URLSearchParams({ tipo, de: from, ate: to, cliente: client }).toString()}`}
-                  download
-                  title="Ficheiro CSV — abre no Excel, Numbers ou Google Sheets"
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50"
-                >
-                  <Download className="size-4" /> {label}
-                </a>
-              ))}
+              ).map(([tipo, label]) => {
+                const qs = new URLSearchParams({ tipo, de: from, ate: to, cliente: client }).toString();
+                return (
+                  <span key={tipo} className="inline-flex overflow-hidden rounded-lg border border-slate-300 bg-white text-sm font-medium text-slate-700 shadow-sm">
+                    <span className="inline-flex items-center gap-1.5 border-r border-slate-200 px-3 py-1.5">
+                      <Download className="size-4" /> {label}
+                    </span>
+                    <a href={`/admin/saidas/exportar?${qs}`} download title="Excel (CSV) — abre no Excel, Numbers ou Google Sheets" className="px-2.5 py-1.5 hover:bg-slate-50">
+                      Excel
+                    </a>
+                    <a
+                      href={`/admin/relatorio-material?${qs}&pdf=1`}
+                      target="_blank"
+                      rel="noopener"
+                      title="PDF com a marca Ponto Radical (abre a janela de impressão: escolha «Guardar como PDF»)"
+                      className="border-l border-slate-200 px-2.5 py-1.5 hover:bg-slate-50"
+                    >
+                      PDF
+                    </a>
+                  </span>
+                );
+              })}
             </div>
           </header>
           {summary.length === 0 ? (

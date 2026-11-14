@@ -124,12 +124,14 @@ function csv(rows: (string | number | null | undefined)[][]): string {
   return "﻿" + rows.map((r) => r.map(cell).join(";")).join("\r\n") + "\r\n";
 }
 
-const STATUS_TEXT: Record<DeliveryStatus, string> = { emitida: "Emitida (por assinar)", assinada: "Assinada", anulada: "Anulada" };
+export const STATUS_TEXT: Record<DeliveryStatus, string> = { emitida: "Emitida (por assinar)", assinada: "Assinada", anulada: "Anulada" };
 
 /** Resumo por material: total fornecido no período (sem guias anuladas). */
-export function controlSummaryCsv(deliveries: Delivery[], f: ControlFilter): string {
+export type ControlSummaryRow = { description: string; unit: string; quantity: number; lines: number; clients: string[]; first: string; last: string };
+
+/** Linhas do resumo por material (usadas no CSV e no relatório PDF). */
+export function controlSummaryRows(deliveries: Delivery[], f: ControlFilter): ControlSummaryRow[] {
   const list = filterDeliveries(deliveries, f);
-  const rows: (string | number)[][] = [["Material", "Unidade", "Quantidade fornecida", "Linhas", "Clientes", "Primeira saída", "Última saída"]];
   const extra = new Map<string, { clients: Map<string, string>; first: string; last: string }>();
   for (const d of list) {
     if (d.status === "anulada") continue;
@@ -143,10 +145,20 @@ export function controlSummaryCsv(deliveries: Delivery[], f: ControlFilter): str
       extra.set(key, e);
     }
   }
-  for (const s of summarizeItems(list)) {
+  return summarizeItems(list).map((s) => {
     const e = extra.get(`${s.description.trim().toLowerCase()}|${s.unit}`);
-    rows.push([s.description, s.unit, s.quantity, s.deliveries, e ? [...e.clients.values()].join(", ") : "", e?.first ?? "", e?.last ?? ""]);
-  }
+    return { description: s.description, unit: s.unit, quantity: s.quantity, lines: s.deliveries, clients: e ? [...e.clients.values()] : [], first: e?.first ?? "", last: e?.last ?? "" };
+  });
+}
+
+/** Guias filtradas por ordem cronológica (detalhe). */
+export function controlDetailDeliveries(deliveries: Delivery[], f: ControlFilter): Delivery[] {
+  return [...filterDeliveries(deliveries, f)].sort((a, b) => a.delivery_date.localeCompare(b.delivery_date) || a.number.localeCompare(b.number));
+}
+
+export function controlSummaryCsv(deliveries: Delivery[], f: ControlFilter): string {
+  const rows: (string | number)[][] = [["Material", "Unidade", "Quantidade fornecida", "Linhas", "Clientes", "Primeira saída", "Última saída"]];
+  for (const r of controlSummaryRows(deliveries, f)) rows.push([r.description, r.unit, r.quantity, r.lines, r.clients.join(", "), r.first, r.last]);
   return csv(rows);
 }
 
@@ -155,7 +167,7 @@ export function controlDetailCsv(deliveries: Delivery[], f: ControlFilter): stri
   const rows: (string | number | null)[][] = [
     ["Guia", "Data", "Estado", "Cliente", "Dados do cliente", "Referência / obra", "Entregue por", "Recebido por", "Nº", "Material", "Referência do material", "Quantidade", "Unidade", "Notas da linha"],
   ];
-  for (const d of [...filterDeliveries(deliveries, f)].sort((a, b) => a.delivery_date.localeCompare(b.delivery_date) || a.number.localeCompare(b.number))) {
+  for (const d of controlDetailDeliveries(deliveries, f)) {
     d.items.forEach((it, i) =>
       rows.push([
         d.number,
