@@ -28,7 +28,5 @@ export function localePath(locale: Locale): string {
 /** Marca (sessionStorage) para saltar o ecrã de entrada no carregamento seguinte, depois de escolher a língua. */
 export const GATE_SKIP_KEY = "pr-gate-skip";
 
-/** Contador (localStorage) de vezes que o ecrã de entrada já foi mostrado neste navegador. */
-export const GATE_VIEWS_KEY = "pr-gate-vistas";
-/** Depois de mostrado este número de vezes, o ecrã de entrada deixa de aparecer no mesmo navegador. */
-export const GATE_MAX_VIEWS = 3;
+/** Antigo contador de visitas (limite de 3, retirado a 25/11/2026); apagado dos navegadores pelo script de entrada. */
+export const GATE_VIEWS_KEY_OLD = "pr-gate-vistas";

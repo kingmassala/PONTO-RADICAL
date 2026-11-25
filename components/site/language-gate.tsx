@@ -23,8 +23,8 @@ function LogoMark() {
 
 /**
  * Ecrã de entrada: o logótipo a girar em 3D sobre fundo branco e a escolha da língua.
- * Aparece nas 3 primeiras visitas de cada navegador (contador em localStorage, ver
- * lib/i18n/gate-script.ts) e nunca logo a seguir a escolher outra língua.
+ * Aparece em todos os carregamentos da página (incluindo ao actualizar); o script de
+ * lib/i18n/gate-script.ts só o esconde logo a seguir a escolher outra língua.
  *
  * Na pré-visualização do painel (`previewHrefs`) aparece sempre, a escolha não é
  * guardada e cada língua abre a pré-visualização nessa língua.
